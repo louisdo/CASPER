@@ -1,0 +1,2 @@
+Loading phrase_splade for the first time. This will be done only once for phrase_splade
+({'NDCG@5': 0.14982, 'NDCG@10': 0.17989, 'NDCG@100': 0.25113, 'NDCG@1000': 0.29573}, {'MAP@5': 0.09166, 'MAP@10': 0.10697, 'MAP@100': 0.12414, 'MAP@1000': 0.12658}, {'Recall@5': 0.13278, 'Recall@10': 0.18787, 'Recall@100': 0.40065, 'Recall@1000': 0.61832}, {'P@5': 0.1312, 'P@10': 0.0927, 'P@100': 0.01974, 'P@1000': 0.00304}) {'MRR@5': 0.29882, 'MRR@10': 0.31161, 'MRR@100': 0.32141, 'MRR@1000': 0.32204}

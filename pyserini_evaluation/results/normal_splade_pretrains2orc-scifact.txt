@@ -1,0 +1,3 @@
+yoyoyoyoyo False
+Loading normal_splade_pretrains2orc for the first time. This will be done only once for normal_splade_pretrains2orc
+({'NDCG@5': 0.60763, 'NDCG@10': 0.62413, 'NDCG@100': 0.65845, 'NDCG@1000': 0.67023}, {'MAP@5': 0.5785, 'MAP@10': 0.58682, 'MAP@100': 0.59404, 'MAP@1000': 0.59452}, {'Recall@5': 0.67772, 'Recall@10': 0.72533, 'Recall@100': 0.882, 'Recall@1000': 0.97333}, {'P@5': 0.14933, 'P@10': 0.081, 'P@100': 0.01, 'P@1000': 0.0011}) {'MRR@5': 0.59189, 'MRR@10': 0.59739, 'MRR@100': 0.60381, 'MRR@1000': 0.60416}

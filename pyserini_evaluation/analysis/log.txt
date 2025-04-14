@@ -1,0 +1,31 @@
+PLAIN-2: Do Cholesterol Statin Drugs Cause Breast Cancer?
+MED-2432 query encode là stat, nhưng document lại encode là statins, lý do là trong query nó viết là "statin" chứ k phải là statins -> có thể cần stemming
+
+
+PLAIN-12: Exploiting Autophagy to Live Longer
+MED-2513: score quá thấp so với các doc khác không vào nổi top
+
+PLAIN-23: How to Reduce Exposure to Alkylphenols Through Your Diet
+MED-2649: score quá thấp so với các doc khác không vào nổi top
+Một trong các doc khác: 
+MED-4036: match với query này [['health', 360], ['food', 14125], ['gene', 1825], ['consumer', 805], ['consumption', 1020], ['diet', 31790], ['nutrition', 13193], ['dietary', 7820], ['pesticide', 8625]]
+chú ý là bị match "nutrition", "pesticide" khá là cao. Cũng k hẳn là sai vì Alkylphenols là chất để cho pesticide. 
+Normal splade không match những từ này. Các từ được normal splade match: [['fat', 2220], ['diet', 32661]] 
+
+
+PLAIN-33: What’s Driving America’s Obesity Problem?
+MED-5341: score quá thấp so với các doc khác không vào nổi top
+Query encoder của phrase splade không bắt được từ "fat" trong khi normal splade thì có
+
+PLAIN-44: Who Should be Careful About Curcumin?
+query này thì phrase splade có vẻ ngon hơn
+
+
+PLAIN-56: Foods for Glaucoma
+query này thì phrase splade có vẻ ngon hơn
+
+PLAIN-68: What is Actually in Chicken Nuggets?
+query này thì phrase splade có vẻ ngon hơn
+
+PLAIN-78: What Do Meat Purge and Cola Have in Common?
+MED-3096: score quá thấp so với các doc khác không vào nổi top

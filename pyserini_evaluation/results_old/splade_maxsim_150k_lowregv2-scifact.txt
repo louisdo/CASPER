@@ -1,0 +1,2 @@
+Loading splade_maxsim_150k_lowregv2 for the first time. This will be done only once for splade_maxsim_150k_lowregv2
+({'NDCG@10': 0.65224, 'NDCG@100': 0.6769}, {'MAP@10': 0.61334, 'MAP@100': 0.61901}, {'Recall@10': 0.756, 'Recall@100': 0.868}, {'P@10': 0.08567, 'P@100': 0.00983}) {'MRR@10': 0.62806, 'MRR@100': 0.63247}

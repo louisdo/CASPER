@@ -1,0 +1,3 @@
+- +beir.dataset=scidocs
+- +beir.dataset_path=data/beir
+- config.index_retrieve_batch_size=100

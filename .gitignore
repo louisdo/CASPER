@@ -1,0 +1,11 @@
+.idea/
+*__pycache__
+.ipynb_checkpoints
+*.pkl
+model_ckpt/
+ckpt/
+output/
+data/
+*_gitig_*
+*.json
+pyserini_evaluation/metadata/

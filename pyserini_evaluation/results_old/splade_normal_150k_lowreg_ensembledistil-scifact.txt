@@ -1,0 +1,2 @@
+Loading splade_normal_150k_lowreg_ensembledistil for the first time. This will be done only once for splade_normal_150k_lowreg_ensembledistil
+({'NDCG@10': 0.00509, 'NDCG@100': 0.02448}, {'MAP@10': 0.00298, 'MAP@100': 0.00624}, {'Recall@10': 0.009, 'Recall@100': 0.1065}, {'P@10': 0.00133, 'P@100': 0.00117})

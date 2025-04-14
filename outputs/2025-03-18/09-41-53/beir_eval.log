@@ -1,0 +1,36 @@
+[2025-03-18 09:41:54,928][beir.datasets.data_loader][INFO] - Loading Corpus...
+[2025-03-18 09:41:55,005][beir.datasets.data_loader][INFO] - Loaded 5183 TEST Documents.
+[2025-03-18 09:41:55,006][beir.datasets.data_loader][INFO] - Doc Example: {'text': 'Alterations of the architecture of cerebral white matter in the developing human brain can affect cortical development and result in functional disabilities. A line scan diffusion-weighted magnetic resonance imaging (MRI) sequence with diffusion tensor analysis was applied to measure the apparent diffusion coefficient, to calculate relative anisotropy, and to delineate three-dimensional fiber architecture in cerebral white matter in preterm (n = 17) and full-term infants (n = 7). To assess effects of prematurity on cerebral white matter development, early gestation preterm infants (n = 10) were studied a second time at term. In the central white matter the mean apparent diffusion coefficient at 28 wk was high, 1.8 microm2/ms, and decreased toward term to 1.2 microm2/ms. In the posterior limb of the internal capsule, the mean apparent diffusion coefficients at both times were similar (1.2 versus 1.1 microm2/ms). Relative anisotropy was higher the closer birth was to term with greater absolute values in the internal capsule than in the central white matter. Preterm infants at term showed higher mean diffusion coefficients in the central white matter (1.4 +/- 0.24 versus 1.15 +/- 0.09 microm2/ms, p = 0.016) and lower relative anisotropy in both areas compared with full-term infants (white matter, 10.9 +/- 0.6 versus 22.9 +/- 3.0%, p = 0.001; internal capsule, 24.0 +/- 4.44 versus 33.1 +/- 0.6% p = 0.006). Nonmyelinated fibers in the corpus callosum were visible by diffusion tensor MRI as early as 28 wk; full-term and preterm infants at term showed marked differences in white matter fiber organization. The data indicate that quantitative assessment of water diffusion by diffusion tensor MRI provides insight into microstructural development in cerebral white matter in living infants.', 'title': 'Microstructural development of human newborn cerebral white matter assessed in vivo by diffusion tensor magnetic resonance imaging.'}
+[2025-03-18 09:41:55,007][beir.datasets.data_loader][INFO] - Loading Queries...
+[2025-03-18 09:41:55,013][beir.datasets.data_loader][INFO] - Loaded 300 TEST Queries.
+[2025-03-18 09:41:55,013][beir.datasets.data_loader][INFO] - Query Example: 0-dimensional biomaterials show inductive properties.
+[2025-03-18 09:42:57,065][root][INFO] - 
+
+[2025-03-18 09:42:57,065][root][INFO] - NDCG@1: 0.5567
+[2025-03-18 09:42:57,065][root][INFO] - NDCG@10: 0.6469
+[2025-03-18 09:42:57,065][root][INFO] - NDCG@100: 0.6469
+[2025-03-18 09:42:57,066][root][INFO] - NDCG@1000: 0.6469
+[2025-03-18 09:42:57,067][root][INFO] - 
+
+[2025-03-18 09:42:57,067][root][INFO] - MAP@1: 0.5358
+[2025-03-18 09:42:57,068][root][INFO] - MAP@10: 0.6158
+[2025-03-18 09:42:57,069][root][INFO] - MAP@100: 0.6158
+[2025-03-18 09:42:57,069][root][INFO] - MAP@1000: 0.6158
+[2025-03-18 09:42:57,070][root][INFO] - 
+
+[2025-03-18 09:42:57,071][root][INFO] - Recall@1: 0.5358
+[2025-03-18 09:42:57,071][root][INFO] - Recall@10: 0.7251
+[2025-03-18 09:42:57,072][root][INFO] - Recall@100: 0.7251
+[2025-03-18 09:42:57,073][root][INFO] - Recall@1000: 0.7251
+[2025-03-18 09:42:57,073][root][INFO] - 
+
+[2025-03-18 09:42:57,074][root][INFO] - P@1: 0.5567
+[2025-03-18 09:42:57,074][root][INFO] - P@10: 0.0813
+[2025-03-18 09:42:57,075][root][INFO] - P@100: 0.0081
+[2025-03-18 09:42:57,076][root][INFO] - P@1000: 0.0008
+[2025-03-18 09:42:57,077][root][INFO] - 
+
+[2025-03-18 09:42:57,099][root][INFO] - R_cap@1: 0.5567
+[2025-03-18 09:42:57,099][root][INFO] - R_cap@10: 0.7251
+[2025-03-18 09:42:57,099][root][INFO] - R_cap@100: 0.7251
+[2025-03-18 09:42:57,100][root][INFO] - R_cap@1000: 0.7251

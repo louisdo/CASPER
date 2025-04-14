@@ -1,0 +1,36 @@
+[2025-03-18 09:57:35,121][beir.datasets.data_loader][INFO] - Loading Corpus...
+[2025-03-18 09:57:35,166][beir.datasets.data_loader][INFO] - Loaded 3633 TEST Documents.
+[2025-03-18 09:57:35,167][beir.datasets.data_loader][INFO] - Doc Example: {'text': 'Recent studies have suggested that statins, an established drug group in the prevention of cardiovascular mortality, could delay or prevent breast cancer recurrence but the effect on disease-specific mortality remains unclear. We evaluated risk of breast cancer death among statin users in a population-based cohort of breast cancer patients. The study cohort included all newly diagnosed breast cancer patients in Finland during 1995–2003 (31,236 cases), identified from the Finnish Cancer Registry. Information on statin use before and after the diagnosis was obtained from a national prescription database. We used the Cox proportional hazards regression method to estimate mortality among statin users with statin use as time-dependent variable. A total of 4,151 participants had used statins. During the median follow-up of 3.25 years after the diagnosis (range 0.08–9.0 years) 6,011 participants died, of which 3,619 (60.2%) was due to breast cancer. After adjustment for age, tumor characteristics, and treatment selection, both post-diagnostic and pre-diagnostic statin use were associated with lowered risk of breast cancer death (HR 0.46, 95% CI 0.38–0.55 and HR 0.54, 95% CI 0.44–0.67, respectively). The risk decrease by post-diagnostic statin use was likely affected by healthy adherer bias; that is, the greater likelihood of dying cancer patients to discontinue statin use as the association was not clearly dose-dependent and observed already at low-dose/short-term use. The dose- and time-dependence of the survival benefit among pre-diagnostic statin users suggests a possible causal effect that should be evaluated further in a clinical trial testing statins’ effect on survival in breast cancer patients.', 'title': 'Statin Use and Breast Cancer Survival: A Nationwide Cohort Study from Finland'}
+[2025-03-18 09:57:35,167][beir.datasets.data_loader][INFO] - Loading Queries...
+[2025-03-18 09:57:35,186][beir.datasets.data_loader][INFO] - Loaded 323 TEST Queries.
+[2025-03-18 09:57:35,187][beir.datasets.data_loader][INFO] - Query Example: Do Cholesterol Statin Drugs Cause Breast Cancer?
+[2025-03-18 09:58:01,044][root][INFO] - 
+
+[2025-03-18 09:58:01,044][root][INFO] - NDCG@1: 0.4133
+[2025-03-18 09:58:01,044][root][INFO] - NDCG@10: 0.2751
+[2025-03-18 09:58:01,045][root][INFO] - NDCG@100: 0.1838
+[2025-03-18 09:58:01,045][root][INFO] - NDCG@1000: 0.1804
+[2025-03-18 09:58:01,046][root][INFO] - 
+
+[2025-03-18 09:58:01,046][root][INFO] - MAP@1: 0.0513
+[2025-03-18 09:58:01,046][root][INFO] - MAP@10: 0.1069
+[2025-03-18 09:58:01,046][root][INFO] - MAP@100: 0.1069
+[2025-03-18 09:58:01,047][root][INFO] - MAP@1000: 0.1069
+[2025-03-18 09:58:01,048][root][INFO] - 
+
+[2025-03-18 09:58:01,048][root][INFO] - Recall@1: 0.0513
+[2025-03-18 09:58:01,049][root][INFO] - Recall@10: 0.1304
+[2025-03-18 09:58:01,050][root][INFO] - Recall@100: 0.1304
+[2025-03-18 09:58:01,051][root][INFO] - Recall@1000: 0.1304
+[2025-03-18 09:58:01,051][root][INFO] - 
+
+[2025-03-18 09:58:01,051][root][INFO] - P@1: 0.4272
+[2025-03-18 09:58:01,051][root][INFO] - P@10: 0.1681
+[2025-03-18 09:58:01,052][root][INFO] - P@100: 0.0168
+[2025-03-18 09:58:01,053][root][INFO] - P@1000: 0.0017
+[2025-03-18 09:58:01,054][root][INFO] - 
+
+[2025-03-18 09:58:01,059][root][INFO] - R_cap@1: 0.4303
+[2025-03-18 09:58:01,059][root][INFO] - R_cap@10: 0.2261
+[2025-03-18 09:58:01,059][root][INFO] - R_cap@100: 0.1319
+[2025-03-18 09:58:01,060][root][INFO] - R_cap@1000: 0.1304

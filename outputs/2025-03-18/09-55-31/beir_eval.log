@@ -1,0 +1,38 @@
+[2025-03-18 09:55:32,370][beir.util][INFO] - Downloading nfcorpus.zip ...
+[2025-03-18 09:55:37,138][beir.util][INFO] - Unzipping nfcorpus.zip ...
+[2025-03-18 09:55:37,441][beir.datasets.data_loader][INFO] - Loading Corpus...
+[2025-03-18 09:55:37,485][beir.datasets.data_loader][INFO] - Loaded 3633 TEST Documents.
+[2025-03-18 09:55:37,485][beir.datasets.data_loader][INFO] - Doc Example: {'text': 'Recent studies have suggested that statins, an established drug group in the prevention of cardiovascular mortality, could delay or prevent breast cancer recurrence but the effect on disease-specific mortality remains unclear. We evaluated risk of breast cancer death among statin users in a population-based cohort of breast cancer patients. The study cohort included all newly diagnosed breast cancer patients in Finland during 1995–2003 (31,236 cases), identified from the Finnish Cancer Registry. Information on statin use before and after the diagnosis was obtained from a national prescription database. We used the Cox proportional hazards regression method to estimate mortality among statin users with statin use as time-dependent variable. A total of 4,151 participants had used statins. During the median follow-up of 3.25 years after the diagnosis (range 0.08–9.0 years) 6,011 participants died, of which 3,619 (60.2%) was due to breast cancer. After adjustment for age, tumor characteristics, and treatment selection, both post-diagnostic and pre-diagnostic statin use were associated with lowered risk of breast cancer death (HR 0.46, 95% CI 0.38–0.55 and HR 0.54, 95% CI 0.44–0.67, respectively). The risk decrease by post-diagnostic statin use was likely affected by healthy adherer bias; that is, the greater likelihood of dying cancer patients to discontinue statin use as the association was not clearly dose-dependent and observed already at low-dose/short-term use. The dose- and time-dependence of the survival benefit among pre-diagnostic statin users suggests a possible causal effect that should be evaluated further in a clinical trial testing statins’ effect on survival in breast cancer patients.', 'title': 'Statin Use and Breast Cancer Survival: A Nationwide Cohort Study from Finland'}
+[2025-03-18 09:55:37,486][beir.datasets.data_loader][INFO] - Loading Queries...
+[2025-03-18 09:55:37,509][beir.datasets.data_loader][INFO] - Loaded 323 TEST Queries.
+[2025-03-18 09:55:37,509][beir.datasets.data_loader][INFO] - Query Example: Do Cholesterol Statin Drugs Cause Breast Cancer?
+[2025-03-18 09:56:22,558][root][INFO] - 
+
+[2025-03-18 09:56:22,559][root][INFO] - NDCG@1: 0.4505
+[2025-03-18 09:56:22,559][root][INFO] - NDCG@10: 0.2843
+[2025-03-18 09:56:22,559][root][INFO] - NDCG@100: 0.1901
+[2025-03-18 09:56:22,559][root][INFO] - NDCG@1000: 0.1866
+[2025-03-18 09:56:22,559][root][INFO] - 
+
+[2025-03-18 09:56:22,559][root][INFO] - MAP@1: 0.0599
+[2025-03-18 09:56:22,559][root][INFO] - MAP@10: 0.1108
+[2025-03-18 09:56:22,559][root][INFO] - MAP@100: 0.1108
+[2025-03-18 09:56:22,559][root][INFO] - MAP@1000: 0.1108
+[2025-03-18 09:56:22,559][root][INFO] - 
+
+[2025-03-18 09:56:22,559][root][INFO] - Recall@1: 0.0599
+[2025-03-18 09:56:22,559][root][INFO] - Recall@10: 0.1321
+[2025-03-18 09:56:22,559][root][INFO] - Recall@100: 0.1321
+[2025-03-18 09:56:22,560][root][INFO] - Recall@1000: 0.1321
+[2025-03-18 09:56:22,560][root][INFO] - 
+
+[2025-03-18 09:56:22,560][root][INFO] - P@1: 0.4644
+[2025-03-18 09:56:22,560][root][INFO] - P@10: 0.1687
+[2025-03-18 09:56:22,560][root][INFO] - P@100: 0.0169
+[2025-03-18 09:56:22,560][root][INFO] - P@1000: 0.0017
+[2025-03-18 09:56:22,560][root][INFO] - 
+
+[2025-03-18 09:56:22,565][root][INFO] - R_cap@1: 0.4675
+[2025-03-18 09:56:22,565][root][INFO] - R_cap@10: 0.2290
+[2025-03-18 09:56:22,565][root][INFO] - R_cap@100: 0.1336
+[2025-03-18 09:56:22,566][root][INFO] - R_cap@1000: 0.1321

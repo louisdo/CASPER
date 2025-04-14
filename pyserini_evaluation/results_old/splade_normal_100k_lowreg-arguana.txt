@@ -1,0 +1,2 @@
+Loading splade_normal_100k_lowreg for the first time. This will be done only once for splade_normal_100k_lowreg
+({'NDCG@10': 0.394, 'NDCG@100': 0.45433}, {'MAP@10': 0.31515, 'MAP@100': 0.32866}, {'Recall@10': 0.64936, 'Recall@100': 0.91963}, {'P@10': 0.06494, 'P@100': 0.0092})

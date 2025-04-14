@@ -1,0 +1,63 @@
+config:
+  lr: 2.0e-05
+  seed: 123
+  gradient_accumulation_steps: 1
+  weight_decay: 0.01
+  validation_metrics:
+  - MRR@10
+  - recall@100
+  - recall@200
+  - recall@500
+  pretrained_no_yamlconfig: false
+  nb_iterations: 100000
+  train_batch_size: 32
+  eval_batch_size: 600
+  index_retrieve_batch_size: 500
+  record_frequency: 10000
+  train_monitoring_freq: 100
+  warmup_steps: 6000
+  max_length: 256
+  fp16: true
+  augment_pairs: in_batch_negatives
+  matching_type: phrase_splade_v2
+  monitoring_ckpt: loss
+  loss: InBatchPairwiseNLLPhraseSpladev2
+  regularizer:
+    FLOPS:
+      lambda_q: 0.05
+      lambda_d: 0.03
+      T: 50000
+      targeted_rep: rep
+      reg: FLOPS
+  tokenizer_type: lamdo/distilbert-base-uncased-phrase-20kaddedphrases_erukgds-mlm-18000steps-v2
+  top_k: 5
+  threshold: 0.4
+  eval_metric:
+  - - mrr_10
+    - recall
+  retrieval_name:
+  - TOY
+  checkpoint_dir: /scratch/lamdo/phrase_splade_checkpoints/phrase_splade_18/debug/checkpoint
+  index_dir: /scratch/lamdo/phrase_splade_checkpoints/phrase_splade_18/debug/index
+  out_dir: /scratch/lamdo/phrase_splade_checkpoints/phrase_splade_18/debug/out
+data:
+  type: triplets
+  TRAIN_DATA_DIR: /scratch/lamdo/unArxive/keyphrase_informativeness_combined_references/triplets_hardneg
+  VALIDATION_SIZE_FOR_LOSS: 20
+  VALIDATION_FULL_RANKING:
+    D_COLLECTION_PATH: data/toy_data/val_collection
+    Q_COLLECTION_PATH: data/toy_data/val_queries
+    QREL_PATH: data/toy_data/qrel/qrel.json
+    TOP_K: 20
+  COLLECTION_PATH: data/toy_data/full_collection
+  Q_COLLECTION_PATH:
+  - data/toy_data/dev_queries
+  EVAL_QREL_PATH:
+  - data/toy_data/qrel/qrel.json
+  flops_queries: data/toy_data/dev_queries
+init_dict:
+  model_type_or_dir: lamdo/distilbert-base-uncased-phrase-20kaddedphrases_erukgds-mlm-18000steps-v2
+  model_type_or_dir_q: null
+  freeze_d_model: 0
+  agg: max
+  fp16: true

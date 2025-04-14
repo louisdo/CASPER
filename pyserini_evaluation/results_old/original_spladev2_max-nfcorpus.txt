@@ -1,0 +1,2 @@
+Loading original_spladev2_max for the first time. This will be done only once for original_spladev2_max
+({'NDCG@10': 0.31985, 'NDCG@100': 0.28375}, {'MAP@10': 0.12085, 'MAP@100': 0.1468}, {'Recall@10': 0.15256, 'Recall@100': 0.26845}, {'P@10': 0.23065, 'P@100': 0.07139})

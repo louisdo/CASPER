@@ -1,0 +1,27 @@
+# FILES
+defaults:  # (these specify which config FILES to use)
+  ############## TRAIN ###################################
+  - train/config: splade_normal
+  - train/data: distil_from_ensemble
+  - train/model: splade_from_distilbert
+  ############## INDEX ###################################
+  - index: toy
+  ############## RETRIEVE ################################
+  - retrieve_evaluate: toy
+  ############### FLOPS ##################################
+  - flops: toy
+
+# Direct PARAMETER setting
+config:  # to be provided for each run
+  loss: DistilMarginMSE
+  regularizer:
+    FLOPS:
+      lambda_q: 0.1
+      lambda_d: 0.08
+      T: 50000
+      targeted_rep: rep
+      reg: FLOPS
+  checkpoint_dir: "/scratch/lamdo/splade_maxsim_ckpts/splade_normal_150k_lowreg_ensembledistil/debug/checkpoint"
+  index_dir: "/scratch/lamdo/splade_maxsim_ckpts/splade_normal_150k_lowreg_ensembledistil/debug/index"
+  out_dir: "/scratch/lamdo/splade_maxsim_ckpts/splade_normal_150k_lowreg_ensembledistil/debug/out"
+  fp16: true

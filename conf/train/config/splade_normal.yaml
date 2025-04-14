@@ -1,0 +1,28 @@
+# @package config
+
+lr: 2e-5
+seed: 123 #1238 #1237 #1236 #1235 #123
+gradient_accumulation_steps: 1
+weight_decay: 0.01
+validation_metrics: [ MRR@10, recall@100, recall@200, recall@500 ]
+pretrained_no_yamlconfig: false
+nb_iterations: 150000 # 30000 for unarxive_intro_relatedwork_1citationpersentence
+train_batch_size: 32  # number of gpus needs to divide this
+eval_batch_size: 600
+index_retrieve_batch_size: 500
+record_frequency: 10000
+train_monitoring_freq: 1000
+warmup_steps: 6000
+max_length: 256
+fp16: false
+augment_pairs: in_batch_negatives
+matching_type: splade
+monitoring_ckpt: loss  # or e.g. MRR@10
+loss: InBatchPairwiseNLL
+regularizer:
+  FLOPS:
+    lambda_q: 0.0003 #5e-3
+    lambda_d: 0.0001 #3e-3
+    T: 50000 # 30000 for unarxive_intro_relatedwork_1citationpersentence
+    targeted_rep: rep
+    reg: FLOPS

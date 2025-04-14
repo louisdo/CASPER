@@ -1,0 +1,2 @@
+Loading eru_kg for the first time. This will be done only once for eru_kg
+({'NDCG@10': 0.13648, 'NDCG@100': 0.19412}, {'MAP@10': 0.03582, 'MAP@100': 0.065}, {'Recall@10': 0.08551, 'Recall@100': 0.29596}, {'P@10': 0.122, 'P@100': 0.0518}) {'MRR@10': 0.2486, 'MRR@100': 0.26102}
