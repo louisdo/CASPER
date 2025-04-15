@@ -2,7 +2,7 @@
 custom dataloaders (for dynamic batching)
 """
 
-import torch
+import torch, random
 from torch.utils.data.dataloader import DataLoader
 from transformers import AutoTokenizer
 
@@ -13,6 +13,9 @@ class DataLoaderWrapper(DataLoader):
     def __init__(self, tokenizer_type, max_length, **kwargs):
         self.max_length = max_length
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_type)
+
+        # TODO: this is bad code, just here at the moment for testing
+        self.distil_bert_tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
         super().__init__(collate_fn=self.collate_fn, **kwargs, pin_memory=True)
 
     def collate_fn(self, batch):
@@ -25,6 +28,32 @@ class SiamesePairsDataLoader(DataLoaderWrapper):
     """
 
     def collate_fn(self, batch):
+        """
+        batch is a list of tuples, each tuple has 3 (text) items (q, d_pos, d_neg)
+        """
+        q, d_pos, d_neg = zip(*batch)
+        q = random.choice([self.tokenizer, self.distil_bert_tokenizer])(list(q),
+                           add_special_tokens=True,
+                           padding="longest",  # pad to max sequence length in batch
+                           truncation="longest_first",  # truncates to self.max_length
+                           max_length=self.max_length,
+                           return_attention_mask=True)
+        d_pos = random.choice([self.tokenizer, self.distil_bert_tokenizer])(list(d_pos),
+                               add_special_tokens=True,
+                               padding="longest",  # pad to max sequence length in batch
+                               truncation="longest_first",  # truncates to self.max_length
+                               max_length=self.max_length,
+                               return_attention_mask=True)
+        d_neg = random.choice([self.tokenizer, self.distil_bert_tokenizer])(list(d_neg),
+                               add_special_tokens=True,
+                               padding="longest",  # pad to max sequence length in batch
+                               truncation="longest_first",  # truncates to self.max_length
+                               max_length=self.max_length,
+                               return_attention_mask=True)
+        sample = {**rename_keys(q, "q"), **rename_keys(d_pos, "pos"), **rename_keys(d_neg, "neg")}
+        return {k: torch.tensor(v) for k, v in sample.items()}
+
+    def collate_fn_legacy(self, batch):
         """
         batch is a list of tuples, each tuple has 3 (text) items (q, d_pos, d_neg)
         """

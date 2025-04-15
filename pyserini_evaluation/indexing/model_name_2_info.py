@@ -19,7 +19,8 @@ model_name_2_path = {
     # "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_10/debug/checkpoint/model", # first version, 4.4k phrases added
     # "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_11/debug/checkpoint/model", # second version, 14k phrases added 
     # "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_12/debug/checkpoint/model", # third version, 16k added from s2orc, pretraining on s2orc
-    "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_13/debug/checkpoint/model", # fourth version, 16k added from s2orc, pretraining on s2orc, lower regularization than third version
+    # "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_13/debug/checkpoint/model", # fourth version, 16k added from s2orc, pretraining on s2orc, lower regularization than third version
+    "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_24/debug/checkpoint/model", # fifth version, 16k added from s2orc, pretraining on s2orc, trained on kp20k, lower regularization
     "eru_kg": "/scratch/lamdo/splade_checkpoints/experiments_combined_references_v8-1/debug/checkpoint/model",
     "normal_splade_pretrains2orc": "/scratch/lamdo/phrase_splade_checkpoints/normal_splade_pretrains2orc/debug/checkpoint/model"
 }

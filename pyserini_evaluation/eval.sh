@@ -1,10 +1,10 @@
-datasets=(cfscube)
+datasets=(doris_mae cfscube)
 models=(
-    # "phrase_splade"
+    "phrase_splade"
     # "eru_kg"
     # "splade_maxsim_150k_lowregv4"
     # normal_splade_pretrains2orc
-    original_spladev2_max
+    # original_spladev2_max
 )
 
 for dataset in "${datasets[@]}"; do
