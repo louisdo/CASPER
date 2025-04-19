@@ -125,7 +125,7 @@ class TransformerTrainer(TrainerIter):
                 self.training_res_handler.write("{},{}\n".format(i, loss.item()))
                 self.writer.add_scalar("batch_train_loss", loss.item(), i)
                 self.writer.add_scalar("moving_avg_ranking_loss", moving_avg_ranking_loss, i)
-                print("+batch_loss_iter{}: {}".format(i, round(loss.item(), 4)))
+                print("+batch_loss_iter{}: {}, {}".format(i, round(loss.item(), 4), sum(regularization_losses.values())))
                 if self.regularizer is not None:
                     if "train" in self.regularizer:
                         for reg_loss in regularization_losses:
@@ -209,6 +209,7 @@ class SiameseTransformerTrainer(TransformerTrainer):
         if "teacher_p_score" in batch:  # distillation pairs dataloader
             out["teacher_pos_score"] = batch["teacher_p_score"]
             out["teacher_neg_score"] = batch["teacher_n_score"]
+        
         return out
 
     def evaluate_loss(self, data_loader):
@@ -281,117 +282,117 @@ class SiameseTransformerTrainer(TransformerTrainer):
 
 
 
-class SiameseTransformerTrainerPhraseSplade(SiameseTransformerTrainer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.l2_loss = L2()
+# class SiameseTransformerTrainerPhraseSplade(SiameseTransformerTrainer):
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.l2_loss = L2()
 
-    def train_iterations(self):
-        moving_avg_ranking_loss = 0
-        mpm = amp.MixedPrecisionManager(self.fp16)
-        self.optimizer.zero_grad()
+#     def train_iterations(self):
+#         moving_avg_ranking_loss = 0
+#         mpm = amp.MixedPrecisionManager(self.fp16)
+#         self.optimizer.zero_grad()
 
-        for i in tqdm(range(self.start_iteration, self.nb_iterations + 1)):
-            self.model.train()  # train model
-            # self.optimizer.zero_grad()
-            try:
-                batch = next(self.train_iterator)
-            except StopIteration:
-                # when nb_iterations > len(data_loader)
-                self.train_iterator = iter(self.train_loader)
-                batch = next(self.train_iterator)
+#         for i in tqdm(range(self.start_iteration, self.nb_iterations + 1)):
+#             self.model.train()  # train model
+#             # self.optimizer.zero_grad()
+#             try:
+#                 batch = next(self.train_iterator)
+#             except StopIteration:
+#                 # when nb_iterations > len(data_loader)
+#                 self.train_iterator = iter(self.train_loader)
+#                 batch = next(self.train_iterator)
 
-            with mpm.context():
-                for k, v in batch.items():
-                    batch[k] = v.to(self.device)
-                out = self.forward(batch)  # out is a dict (we just feed it to the loss)
-                loss = self.loss(out).mean()  # we need to average as we obtain one loss per GPU in DataParallel
-                moving_avg_ranking_loss = 0.99 * moving_avg_ranking_loss + 0.01 * loss.item()
-                # training moving average for logging
-                if self.regularizer is not None:
-                    if "train" in self.regularizer:
-                        regularization_losses = {}
-                        for reg in self.regularizer["train"]:
-                            lambda_q = self.regularizer["train"][reg]["lambdas"]["lambda_q"].step() if "lambda_q" in \
-                                                                                                       self.regularizer[
-                                                                                                           "train"][
-                                                                                                           reg][
-                                                                                                           "lambdas"] else False
-                            lambda_d = self.regularizer["train"][reg]["lambdas"]["lambda_d"].step() if "lambda_d" in \
-                                                                                                       self.regularizer[
-                                                                                                           "train"][
-                                                                                                           reg][
-                                                                                                           "lambdas"] else False
-                            targeted_rep = self.regularizer["train"][reg]["targeted_rep"]  # used to select the "name"
-                            # of the representation to regularize (for instance the model could output several
-                            # representations e.g. a semantic rep and a lexical rep) => this is just a general case
-                            # for the Trainer
-                            regularization_losses[reg] = 0
-                            if lambda_q:
-                                pos_q_rep = out["pos_q_{}".format(targeted_rep)]
-                                pos_q_rep_tokens = pos_q_rep[...,:ORIGINAL_BERT_VOCAB_SIZE]
-                                pos_q_rep_phrases = pos_q_rep[...,ORIGINAL_BERT_VOCAB_SIZE:]
+#             with mpm.context():
+#                 for k, v in batch.items():
+#                     batch[k] = v.to(self.device)
+#                 out = self.forward(batch)  # out is a dict (we just feed it to the loss)
+#                 loss = self.loss(out).mean()  # we need to average as we obtain one loss per GPU in DataParallel
+#                 moving_avg_ranking_loss = 0.99 * moving_avg_ranking_loss + 0.01 * loss.item()
+#                 # training moving average for logging
+#                 if self.regularizer is not None:
+#                     if "train" in self.regularizer:
+#                         regularization_losses = {}
+#                         for reg in self.regularizer["train"]:
+#                             lambda_q = self.regularizer["train"][reg]["lambdas"]["lambda_q"].step() if "lambda_q" in \
+#                                                                                                        self.regularizer[
+#                                                                                                            "train"][
+#                                                                                                            reg][
+#                                                                                                            "lambdas"] else False
+#                             lambda_d = self.regularizer["train"][reg]["lambdas"]["lambda_d"].step() if "lambda_d" in \
+#                                                                                                        self.regularizer[
+#                                                                                                            "train"][
+#                                                                                                            reg][
+#                                                                                                            "lambdas"] else False
+#                             targeted_rep = self.regularizer["train"][reg]["targeted_rep"]  # used to select the "name"
+#                             # of the representation to regularize (for instance the model could output several
+#                             # representations e.g. a semantic rep and a lexical rep) => this is just a general case
+#                             # for the Trainer
+#                             regularization_losses[reg] = 0
+#                             if lambda_q:
+#                                 pos_q_rep = out["pos_q_{}".format(targeted_rep)]
+#                                 pos_q_rep_tokens = pos_q_rep[...,:ORIGINAL_BERT_VOCAB_SIZE]
+#                                 pos_q_rep_phrases = pos_q_rep[...,ORIGINAL_BERT_VOCAB_SIZE:]
 
-                                q_reg_tokens = (self.regularizer["train"][reg]["loss"](pos_q_rep_tokens) * lambda_q).mean()
-                                q_reg_phrases = (self.l2_loss(pos_q_rep_phrases) * lambda_q * 0.25).mean()
+#                                 q_reg_tokens = (self.regularizer["train"][reg]["loss"](pos_q_rep_tokens) * lambda_q).mean()
+#                                 q_reg_phrases = (self.l2_loss(pos_q_rep_phrases) * lambda_q * 0.25).mean()
 
-                                regularization_losses[reg] += q_reg_tokens + q_reg_phrases
-                            if lambda_d:
-                                pos_d_rep = out["pos_d_{}".format(targeted_rep)]
-                                pos_d_rep_tokens = pos_d_rep[...,:ORIGINAL_BERT_VOCAB_SIZE]
-                                pos_d_rep_phrases = pos_d_rep[...,ORIGINAL_BERT_VOCAB_SIZE:]
+#                                 regularization_losses[reg] += q_reg_tokens + q_reg_phrases
+#                             if lambda_d:
+#                                 pos_d_rep = out["pos_d_{}".format(targeted_rep)]
+#                                 pos_d_rep_tokens = pos_d_rep[...,:ORIGINAL_BERT_VOCAB_SIZE]
+#                                 pos_d_rep_phrases = pos_d_rep[...,ORIGINAL_BERT_VOCAB_SIZE:]
 
-                                neg_d_rep = out["neg_d_{}".format(targeted_rep)]
-                                neg_d_rep_tokens = neg_d_rep[...,:ORIGINAL_BERT_VOCAB_SIZE]
-                                neg_d_rep_phrases = neg_d_rep[...,ORIGINAL_BERT_VOCAB_SIZE:]
+#                                 neg_d_rep = out["neg_d_{}".format(targeted_rep)]
+#                                 neg_d_rep_tokens = neg_d_rep[...,:ORIGINAL_BERT_VOCAB_SIZE]
+#                                 neg_d_rep_phrases = neg_d_rep[...,ORIGINAL_BERT_VOCAB_SIZE:]
 
-                                d_reg_tokens = ((self.regularizer["train"][reg]["loss"](pos_d_rep_tokens) * lambda_d).mean() + \
-                                    (self.regularizer["train"][reg]["loss"](neg_d_rep_tokens) * lambda_d).mean()) / 2
-                                d_reg_phrases = ((self.l2_loss(pos_d_rep_phrases) * lambda_d).mean() + (self.l2_loss(neg_d_rep_phrases) * lambda_d).mean()) / 2
+#                                 d_reg_tokens = ((self.regularizer["train"][reg]["loss"](pos_d_rep_tokens) * lambda_d).mean() + \
+#                                     (self.regularizer["train"][reg]["loss"](neg_d_rep_tokens) * lambda_d).mean()) / 2
+#                                 d_reg_phrases = ((self.l2_loss(pos_d_rep_phrases) * lambda_d).mean() + (self.l2_loss(neg_d_rep_phrases) * lambda_d).mean()) / 2
 
                                 
-                                regularization_losses[reg] += d_reg_tokens + d_reg_phrases
-                            # NOTE: we take the rep of pos q for queries, but it would be equivalent to take the neg
-                            # (because we consider triplets, so the rep of pos and neg are the same)
-                            loss += sum(regularization_losses.values())
-                    with torch.no_grad():
-                        monitor_losses = {}
-                        for reg in self.regularizer["eval"]:
-                            monitor_losses["{}_q".format(reg)] = self.regularizer["eval"][reg]["loss"](
-                                out["pos_q_rep"]).mean()
-                            # again, we can choose pos_q_rep or neg_q_rep indifferently
-                            monitor_losses["{}_d".format(reg)] = (self.regularizer["eval"][reg]["loss"](
-                                out["pos_d_rep"]).mean() + self.regularizer["eval"][reg]["loss"](
-                                out["neg_d_rep"]).mean()) / 2
-            # when multiple GPUs, we need to aggregate the loss from the different GPUs (that's why the .mean())
-            # see https://medium.com/huggingface/training-larger-batches-practical-tips-on-1-gpu-multi-gpu-distributed-setups-ec88c3e51255
-            # for gradient accumulation  # TODO: check if everything works with gradient accumulation
-            loss = loss / self.config["gradient_accumulation_steps"]
-            # perform gradient update:
-            mpm.backward(loss)
+#                                 regularization_losses[reg] += d_reg_tokens + d_reg_phrases
+#                             # NOTE: we take the rep of pos q for queries, but it would be equivalent to take the neg
+#                             # (because we consider triplets, so the rep of pos and neg are the same)
+#                             loss += sum(regularization_losses.values())
+#                     with torch.no_grad():
+#                         monitor_losses = {}
+#                         for reg in self.regularizer["eval"]:
+#                             monitor_losses["{}_q".format(reg)] = self.regularizer["eval"][reg]["loss"](
+#                                 out["pos_q_rep"]).mean()
+#                             # again, we can choose pos_q_rep or neg_q_rep indifferently
+#                             monitor_losses["{}_d".format(reg)] = (self.regularizer["eval"][reg]["loss"](
+#                                 out["pos_d_rep"]).mean() + self.regularizer["eval"][reg]["loss"](
+#                                 out["neg_d_rep"]).mean()) / 2
+#             # when multiple GPUs, we need to aggregate the loss from the different GPUs (that's why the .mean())
+#             # see https://medium.com/huggingface/training-larger-batches-practical-tips-on-1-gpu-multi-gpu-distributed-setups-ec88c3e51255
+#             # for gradient accumulation  # TODO: check if everything works with gradient accumulation
+#             loss = loss / self.config["gradient_accumulation_steps"]
+#             # perform gradient update:
+#             mpm.backward(loss)
 
-            if i % self.config["gradient_accumulation_steps"] == 0:
-                mpm.step(self.optimizer)
-                if self.scheduler is not None:
-                    self.scheduler.step()
-                    self.writer.add_scalar("lr", self.scheduler.get_last_lr()[0], i - 1)
-            if i % self.config["train_monitoring_freq"] == 0:
-                self.training_res_handler.write("{},{}\n".format(i, loss.item()))
-                self.writer.add_scalar("batch_train_loss", loss.item(), i)
-                self.writer.add_scalar("moving_avg_ranking_loss", moving_avg_ranking_loss, i)
-                print("+batch_loss_iter{}: {}".format(i, round(loss.item(), 4)))
-                if self.regularizer is not None:
-                    if "train" in self.regularizer:
-                        for reg_loss in regularization_losses:
-                            self.writer.add_scalar("batch_{}".format(reg_loss),
-                                                   regularization_losses[reg_loss].item(), i)
-                    for monitor_loss in monitor_losses:
-                        self.writer.add_scalar("batch_{}".format(monitor_loss),
-                                               monitor_losses[monitor_loss].item(), i)
-            # various metrics we save:
-            if i % self.record_frequency == 0:
-                self.save_checkpoint(step=i, perf=loss, is_best=True)
-        if not self.validation:
-            # when no validation, finally save the final model (last epoch)
-            self.save_checkpoint(step=i, perf=loss, is_best=True)
-        self.save_checkpoint(step=i, perf=loss, is_best=False, final_checkpoint=True)  # save the last anyway
+#             if i % self.config["gradient_accumulation_steps"] == 0:
+#                 mpm.step(self.optimizer)
+#                 if self.scheduler is not None:
+#                     self.scheduler.step()
+#                     self.writer.add_scalar("lr", self.scheduler.get_last_lr()[0], i - 1)
+#             if i % self.config["train_monitoring_freq"] == 0:
+#                 self.training_res_handler.write("{},{}\n".format(i, loss.item()))
+#                 self.writer.add_scalar("batch_train_loss", loss.item(), i)
+#                 self.writer.add_scalar("moving_avg_ranking_loss", moving_avg_ranking_loss, i)
+#                 print("+batch_loss_iter{}: {}, {}".format(i, round(loss.item(), 4), sum(regularization_losses.values())))
+#                 if self.regularizer is not None:
+#                     if "train" in self.regularizer:
+#                         for reg_loss in regularization_losses:
+#                             self.writer.add_scalar("batch_{}".format(reg_loss),
+#                                                    regularization_losses[reg_loss].item(), i)
+#                     for monitor_loss in monitor_losses:
+#                         self.writer.add_scalar("batch_{}".format(monitor_loss),
+#                                                monitor_losses[monitor_loss].item(), i)
+#             # various metrics we save:
+#             if i % self.record_frequency == 0:
+#                 self.save_checkpoint(step=i, perf=loss, is_best=True)
+#         if not self.validation:
+#             # when no validation, finally save the final model (last epoch)
+#             self.save_checkpoint(step=i, perf=loss, is_best=True)
+#         self.save_checkpoint(step=i, perf=loss, is_best=False, final_checkpoint=True)  # save the last anyway

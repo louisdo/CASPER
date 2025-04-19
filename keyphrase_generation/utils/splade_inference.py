@@ -29,6 +29,25 @@ def init_splade_model(model_name):
     elif model_name == "phrase_splade": 
         model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_25/debug/checkpoint/model"
 
+    elif model_name == "phrase_splade_26": 
+        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_26/debug/checkpoint/model"
+
+    elif model_name == "phrase_splade_27": 
+        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_27/debug/checkpoint/model"
+
+    elif model_name == "phrase_splade_28": 
+        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_28/debug/checkpoint/model"
+    elif model_name == "phrase_splade_29": 
+        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_29/debug/checkpoint/model"
+    elif model_name == "phrase_splade_30": 
+        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_30/debug/checkpoint/model"
+
+    elif model_name == "phrase_splade_24": 
+        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_24/debug/checkpoint/model"
+
+    elif model_name == "phrase_splade_12": 
+        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_12/debug/checkpoint/model"
+
     else: raise NotImplementedError
 
 

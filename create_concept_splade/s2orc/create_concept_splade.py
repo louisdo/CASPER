@@ -100,19 +100,23 @@ def create_model_with_added_phrase_vocab(phrase_vocab, model_name = "distilbert/
 
 
 if __name__ == "__main__":
-    vocab_path = "/home/lamdo/splade/create_concept_splade/s2orc/phrase_vocab.json"
+    vocab_path = "/home/lamdo/splade/create_concept_splade/s2orc/phrase_vocab_100k.json"
 
     with open(vocab_path) as f:
         phrase_counter = json.load(f)
 
-    phrase_vocab = list(phrase_counter.keys())
+    if isinstance(phrase_counter, dict):
+        phrase_vocab = list(phrase_counter.keys())
+    else:
+        phrase_vocab = phrase_counter
 
     tokenizer, model = create_model_with_added_phrase_vocab(
-        phrase_vocab=phrase_vocab
+        phrase_vocab=phrase_vocab,
+        max_added_phrases=60000
     )
 
     print(model.distilbert.embeddings.word_embeddings.weight.shape)
 
-    model_name_on_hf = "lamdo/distilbert-base-uncased-phrase-16kaddedphrasesfroms2orc"
+    model_name_on_hf = "lamdo/distilbert-base-uncased-phrase-60kaddedphrasesfroms2orc"
     tokenizer.push_to_hub(model_name_on_hf)
     model.push_to_hub(model_name_on_hf)

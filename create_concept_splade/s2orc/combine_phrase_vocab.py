@@ -1,4 +1,4 @@
-# python combine_phrase_vocab.py --input_folder ./vocab --output_file ./phrase_vocab.json
+# python combine_phrase_vocab.py --input_folder /scratch/lamdo/s2orc_phrase_vocab --output_file ./phrase_vocab_100k.json
 
 import json, os
 from tqdm import tqdm
@@ -10,8 +10,8 @@ def main():
     parser = ArgumentParser()
     parser.add_argument("--input_folder", type=str, required=True)
     parser.add_argument("--output_file", type = str, required=True)
-    parser.add_argument("--count_threshold", type = int, default = 100)
-    parser.add_argument("--max_num_phrases", type = int, default = 20000)
+    parser.add_argument("--count_threshold", type = int, default = 50)
+    parser.add_argument("--max_num_phrases", type = int, default = 100000)
 
     args = parser.parse_args()
 
@@ -31,7 +31,8 @@ def main():
     for input_file in tqdm(input_files, desc = "Processing files"):
         with open(input_file) as f:
             data = json.load(f)
-            phrase_counter.update(data)
+            temp_phrase_counter = {k:len(v) for k, v in data.items()}
+            phrase_counter.update(temp_phrase_counter)
 
     
     phrase_counter = Counter({k:v for k,v in phrase_counter.items() if v >= count_threshold and k not in bert_vocab})
@@ -41,7 +42,7 @@ def main():
     print("Number of phrases", len(phrase_counter))
 
     with open(output_file, "w") as f:
-        json.dump(phrase_counter, f, indent=4)
+        json.dump(list(sorted(phrase_counter.keys(), key = lambda x: -phrase_counter[x])), f, indent=4)
 
 
 if __name__ == "__main__":

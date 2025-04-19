@@ -13,7 +13,7 @@ from .losses.regularization import init_regularizer, RegWeightScheduler
 from .models.models_utils import get_model
 from .optim.bert_optim import init_simple_bert_optim
 from .tasks.transformer_evaluator import SparseApproxEvalWrapper
-from .tasks.transformer_trainer import SiameseTransformerTrainer, SiameseTransformerTrainerPhraseSplade
+from .tasks.transformer_trainer import SiameseTransformerTrainer
 from .utils.utils import set_seed, restore_model, get_initialize_config, get_loss, set_seed_from_config
 
 
@@ -182,14 +182,7 @@ def train(exp_dict: DictConfig):
     # # TRAIN
     # #################################################################
     print("+++++ BEGIN TRAINING +++++")
-    if config["matching_type"] in ["phrase_splade_v2"]:
-        trainer = SiameseTransformerTrainerPhraseSplade(model=model, iterations=iterations, loss=loss, optimizer=optimizer,
-                                        config=config, scheduler=scheduler,
-                                        train_loader=train_loader, validation_loss_loader=val_loss_loader,
-                                        validation_evaluator=val_evaluator,
-                                        regularizer=regularizer)
-    else:
-        trainer = SiameseTransformerTrainer(model=model, iterations=iterations, loss=loss, optimizer=optimizer,
+    trainer = SiameseTransformerTrainer(model=model, iterations=iterations, loss=loss, optimizer=optimizer,
                                         config=config, scheduler=scheduler,
                                         train_loader=train_loader, validation_loss_loader=val_loss_loader,
                                         validation_evaluator=val_evaluator,

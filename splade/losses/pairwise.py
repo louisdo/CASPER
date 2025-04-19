@@ -59,30 +59,80 @@ class InBatchPairwiseNLLv2:
         return (loss_maxsim + loss_normal) / 2
     
 
-class InBatchPairwiseNLLPhraseSpladev2:
+
+class InBatchPairwiseNLLPhraseSplade:
+    def __init__(self):
+        self.logsoftmax = torch.nn.LogSoftmax(dim=1)
+
+    def helper(self, out_d, field_name, use_hardneg = True):
+        in_batch_scores, neg_scores = out_d[f"pos_{field_name}"], out_d[f"neg_{field_name}"]
+        # here in_batch_scores is a matrix of size bs * (bs / nb_gpus)
+        nb_columns = in_batch_scores.shape[1]
+        nb_gpus = int(in_batch_scores.shape[0] / nb_columns)
+        if use_hardneg:
+            temp = torch.cat([in_batch_scores, neg_scores], dim=1)  # concat neg score from BM25 sampling
+            # shape (batch_size, batch_size/nb_gpus + 1)
+        else:
+            zero_neg_scores = torch.zeros_like(neg_scores)
+            temp = torch.cat([in_batch_scores, zero_neg_scores], dim=1) # shape (batch_size, batch_size/nb_gpus + 1)
+
+        scores = self.logsoftmax(temp)
+        return torch.mean(-scores[torch.arange(in_batch_scores.shape[0]),
+                                  torch.arange(nb_columns).repeat(nb_gpus)])
+    
+    def __call__(self, out_d):
+        loss = self.helper(out_d=out_d, field_name="score", use_hardneg=True)
+        loss_phrase = self.helper(out_d=out_d, field_name="score_phrase", use_hardneg=False)
+
+        return (loss + loss_phrase) / 2
+
+
+
+class InBatchPairwiseNLLNoHardNeg:
     """in batch negatives version
     """
 
     def __init__(self):
         self.logsoftmax = torch.nn.LogSoftmax(dim=1)
 
-    def helper(self, out_d, field_name):
-        in_batch_scores, neg_scores = out_d[f"pos_{field_name}"], out_d[f"neg_{field_name}"]
+    def __call__(self, out_d):
+        in_batch_scores, neg_scores = out_d["pos_score"], out_d["neg_score"]
         # here in_batch_scores is a matrix of size bs * (bs / nb_gpus)
         nb_columns = in_batch_scores.shape[1]
         nb_gpus = int(in_batch_scores.shape[0] / nb_columns)
-        temp = torch.cat([in_batch_scores, neg_scores], dim=1)  # concat neg score from BM25 sampling
+
+        zero_neg_scores = torch.zeros_like(neg_scores)
+        temp = torch.cat([in_batch_scores, zero_neg_scores], dim=1)  # concat neg score from BM25 sampling
         # shape (batch_size, batch_size/nb_gpus + 1)
         scores = self.logsoftmax(temp)
         return torch.mean(-scores[torch.arange(in_batch_scores.shape[0]),
                                   torch.arange(nb_columns).repeat(nb_gpus)])
-    
-    def __call__(self, out_d):
-        loss = self.helper(out_d=out_d, field_name="score")
-        loss_phrase = out_d["pos_l2_loss_phrase"]
 
-        # TODO: The param 0.25 is arbitrary
-        return loss + 0.25 * loss_phrase
+
+# class InBatchPairwiseNLLPhraseSpladev2:
+#     """in batch negatives version
+#     """
+
+#     def __init__(self):
+#         self.logsoftmax = torch.nn.LogSoftmax(dim=1)
+
+#     def helper(self, out_d, field_name):
+#         in_batch_scores, neg_scores = out_d[f"pos_{field_name}"], out_d[f"neg_{field_name}"]
+#         # here in_batch_scores is a matrix of size bs * (bs / nb_gpus)
+#         nb_columns = in_batch_scores.shape[1]
+#         nb_gpus = int(in_batch_scores.shape[0] / nb_columns)
+#         temp = torch.cat([in_batch_scores, neg_scores], dim=1)  # concat neg score from BM25 sampling
+#         # shape (batch_size, batch_size/nb_gpus + 1)
+#         scores = self.logsoftmax(temp)
+#         return torch.mean(-scores[torch.arange(in_batch_scores.shape[0]),
+#                                   torch.arange(nb_columns).repeat(nb_gpus)])
+    
+#     def __call__(self, out_d):
+#         loss = self.helper(out_d=out_d, field_name="score")
+#         loss_phrase = out_d["pos_l2_loss_phrase"]
+
+#         # TODO: The param 0.25 is arbitrary
+#         return loss + 0.25 * loss_phrase
     
 
 

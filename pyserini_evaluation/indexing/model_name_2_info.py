@@ -20,7 +20,11 @@ model_name_2_path = {
     # "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_11/debug/checkpoint/model", # second version, 14k phrases added 
     # "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_12/debug/checkpoint/model", # third version, 16k added from s2orc, pretraining on s2orc
     # "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_13/debug/checkpoint/model", # fourth version, 16k added from s2orc, pretraining on s2orc, lower regularization than third version
-    "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_24/debug/checkpoint/model", # fifth version, 16k added from s2orc, pretraining on s2orc, trained on kp20k, lower regularization
+    # "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_24/debug/checkpoint/model", # fifth version, 16k added from s2orc, pretraining on s2orc, trained on kp20k, lower regularization
+    "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_25/debug/checkpoint/model", # sixth version, similar to fifth, but switching back and fourth between tokenization using tokens and phrases during training
+    "phrase_splade_27": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_27/debug/checkpoint/model", # seventh version, similar to sixth, training with ERU-KG dataset, high regularization
+    "phrase_splade_26": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_26/debug/checkpoint/model", # eighth version, similar to seventh, training with ERU-KG dataset, low regularization
+    "phrase_splade_24": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_24/debug/checkpoint/model", # same as phrase_splade_25, but no switching back and fourth
     "eru_kg": "/scratch/lamdo/splade_checkpoints/experiments_combined_references_v8-1/debug/checkpoint/model",
     "normal_splade_pretrains2orc": "/scratch/lamdo/phrase_splade_checkpoints/normal_splade_pretrains2orc/debug/checkpoint/model"
 }
@@ -42,6 +46,9 @@ model_name_2_model_class = {
     "splade_maxsim_150k_lowregv4": SpladeMaxSim,
     "splade_normal_150k_lowreg_ensembledistil": Splade,
     "phrase_splade": Splade,
+    "phrase_splade_26": Splade,
+    "phrase_splade_27": Splade,
+    "phrase_splade_24": Splade,
     "eru_kg": Splade,
     "normal_splade_pretrains2orc": Splade
 }
@@ -63,6 +70,9 @@ model_name_2_is_maxsim = {
     "splade_maxsim_150k_lowregv4": True,
     "splade_normal_150k_lowreg_ensembledistil": False,
     "phrase_splade": False,
+    "phrase_splade_26": False,
+    "phrase_splade_27": False,
+    "phrase_splade_24": False,
     "eru_kg": False,
     "normal_splade_pretrains2orc": False
 }

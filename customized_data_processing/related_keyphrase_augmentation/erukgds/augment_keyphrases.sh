@@ -1,0 +1,4 @@
+python augment_keyphrases.py \
+--training_data_input_folder /scratch/lamdo/unArxive/keyphrase_informativeness_combined_references/triplets_hardneg \
+--input_phrase_augmentation_file /scratch/lvnguyen/splade_keyphrases_expansion/queries_with_phrases.json \
+--training_data_output /scratch/lamdo/unArxive/keyphrase_informativeness_combined_references/triplets_hardneg_augment_phrases

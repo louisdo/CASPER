@@ -1,7 +1,5 @@
 models_to_include=(
-    phrase_splade
-
-
+    phrase_splade_30
 )
 
 join_by() {
@@ -17,6 +15,7 @@ models_to_include_joined=$(join_by , "${models_to_include[@]}")
 echo "$models_to_include_joined"
 
 RESULTS_FOLDER="/scratch/lamdo/phrase_splade_keyphrase_generation_results" \
-DATASETS_TO_INCLUDE="semeval,inspec,nus,krapivin,kp20k" MODELS_TO_INCLUDE=$models_to_include_joined python view_kg_experiment_results.py
+DATASETS_TO_INCLUDE="krapivin" MODELS_TO_INCLUDE=$models_to_include_joined \
+python view_kg_experiment_results.py
 
 # "semeval,inspec,nus,krapivin,kp20k"

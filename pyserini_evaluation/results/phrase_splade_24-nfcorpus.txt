@@ -1,0 +1,3 @@
+yoyoyoyoyo False
+Loading phrase_splade_24 for the first time. This will be done only once for phrase_splade_24
+({'NDCG@5': 0.31853, 'NDCG@10': 0.29329, 'NDCG@100': 0.2773, 'NDCG@1000': 0.36163}, {'MAP@5': 0.09137, 'MAP@10': 0.10645, 'MAP@100': 0.13593, 'MAP@1000': 0.14897}, {'Recall@5': 0.11225, 'Recall@10': 0.14474, 'Recall@100': 0.28727, 'Recall@1000': 0.59454}, {'P@5': 0.27245, 'P@10': 0.21548, 'P@100': 0.07495, 'P@1000': 0.01985}) {'MRR@5': 0.46409, 'MRR@10': 0.47285, 'MRR@100': 0.48002, 'MRR@1000': 0.48051}

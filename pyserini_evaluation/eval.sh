@@ -1,6 +1,7 @@
-datasets=(doris_mae cfscube)
+datasets=(scifact scidocs nfcorpus trec-covid doris_mae)
 models=(
-    "phrase_splade"
+    # "phrase_splade_27"
+    phrase_splade_24
     # "eru_kg"
     # "splade_maxsim_150k_lowregv4"
     # normal_splade_pretrains2orc
@@ -10,7 +11,7 @@ models=(
 for dataset in "${datasets[@]}"; do
     for model in "${models[@]}"; do
 
-        CUDA_VISIBLE_DEVICES=2 \
+        CUDA_VISIBLE_DEVICES=1 \
         python eval.py \
         --splade_model_name $model \
         --index_folder /scratch/lamdo/beir_splade/indexes/ \

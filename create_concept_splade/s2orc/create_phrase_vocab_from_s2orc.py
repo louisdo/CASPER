@@ -46,7 +46,7 @@ def main():
     BATCH_SIZE = 100
 
     ds = load_dataset("sentence-transformers/s2orc", "title-abstract-pair")
-    vocab = Counter()
+    vocab = {}
 
     slice_step = int(total_num_docs / num_slices)
 
@@ -56,7 +56,8 @@ def main():
     print("First 5 indices:", list_indices[:5])
 
     for i in tqdm(range(0, len(list_indices), BATCH_SIZE)):
-        batch = [ds["train"][j] for j in list_indices[i: i + BATCH_SIZE]]
+        batch_indices = list_indices[i: i + BATCH_SIZE]
+        batch = [ds["train"][j] for j in batch_indices]
         batch_text = [f"""{line['title'].lower()}. {line['abstract'].lower()}""" for line in batch]
 
         docs_tokens = SPLADE_MODEL[SPLADE_MODEL_NAME]["tokenizer"](
@@ -66,11 +67,15 @@ def main():
 
         batch_candidates = [CANDEXT(text) for text in batch_text]
 
-        for candidates, tokens_scores in zip(batch_candidates, batch_tokens_scores):
+        for idx, candidates, tokens_scores in zip(batch_indices, batch_candidates, batch_tokens_scores):
+
             scores = scores_candidates(candidates, tokens_scores, model_name = SPLADE_MODEL_NAME)
             candidates_scores = Counter({c:s for c,s in zip(candidates, scores)})
             top_candidates = candidates_scores.most_common(top_k_candidates)
-            vocab.update([item[0] for item in top_candidates])
+            for c,s in top_candidates:
+                if len(c) <= 2: continue
+                if c not in vocab: vocab[c] = []
+                vocab[c].append(idx)
 
     
     output_file = os.path.join(output_folder, f"{current_slice_index}.json")
