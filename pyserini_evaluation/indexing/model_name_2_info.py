@@ -25,6 +25,7 @@ model_name_2_path = {
     "phrase_splade_27": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_27/debug/checkpoint/model", # seventh version, similar to sixth, training with ERU-KG dataset, high regularization
     "phrase_splade_26": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_26/debug/checkpoint/model", # eighth version, similar to seventh, training with ERU-KG dataset, low regularization
     "phrase_splade_24": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_24/debug/checkpoint/model", # same as phrase_splade_25, but no switching back and fourth
+    "phrase_splade_31": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_31/debug/checkpoint/model",
     "eru_kg": "/scratch/lamdo/splade_checkpoints/experiments_combined_references_v8-1/debug/checkpoint/model",
     "normal_splade_pretrains2orc": "/scratch/lamdo/phrase_splade_checkpoints/normal_splade_pretrains2orc/debug/checkpoint/model"
 }
@@ -49,6 +50,7 @@ model_name_2_model_class = {
     "phrase_splade_26": Splade,
     "phrase_splade_27": Splade,
     "phrase_splade_24": Splade,
+    "phrase_splade_31": Splade,
     "eru_kg": Splade,
     "normal_splade_pretrains2orc": Splade
 }
@@ -73,6 +75,7 @@ model_name_2_is_maxsim = {
     "phrase_splade_26": False,
     "phrase_splade_27": False,
     "phrase_splade_24": False,
+    "phrase_splade_31": False,
     "eru_kg": False,
     "normal_splade_pretrains2orc": False
 }

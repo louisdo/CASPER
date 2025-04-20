@@ -81,10 +81,10 @@ class InBatchPairwiseNLLPhraseSplade:
                                   torch.arange(nb_columns).repeat(nb_gpus)])
     
     def __call__(self, out_d):
-        loss = self.helper(out_d=out_d, field_name="score", use_hardneg=True)
-        loss_phrase = self.helper(out_d=out_d, field_name="score_phrase", use_hardneg=False)
+        loss = self.helper(out_d=out_d, field_name="score", use_hardneg=False)
+        loss_tokens = self.helper(out_d=out_d, field_name="score_tokens", use_hardneg=True)
 
-        return (loss + loss_phrase) / 2
+        return (loss + loss_tokens) / 2
 
 
 

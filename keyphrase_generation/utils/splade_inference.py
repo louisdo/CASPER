@@ -41,6 +41,8 @@ def init_splade_model(model_name):
         model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_29/debug/checkpoint/model"
     elif model_name == "phrase_splade_30": 
         model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_30/debug/checkpoint/model"
+    elif model_name == "phrase_splade_31": 
+        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_31/debug/checkpoint/model"
 
     elif model_name == "phrase_splade_24": 
         model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_24/debug/checkpoint/model"

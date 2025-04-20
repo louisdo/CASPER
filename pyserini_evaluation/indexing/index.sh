@@ -1,7 +1,7 @@
-datasets=(scifact scidocs nfcorpus trec-covid doris_mae cfscube)
+datasets=(trec-covid doris_mae cfscube)
 models=(
     # "phrase_splade_27"
-    "phrase_splade_24"
+    "phrase_splade_31"
     # "eru_kg"
     # "splade_maxsim_150k_lowregv4"
     # normal_splade_pretrains2orc

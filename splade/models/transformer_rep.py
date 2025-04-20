@@ -471,7 +471,7 @@ class SiameseBasePhrase(torch.nn.Module, ABC):
                     d_rep = normalize(d_rep)
 
                 d_rep_tokens = d_rep[...,:self.original_bert_vocab_size]
-                d_rep_phrases = d_rep[...,self.original_bert_vocab_size:]
+                # d_rep_phrases = d_rep[...,self.original_bert_vocab_size:]
 
                 out.update({"d_rep": d_rep})
             if do_q:
@@ -480,7 +480,7 @@ class SiameseBasePhrase(torch.nn.Module, ABC):
                     q_rep = normalize(q_rep)
 
                 q_rep_tokens = q_rep[...,:self.original_bert_vocab_size]
-                q_rep_phrases = q_rep[...,self.original_bert_vocab_size:]
+                # q_rep_phrases = q_rep[...,self.original_bert_vocab_size:]
 
                 out.update({"q_rep": q_rep})
             if do_d and do_q:
@@ -495,13 +495,13 @@ class SiameseBasePhrase(torch.nn.Module, ABC):
                     score_phrase = torch.sum(q_rep_phrases * d_rep_phrases, dim=-1)  # shape (bs, nb_neg)
                 else:
                     if "score_batch" in kwargs:
-                        score = torch.matmul(q_rep_tokens, d_rep_tokens.t())  # shape (bs_q, bs_d)
-                        score_phrase = torch.matmul(q_rep_phrases, d_rep_phrases.t())  # shape (bs_q, bs_d)
+                        score = torch.matmul(q_rep, d_rep.t())  # shape (bs_q, bs_d)
+                        score_tokens = torch.matmul(q_rep_tokens, d_rep_tokens.t())  # shape (bs_q, bs_d)
                     else:
-                        score = torch.sum(q_rep_tokens * d_rep_tokens, dim=1, keepdim=True)  # shape (bs, )
-                        score_phrase = torch.sum(q_rep_phrases * d_rep_phrases, dim=1, keepdim=True)  # shape (bs, )
+                        score = torch.sum(q_rep * d_rep, dim=1, keepdim=True)  # shape (bs, )
+                        score_tokens = torch.sum(q_rep_tokens * d_rep_tokens, dim=1, keepdim=True)  # shape (bs, )
                 # out.update({"score": 0.8 * score + 0.2 * score_phrase})
-                out.update({"score": score, "score_phrase": score_phrase})
+                out.update({"score": score, "score_tokens": score_tokens})
         return out
     
 
