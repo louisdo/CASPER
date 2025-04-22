@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Define parameters
+index_path='/home/lvnguyen/research/eru-kg-base'
+based_bert_path='distilbert/distilbert-base-uncased'
+docs_with_embeddings_path='_gitig_data/docs_with_embeddings_mini.jsonl'
+keywords_with_embeddings_path='_gitig_data/keywords_with_embeddings_mini.json'
+num_docs_threshold=8
+
+# # Docs embeddings
+index_path=$index_path saved_path=$docs_with_embeddings_path based_bert_path=$based_bert_path python build_embedding_for_docs.py
+
+# # Keywords embeddings
+index_path=$index_path docs_with_embeddings_path=$docs_with_embeddings_path saved_path=$keywords_with_embeddings_path python build_embedding_for_phrases.py
+
+# # Integrate and push to hub
+# based_bert_path=$based_bert_path keywords_with_embeddings_path=$keywords_with_embeddings_path python create_model_with_added_phrase_vocab.py

@@ -1,0 +1,71 @@
+# Parameters for the metrics
+
+
+# basic parameters
+import metrics.metric
+KeyphraseMetric.kp_sep = ';'
+KeyphraseMetric.title_sep = '[sep]'
+KeyphraseMetric.unk_word = '[unk]'
+KeyphraseMetric.invalidate_unk = True
+
+
+# standard exact matching metrics: f1 and ranking metrics
+import metrics.exact_matching_metric
+ExactMatchingMetric.k_list = [5, 'M', 'O']
+
+
+# rouge
+import metrics.rouge_metric
+RougeMetric.n_list = [1, 2, 'L']
+
+
+# bert_score
+import metrics.bert_score_metric
+BertScoreMetric.lang="en"
+BertScoreMetric.model_type="bert-base-uncased"
+BertScoreMetric.num_layers=8
+BertScoreMetric.verbose=False
+BertScoreMetric.idf=False
+BertScoreMetric.nthreads=8
+BertScoreMetric.batch_size=128
+BertScoreMetric.rescale_with_baseline=False
+
+
+# meteor
+import metrics.meteor_metric
+MeteorMetric.alpha = 0.9
+MeteorMetric.beta = 3
+MeteorMetric.gamma = 0.5
+
+
+# semantic matching: p, r, f1, and coverage
+import metrics.sem_matching_metric
+SemanticMatchingMetric.model_name_or_path='uclanlp/keyphrase-mpnet-v1' #model train on KP20k, KPTimes, StackEx, OpenKP
+SemanticMatchingMetric.similarity_threshold=0
+SemanticMatchingMetric.pooling_across_phrases='max'
+
+
+# moverscore
+import metrics.mover_score_metric
+MoverScoreMetric.version=1
+MoverScoreMetric.n_gram=1
+MoverScoreMetric.remove_subwords=False
+MoverScoreMetric.remove_stop_words=False
+MoverScoreMetric.batch_size=128
+
+
+# approximate matching (no params required)
+import metrics.approx_matching_metric
+
+
+# diversity
+import metrics.diversity_metric
+DiversityMetric.ngram=3
+DiversityMetric.sbert_model='uclanlp/keyphrase-mpnet-v1'
+DiversityMetric.batch_size=128
+
+
+# unieval
+import metrics.unieval_metric
+UniEvalMetric.dimensions=['faithfulness-summ']
+UniEvalMetric.batch_size=64
