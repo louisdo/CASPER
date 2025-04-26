@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 export PYTHONIOENCODING=utf-8
-
+cd ../
 # List of JSON files to process
 files=(
   # "inspec--phrase_splade_33.json"
@@ -58,10 +58,10 @@ files=(
 )
 
 files=(
-  "inspec--phrase_splade_33.json"
-  "krapivin--phrase_splade_33.json"
-  "nus--phrase_splade_33.json"
-  "semeval--phrase_splade_33.json"
+  "inspec--phrase_splade_38.json"
+  "krapivin--phrase_splade_38.json"
+  "nus--phrase_splade_38.json"
+  "semeval--phrase_splade_38.json"
 )
 
 # Process each file
@@ -77,7 +77,7 @@ for file in "${files[@]}"; do
   top_k=10 \
   python metrics/convert_splade_file.py
 
-  python evaluation.py \
+  python utils/phrase_splade_evaluation.py \
     --config-file /home/lvnguyen/research/Efficient-Storage-for-Large-IR-Systems/kpeval/config.gin \
     --jsonl-file "_gitig_samples/_all_keyphrase_$file" \
     --metrics diversity,meteor,approximate_matching,exact_matching,rouge,bert_score,semantic_matching,unieval \
