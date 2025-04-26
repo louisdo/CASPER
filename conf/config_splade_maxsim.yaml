@@ -13,7 +13,7 @@ defaults:  # (these specify which config FILES to use)
 
 # Direct PARAMETER setting
 config:  # to be provided for each run
-  checkpoint_dir: "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv5/debug/checkpoint"
-  index_dir: "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv5/debug/index"
-  out_dir: "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv5/debug/out"
+  checkpoint_dir: "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv6/debug/checkpoint"
+  index_dir: "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv6/debug/index"
+  out_dir: "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv6/debug/out"
   fp16: true

@@ -3,6 +3,7 @@ sys.path.append("/home/lamdo/keyphrase_informativeness_test/splade")
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 from collections import Counter
 from splade.models.transformer_rep import Splade
+from utils.model_name_2_model_info import MODEL_NAME_2_MODEL_INFO
 
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -14,41 +15,9 @@ def init_splade_model(model_name):
     else:
         print(f"Init splade model {model_name}. This will be done only once")
 
-    if model_name == "custom_trained_pubmedqa+specter":
-        model_type_or_dir = "/home/lamdo/keyphrase_informativeness_test/splade/experiments_pubmedqa+specter/debug/checkpoint/model"
+    model_type_or_dir = MODEL_NAME_2_MODEL_INFO.get(model_name)
 
-    elif model_name == "custom_trained_msmarco":
-        model_type_or_dir = "/home/lamdo/keyphrase_informativeness_test/splade/experiments_msmarco/debug/checkpoint/model"
-
-    elif model_name == "splade-cocondenser-ensembledistil":
-        model_type_or_dir = "naver/splade-cocondenser-ensembledistil"
-
-    elif model_name == "splade-cocondenser-selfdistil":
-        model_type_or_dir = "naver/splade-cocondenser-selfdistil"
-    
-    elif model_name == "phrase_splade": 
-        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_25/debug/checkpoint/model"
-
-    elif model_name == "phrase_splade_26": 
-        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_26/debug/checkpoint/model"
-
-    elif model_name == "phrase_splade_27": 
-        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_27/debug/checkpoint/model"
-
-    elif model_name == "phrase_splade_28": 
-        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_28/debug/checkpoint/model"
-    elif model_name == "phrase_splade_29": 
-        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_29/debug/checkpoint/model"
-    elif model_name == "phrase_splade_30": 
-        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_30/debug/checkpoint/model"
-
-    elif model_name == "phrase_splade_24": 
-        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_24/debug/checkpoint/model"
-
-    elif model_name == "phrase_splade_12": 
-        model_type_or_dir = "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_12/debug/checkpoint/model"
-
-    else: raise NotImplementedError
+    if not model_type_or_dir: raise NotImplementedError
 
 
     print(f"Using {model_type_or_dir}")

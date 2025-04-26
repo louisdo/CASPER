@@ -21,8 +21,8 @@ monitoring_ckpt: loss  # or e.g. MRR@10
 loss: InBatchPairwiseNLLv2
 regularizer:
   FLOPS:
-    lambda_q: 0.0001 #5e-3
-    lambda_d: 0.00005 #3e-3
+    lambda_q: 0.0003 #5e-3
+    lambda_d: 0.0001 #3e-3
     T: 50000 # 30000 for unarxive_intro_relatedwork_1citationpersentence
     targeted_rep: rep
     reg: FLOPS
