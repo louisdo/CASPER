@@ -459,6 +459,7 @@ def main():
         "cfscube": "data/cfscube/cfscube",
         "trec_dl_2019": "data/msmarco/trec_dl_2019",
         "trec_dl_2020": "data/msmarco/trec_dl_2020",
+        "acm_cr": "data/acm_cr/acm_cr"
     }
 
     queries_path = os.path.join(

@@ -1,5 +1,5 @@
 SPLADE_CONFIG_NAME="config_splade_maxsim" \
-CUDA_VISIBLE_DEVICES=1 \
+CUDA_VISIBLE_DEVICES=2 \
 python3 -m splade.train
 
 
@@ -10,5 +10,5 @@ python3 -m splade.train
 
 
 SPLADE_CONFIG_NAME="config_phrase_splade" \
-CUDA_VISIBLE_DEVICES=0 \
+CUDA_VISIBLE_DEVICES=2 \
 python3 -m splade.train

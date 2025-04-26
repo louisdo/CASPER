@@ -15,6 +15,8 @@ model_name_2_path = {
     "splade_maxsim_150k_lowregv2": "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv2_/debug/checkpoint/model",
     "splade_maxsim_150k_lowregv3": "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv3/debug/checkpoint/model",
     "splade_maxsim_150k_lowregv4": "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv4/debug/checkpoint/model",
+    "splade_maxsim_150k_lowregv5": "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv5/debug/checkpoint/model", # similar to v4, but lower regularization
+    "splade_maxsim_100k_lowregv6": "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_100k_lowregv6/debug/checkpoint/model",
     "splade_normal_150k_lowreg_ensembledistil": "/scratch/lamdo/splade_maxsim_ckpts/splade_normal_150k_lowreg_ensembledistil/debug/checkpoint/model",
     # "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_10/debug/checkpoint/model", # first version, 4.4k phrases added
     # "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_11/debug/checkpoint/model", # second version, 14k phrases added 
@@ -26,6 +28,12 @@ model_name_2_path = {
     "phrase_splade_26": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_26/debug/checkpoint/model", # eighth version, similar to seventh, training with ERU-KG dataset, low regularization
     "phrase_splade_24": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_24/debug/checkpoint/model", # same as phrase_splade_25, but no switching back and fourth
     "phrase_splade_31": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_31/debug/checkpoint/model",
+    "phrase_splade_33": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_33/debug/checkpoint/model",
+    "phrase_splade_34": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_34/debug/checkpoint/model",
+    "phrase_splade_35": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_35/debug/checkpoint/model",
+    "phrase_splade_36": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_36/debug/checkpoint/model",
+    "phrase_splade_37": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_37/debug/checkpoint/model",
+    "phrase_splade_38": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_38/debug/checkpoint/model",
     "eru_kg": "/scratch/lamdo/splade_checkpoints/experiments_combined_references_v8-1/debug/checkpoint/model",
     "normal_splade_pretrains2orc": "/scratch/lamdo/phrase_splade_checkpoints/normal_splade_pretrains2orc/debug/checkpoint/model"
 }
@@ -45,12 +53,20 @@ model_name_2_model_class = {
     "splade_maxsim_150k_lowregv2": SpladeMaxSim,
     "splade_maxsim_150k_lowregv3": SpladeMaxSim,
     "splade_maxsim_150k_lowregv4": SpladeMaxSim,
+    "splade_maxsim_150k_lowregv5": SpladeMaxSim,
+    "splade_maxsim_100k_lowregv6": SpladeMaxSim,
     "splade_normal_150k_lowreg_ensembledistil": Splade,
     "phrase_splade": Splade,
     "phrase_splade_26": Splade,
     "phrase_splade_27": Splade,
     "phrase_splade_24": Splade,
     "phrase_splade_31": Splade,
+    "phrase_splade_33": Splade,
+    "phrase_splade_34": Splade,
+    "phrase_splade_35": Splade,
+    "phrase_splade_36": Splade,
+    "phrase_splade_37": Splade,
+    "phrase_splade_38": Splade,
     "eru_kg": Splade,
     "normal_splade_pretrains2orc": Splade
 }
@@ -70,12 +86,20 @@ model_name_2_is_maxsim = {
     "splade_maxsim_150k_lowregv2": True,
     "splade_maxsim_150k_lowregv3": True,
     "splade_maxsim_150k_lowregv4": True,
+    "splade_maxsim_150k_lowregv5": True,
+    "splade_maxsim_100k_lowregv6": True,
     "splade_normal_150k_lowreg_ensembledistil": False,
     "phrase_splade": False,
     "phrase_splade_26": False,
     "phrase_splade_27": False,
     "phrase_splade_24": False,
     "phrase_splade_31": False,
+    "phrase_splade_33": False,
+    "phrase_splade_34": False,
+    "phrase_splade_35": False,
+    "phrase_splade_36": False,
+    "phrase_splade_37": False,
+    "phrase_splade_38": False,
     "eru_kg": False,
     "normal_splade_pretrains2orc": False
 }

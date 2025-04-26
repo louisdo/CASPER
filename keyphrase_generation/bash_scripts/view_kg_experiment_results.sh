@@ -1,5 +1,5 @@
 models_to_include=(
-    phrase_splade_31
+    phrase_splade_33
 )
 
 join_by() {

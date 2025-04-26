@@ -56,7 +56,7 @@ class InBatchPairwiseNLLv2:
         loss_maxsim = self.helper(out_d=out_d, field_name="score")
         loss_normal = self.helper(out_d = out_d, field_name="score_normal")
 
-        return (loss_maxsim + loss_normal) / 2
+        return loss_normal + 0.1 * loss_maxsim #(loss_maxsim + loss_normal) / 2
     
 
 
@@ -84,7 +84,9 @@ class InBatchPairwiseNLLPhraseSplade:
         loss = self.helper(out_d=out_d, field_name="score", use_hardneg=False)
         loss_tokens = self.helper(out_d=out_d, field_name="score_tokens", use_hardneg=True)
 
-        return (loss + loss_tokens) / 2
+        # return (loss + loss_tokens) / 2
+
+        return loss + 0.1 * loss_tokens
 
 
 

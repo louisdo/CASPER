@@ -328,15 +328,15 @@ class SiameseBaseMaxSim(torch.nn.Module, ABC):
             if do_d:
                 d_rep, d_rep_token_indices, d_pad_len = self.encode(kwargs["d_kwargs"], is_q=False) # d_rep shape (bs, out_dim), d_rep_token_indices shape (bs, out_dim)
 
-                d_rep_full_onehot = torch.nn.functional.one_hot(kwargs["d_kwargs"]["input_ids"], num_classes = self.vocab_size) * kwargs["d_kwargs"]["attention_mask"].unsqueeze(-1)
+                # d_rep_full_onehot = torch.nn.functional.one_hot(kwargs["d_kwargs"]["input_ids"], num_classes = self.vocab_size) * kwargs["d_kwargs"]["attention_mask"].unsqueeze(-1)
                 
                 bs = d_rep.shape[0]
                 out_dim = d_rep.shape[1]
                 d_rep_full = torch.zeros((bs, d_pad_len, out_dim)).to(d_rep.device)
                 d_rep_full.scatter_(1, d_rep_token_indices.unsqueeze(1), d_rep.unsqueeze(1))
 
-                assert d_rep_full.shape == d_rep_full_onehot.shape
-                d_rep_full = d_rep_full + d_rep_full_onehot
+                # assert d_rep_full.shape == d_rep_full_onehot.shape
+                # d_rep_full = d_rep_full + d_rep_full_onehot
 
                 if self.cosine:  # normalize embeddings
                     d_rep = normalize(d_rep)
@@ -344,15 +344,15 @@ class SiameseBaseMaxSim(torch.nn.Module, ABC):
             if do_q:
                 q_rep, q_rep_token_indices, q_pad_len = self.encode(kwargs["q_kwargs"], is_q=True) # q_rep shape (bs, out_dim), q_rep_token_indices shape (bs, pad_len)
 
-                q_rep_full_onehot = torch.nn.functional.one_hot(kwargs["q_kwargs"]["input_ids"], num_classes = self.vocab_size) * kwargs["q_kwargs"]["attention_mask"].unsqueeze(-1)
+                # q_rep_full_onehot = torch.nn.functional.one_hot(kwargs["q_kwargs"]["input_ids"], num_classes = self.vocab_size) * kwargs["q_kwargs"]["attention_mask"].unsqueeze(-1)
                 
                 bs = q_rep.shape[0]
                 out_dim = q_rep.shape[1]
                 q_rep_full = torch.zeros((bs, q_pad_len, out_dim)).to(q_rep.device)
                 q_rep_full.scatter_(1, q_rep_token_indices.unsqueeze(1), q_rep.unsqueeze(1))
 
-                assert q_rep_full.shape == q_rep_full_onehot.shape
-                q_rep_full = q_rep_full + q_rep_full_onehot
+                # assert q_rep_full.shape == q_rep_full_onehot.shape
+                # q_rep_full = q_rep_full + q_rep_full_onehot
 
                 if self.cosine:  # normalize embeddings
                     q_rep = normalize(q_rep)

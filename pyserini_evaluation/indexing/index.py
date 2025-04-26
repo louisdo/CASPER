@@ -3,11 +3,10 @@ sys.path.append("../../")
 import numpy as np
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 from pyserini_evaluation.indexing.model_name_2_info import model_name_2_path, model_name_2_model_class, model_name_2_is_maxsim
-from pyserini_evaluation.indexing.utils import maybe_create_folder, remove_folder, torch_csr_to_scipy_csr
-# from scipy.sparse import csr_matrix, vstack, save_npz
-from pyserini_evaluation.indexing.utils import merge_dicts
 
 from tqdm import tqdm
+from memory_profiler import profile 
+from copy import deepcopy
 
 SPLADE = {
     "model": None,
@@ -34,7 +33,10 @@ def init_model(model_name):
 
 
         model = model_class(model_type_or_dir, agg="max").to(DEVICE)
+        for param in model.parameters():
+            param.requires_grad = False
         model.eval()
+
         tokenizer = AutoTokenizer.from_pretrained(model_type_or_dir)
         reverse_voc = {v: k.replace(" ", "-") for k, v in tokenizer.vocab.items()}
         
@@ -54,48 +56,34 @@ def get_representation(batch, is_q, store_documents_in_raw = False):
     batch_tokens = SPLADE["tokenizer"](text_batch, return_tensors="pt", truncation = True, padding = True, max_length = MAX_LENGTH).to(DEVICE)
     with torch.no_grad():
         if SPLADE["is_maxsim"]:
-            batch_doc_rep, batch_doc_token_indices, batch_doc_pad_len = \
+            batch_doc_rep, batch_doc_token_indices, _ = \
                 SPLADE["model"].encode(
                     batch_tokens, 
                     is_q = is_q
                 )
-            
-            bs = batch_doc_rep.shape[0]
-            out_dim = batch_doc_rep.shape[1]
-            # batch_doc_rep_full = torch.zeros((bs, MAX_LENGTH, out_dim), dtype=batch_doc_rep.dtype).to(batch_doc_rep.device)
-            # batch_doc_rep_full.scatter_(1, batch_doc_token_indices.unsqueeze(1), batch_doc_rep.unsqueeze(1))
-
-
-            # batch_doc_rep_full = [item.to_sparse_csr().cpu() for item in batch_doc_rep_full]
-            # batch_doc_rep_full = [torch_csr_to_scipy_csr(item) for item in batch_doc_rep_full]
-
-            batch_doc_rep_full = None
 
         else:
             batch_doc_rep = SPLADE["model"].encode(batch_tokens, is_q = is_q)
             batch_doc_token_indices = None
-            batch_doc_pad_len = None
-            batch_doc_rep_full = None
     
     assert len(batch) == batch_doc_rep.size(0)
 
-    res = []
+    # res = []
     for i in range(batch_doc_rep.size(0)):
-        doc_rep = batch_doc_rep[i]
-        doc_token_indices = batch_doc_token_indices[i] if batch_doc_token_indices is not None else None
-
-        input_ids = batch_tokens["input_ids"][i]
-        attention_mask = batch_tokens["attention_mask"][i]
+        doc_rep = batch_doc_rep[i].detach().cpu()
+        doc_token_indices = batch_doc_token_indices[i].detach().cpu() if batch_doc_token_indices is not None else None
 
         try:
             # get the number of non-zero dimensions in the rep:
-            col = torch.nonzero(doc_rep).squeeze().cpu().tolist()
+            col = torch.nonzero(doc_rep).squeeze().tolist()
 
-            weights = doc_rep[col].cpu().tolist()
-            _indices = doc_token_indices[col].cpu().tolist() if doc_token_indices is not None else None
+            weights = doc_rep[col].tolist()
+            _indices = doc_token_indices[col].tolist() if doc_token_indices is not None else None
             d = {k: int(v * 100) for k, v in zip(col, weights)}
             d = {SPLADE["reverse_voc"][k]: v for k, v in d.items()}
             d_indices = {SPLADE["reverse_voc"][k]: v for k, v in zip(col, _indices)} if _indices is not None else None
+
+            del col, weights, _indices
         except Exception as e:
             print("An error occurred", traceback.format_exc())
             d = {}
@@ -108,67 +96,49 @@ def get_representation(batch, is_q, store_documents_in_raw = False):
         
         if d_indices is not None:
             to_append["token_indices"] = d_indices
-            to_append["pad_len"] = batch_doc_pad_len # may not be necessary
         
         if not store_documents_in_raw:
             del to_append["title"]
             del to_append["text"]
 
-        res.append(to_append)
+        yield to_append
 
-    return res, batch_doc_rep_full
+    #     res.append(to_append)
 
-
-
-def prepare_data(corpus, model_name, outfile, batch_size = 100, is_q = False, store_documents_in_raw = False, chunk_idx = None):
-    init_model(model_name=model_name)
-
-    with open(outfile, "w") as f:
-        corpus_full_representations = []
-        desc = f"Processing chunk #{chunk_idx}" if chunk_idx is not None else ""
-        for i in tqdm(range(0, len(corpus), batch_size), desc = desc):
-            batch = corpus[i:i+batch_size]
-
-            representations, full_representations = get_representation(batch, is_q = is_q, 
-                                                 store_documents_in_raw = store_documents_in_raw)
-
-            if full_representations is not None:
-                corpus_full_representations.extend(full_representations)
-
-            for rep in representations:
-                json_string = json.dumps(rep)
-                f.write(json_string + "\n")
-
-        # corpus_full_representations = vstack(corpus_full_representations)
-
-    return corpus_full_representations
-
-                
-def do_indexing(outfolder_dataset, index_folder, docids = None, corpus_full_representations = None, remove_collections_folder = False):
-    command = f"""python -m pyserini.index.lucene \
-  --collection JsonVectorCollection \
-  --input {outfolder_dataset} \
-  --index {index_folder} \
-  --generator DefaultLuceneDocumentGenerator \
-  --threads 8 \
-  --impact --pretokenized \
-  --storePositions --storeDocvectors --storeRaw"""
-    
-    os.system(command)
-
-    if remove_collections_folder:
-        remove_folder(outfolder_dataset)
-
-    if docids is not None and corpus_full_representations is not None:
-        maybe_create_folder(os.path.join(index_folder, "full_representations/"))
-        for docid, full_rep in tqdm(zip(docids, corpus_full_representations)):
-            save_npz(file = os.path.join(index_folder, "full_representations", f"{docid}.npz"), matrix = full_rep)
-
-        with open(os.path.join(index_folder, "full_representations_docids.json"), "w") as f:
-            json.dump(docids, f)
+    # return res
 
 
+# @profile
+def prepare_data(documents, batch_size = 100, is_q = False, store_documents_in_raw = False, chunk_idx = None):
 
+    # all_representations = []
+    # with open(outfile, "w") as f:
+    desc = f"Processing chunk #{chunk_idx}" if chunk_idx is not None else ""
+    for i in tqdm(range(0, len(documents), batch_size), desc = desc):
+
+        representations = get_representation(
+            documents[i:i+batch_size], 
+            is_q = is_q, 
+            store_documents_in_raw = store_documents_in_raw
+        )
+
+        for rep in representations:
+            yield rep
+
+    #     all_representations.extend(deepcopy(representations))
+
+    #     del representations
+
+    # return all_representations
+
+            # for rep in representations:
+            #     json_string = json.dumps(rep)
+            #     f.write(json_string + "\n")
+
+            
+
+
+# @profile
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type = str, required=True)
@@ -177,9 +147,11 @@ def main():
     parser.add_argument("--outfolder", type = str, required=True)
     parser.add_argument("--batch_size", type = int, default = 100)
     parser.add_argument("--is_q", type = bool, default = False)
-    parser.add_argument("--chunking_size", type = int, default = 10000)
+    # parser.add_argument("--chunking_size", type = int, default = 10000)
     parser.add_argument("--remove_collections_folder", type = bool, default = False)
     parser.add_argument("--store_documents_in_raw", type = bool, default = False)
+    parser.add_argument("--num_chunks", type = int, default = 4)
+    parser.add_argument("--chunk_idx", type = int, required = True)
 
     args = parser.parse_args()
 
@@ -189,9 +161,11 @@ def main():
     outfolder = args.outfolder
     batch_size = args.batch_size
     is_q = args.is_q
-    chunking_size = args.chunking_size
+    # chunking_size = args.chunking_size
     remove_collections_folder = args.remove_collections_folder
     store_documents_in_raw = args.store_documents_in_raw
+    num_chunks = args.num_chunks
+    chunk_idx = args.chunk_idx
 
     dataset_name_2_relative_path = {
         "scifact": "data/beir/scifact",
@@ -203,7 +177,10 @@ def main():
         "msmarco": "data/msmarco/msmarco",
         "doris_mae": "data/doris_mae/doris_mae",
         "cfscube": "data/cfscube/cfscube",
+        "acm_cr": "data/acm_cr/acm_cr"
     }
+
+    init_model(model_name=model_name)
 
     # load corpus
     corpus_path = os.path.join(
@@ -221,38 +198,25 @@ def main():
     print("Corpus length", len(corpus))
 
     outfolder_dataset = os.path.join(outfolder, "collections", f"{dataset_name}__{model_name}")
-    maybe_create_folder(outfolder_dataset)
-    corpus_full_representation = []
-    # chunking corpus
-    for chunk_idx, i in enumerate(range(0, len(corpus), chunking_size)):
-        chunk = corpus[i:i+chunking_size]
-        outfile = os.path.join(outfolder_dataset, f"chunk{chunk_idx}.jsonl")
 
-        chunk_full_representations = prepare_data(
-            corpus = chunk,
-            model_name = model_name,
-            outfile = outfile,
-            batch_size=batch_size,
-            is_q=is_q,
-            store_documents_in_raw=store_documents_in_raw,
-            chunk_idx=chunk_idx
-        )
+    chunk_indices = np.array_split(np.arange(len(corpus)), num_chunks)[chunk_idx]
+    chunk = [corpus[index] for index in chunk_indices]
 
-        corpus_full_representation.extend(chunk_full_representations)
+    outfile = os.path.join(outfolder_dataset, f"chunk{chunk_idx}.jsonl")
 
-    corpus_full_representation = corpus_full_representation if corpus_full_representation else None
-
-
-    # do indexing
-    index_folder = os.path.join(outfolder, "indexes", f"{dataset_name}__{model_name}")
-    remove_folder(index_folder)
-    do_indexing(
-        outfolder_dataset = outfolder_dataset,
-        index_folder = index_folder,
-        remove_collections_folder = remove_collections_folder,
-        docids = [line["id"] if "id" in line else line["_id"] for line in corpus],
-        corpus_full_representations=corpus_full_representation
+    to_write = prepare_data(
+        documents = chunk,
+        # outfile = outfile,
+        batch_size=batch_size,
+        is_q=is_q,
+        store_documents_in_raw=store_documents_in_raw,
+        chunk_idx=chunk_idx
     )
+
+    with open(outfile, "w") as f:
+        for rep in to_write:
+            json.dump(rep, f)
+            f.write("\n")
 
 
 if __name__ == "__main__":
