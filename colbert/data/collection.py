@@ -7,7 +7,7 @@
 import os
 import itertools
 
-from colbert.evaluation.loaders import load_collection
+from colbert.evaluation.loaders import load_collection, load_collection_jsonl
 from colbert.infra.run import Run
 
 
@@ -36,7 +36,7 @@ class Collection:
         return load_collection(path)
 
     def _load_jsonl(self, path):
-        raise NotImplementedError()
+        return load_collection_jsonl(path)
 
     def provenance(self):
         return self.path

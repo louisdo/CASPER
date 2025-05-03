@@ -1,0 +1,49 @@
+[May 03, 10:00:33] #> Loading collection...
+0M 
+[May 03, 10:00:36] #> Loading codec...
+[May 03, 10:00:36] Loading decompress_residuals_cpp extension (set COLBERT_LOAD_TORCH_EXTENSION_VERBOSE=True for more info)...
+[May 03, 10:00:37] Loading packbits_cpp extension (set COLBERT_LOAD_TORCH_EXTENSION_VERBOSE=True for more info)...
+[May 03, 10:00:37] #> Loading IVF...
+[May 03, 10:00:37] #> Loading doclens...
+[May 03, 10:00:37] #> Loading codes and residuals...
+
+#> QueryTokenizer.tensorize(batch_text[0], batch_background[0], bsize) ==
+#> Input: I need to create a dataset for a natural language processing task and the dataset needs to be labeled. Since the labeling process is time-consuming and very costly, before I actually create the dataset, I need to evaluate the expected quality of my data labeling process by conducting a feasibility study. If the labeling process introduces unwanted randomness or noise, I need a method to clean these labels.  Since we will be training machine learning models on this dataset, I also need a way to estimate the expected performances of these machine learning models, possibly using the expected quality of my dataset as an indicator. In addition, I need to estimate how much these processes cost. Currently I am thinking about building these processes into a software system that machine learning engineers and data scientists can use. Overall, I need to conduct several feasibility studies to identify potential challenges and make a decision about whether or not to proceed., 		 True, 		 None
+#> Output IDs: torch.Size([256]), tensor([  101,     1,  1045,  2342,  2000,  3443,  1037,  2951, 13462,  2005,
+         1037,  3019,  2653,  6364,  4708,  1998,  1996,  2951, 13462,  3791,
+         2000,  2022, 12599,  1012,  2144,  1996, 28847,  2832,  2003,  2051,
+         1011, 15077,  1998,  2200, 17047,  1010,  2077,  1045,  2941,  3443,
+         1996,  2951, 13462,  1010,  1045,  2342,  2000, 16157,  1996,  3517,
+         3737,  1997,  2026,  2951, 28847,  2832,  2011,  9283,  1037, 24010,
+         2817,  1012,  2065,  1996, 28847,  2832, 13999, 18162,  6721,  2791,
+         2030,  5005,  1010,  1045,  2342,  1037,  4118,  2000,  4550,  2122,
+        10873,  1012,  2144,  2057,  2097,  2022,  2731,  3698,  4083,  4275,
+         2006,  2023,  2951, 13462,  1010,  1045,  2036,  2342,  1037,  2126,
+         2000, 10197,  1996,  3517,  4616,  1997,  2122,  3698,  4083,  4275,
+         1010,  4298,  2478,  1996,  3517,  3737,  1997,  2026,  2951, 13462,
+         2004,  2019, 17245,  1012,  1999,  2804,  1010,  1045,  2342,  2000,
+        10197,  2129,  2172,  2122,  6194,  3465,  1012,  2747,  1045,  2572,
+         3241,  2055,  2311,  2122,  6194,  2046,  1037,  4007,  2291,  2008,
+         3698,  4083,  6145,  1998,  2951,  6529,  2064,  2224,  1012,  3452,
+         1010,  1045,  2342,  2000,  6204,  2195, 24010,  2913,  2000,  6709,
+         4022,  7860,  1998,  2191,  1037,  3247,  2055,  3251,  2030,  2025,
+         2000, 10838,  1012,   102,   103,   103,   103,   103,   103,   103,
+          103,   103,   103,   103,   103,   103,   103,   103,   103,   103,
+          103,   103,   103,   103,   103,   103,   103,   103,   103,   103,
+          103,   103,   103,   103,   103,   103,   103,   103,   103,   103,
+          103,   103,   103,   103,   103,   103,   103,   103,   103,   103,
+          103,   103,   103,   103,   103,   103,   103,   103,   103,   103,
+          103,   103,   103,   103,   103,   103,   103,   103,   103,   103,
+          103,   103,   103,   103,   103,   103], device='cuda:0')
+#> Output Mask: torch.Size([256]), tensor([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], device='cuda:0')
+

@@ -176,6 +176,35 @@ def load_collection(collection_path):
     return collection
 
 
+
+def load_collection_jsonl(collection_path):
+    import json
+    print_message("#> Loading collection...")
+
+    collection = []
+
+    with open(collection_path) as f:
+        for line_idx, line in enumerate(f):
+            if line_idx % (1000*1000) == 0:
+                print(f'{line_idx // 1000 // 1000}M', end=' ', flush=True)
+
+            jline = json.loads(line)
+            pid = jline["id"]
+            passage = jline["text"]
+            title = jline["title"]
+            
+            assert pid == 'id' or int(pid) == line_idx, f"pid={pid}, line_idx={line_idx}"
+
+            if title:
+                passage = title + ' | ' + passage
+
+            collection.append(passage)
+
+    print()
+
+    return collection
+
+
 def load_colbert(args, do_print=True):
     colbert, checkpoint = load_model(args, do_print)
 

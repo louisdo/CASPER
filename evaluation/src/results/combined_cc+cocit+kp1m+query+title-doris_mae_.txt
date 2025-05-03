@@ -1,0 +1,23 @@
+[May 03, 01:57:31] #> Loading collection...
+0M 
+[May 03, 01:57:35] #> Loading codec...
+[May 03, 01:57:35] Loading decompress_residuals_cpp extension (set COLBERT_LOAD_TORCH_EXTENSION_VERBOSE=True for more info)...
+[May 03, 01:57:35] Loading packbits_cpp extension (set COLBERT_LOAD_TORCH_EXTENSION_VERBOSE=True for more info)...
+[May 03, 01:57:36] #> Loading IVF...
+[May 03, 01:57:36] #> Loading doclens...
+[May 03, 01:57:36] #> Loading codes and residuals...
+
+#> QueryTokenizer.tensorize(batch_text[0], batch_background[0], bsize) ==
+#> Input: I need to create a dataset for a natural language processing task and the dataset needs to be labeled. Since the labeling process is time-consuming and very costly, before I actually create the dataset, I need to evaluate the expected quality of my data labeling process by conducting a feasibility study. If the labeling process introduces unwanted randomness or noise, I need a method to clean these labels.  Since we will be training machine learning models on this dataset, I also need a way to estimate the expected performances of these machine learning models, possibly using the expected quality of my dataset as an indicator. In addition, I need to estimate how much these processes cost. Currently I am thinking about building these processes into a software system that machine learning engineers and data scientists can use. Overall, I need to conduct several feasibility studies to identify potential challenges and make a decision about whether or not to proceed., 		 True, 		 None
+#> Output IDs: torch.Size([64]), tensor([  101,     1,  1045,  2342,  2000,  3443,  1037,  2951, 13462,  2005,
+         1037,  3019,  2653,  6364,  4708,  1998,  1996,  2951, 13462,  3791,
+         2000,  2022, 12599,  1012,  2144,  1996, 28847,  2832,  2003,  2051,
+         1011, 15077,  1998,  2200, 17047,  1010,  2077,  1045,  2941,  3443,
+         1996,  2951, 13462,  1010,  1045,  2342,  2000, 16157,  1996,  3517,
+         3737,  1997,  2026,  2951, 28847,  2832,  2011,  9283,  1037, 24010,
+         2817,  1012,  2065,   102], device='cuda:0')
+#> Output Mask: torch.Size([64]), tensor([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], device='cuda:0')
+
+({'NDCG@5': 0.16286, 'NDCG@10': 0.15947, 'NDCG@100': 0.22115, 'NDCG@1000': 0.32532}, {'MAP@5': 0.03647, 'MAP@10': 0.04991, 'MAP@100': 0.08246, 'MAP@1000': 0.09562}, {'Recall@5': 0.0671, 'Recall@10': 0.10442, 'Recall@100': 0.34215, 'Recall@1000': 0.67585}, {'P@5': 0.16264, 'P@10': 0.14176, 'P@100': 0.05681, 'P@1000': 0.01218}) {'MRR@5': 0.26447, 'MRR@10': 0.2815, 'MRR@100': 0.29247, 'MRR@1000': 0.29298}

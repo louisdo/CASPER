@@ -1,0 +1,23 @@
+[May 03, 01:44:21] #> Loading collection...
+0M 
+[May 03, 01:44:23] #> Loading codec...
+[May 03, 01:44:23] Loading decompress_residuals_cpp extension (set COLBERT_LOAD_TORCH_EXTENSION_VERBOSE=True for more info)...
+[May 03, 01:44:23] Loading packbits_cpp extension (set COLBERT_LOAD_TORCH_EXTENSION_VERBOSE=True for more info)...
+[May 03, 01:44:24] #> Loading IVF...
+[May 03, 01:44:24] #> Loading doclens...
+[May 03, 01:44:24] #> Loading codes and residuals...
+
+#> QueryTokenizer.tensorize(batch_text[0], batch_background[0], bsize) ==
+#> Input: what is the origin of COVID-19, 		 True, 		 None
+#> Output IDs: torch.Size([64]), tensor([  101,     1,  2054,  2003,  1996,  4761,  1997,  2522, 17258,  1011,
+         2539,   102,   103,   103,   103,   103,   103,   103,   103,   103,
+          103,   103,   103,   103,   103,   103,   103,   103,   103,   103,
+          103,   103,   103,   103,   103,   103,   103,   103,   103,   103,
+          103,   103,   103,   103,   103,   103,   103,   103,   103,   103,
+          103,   103,   103,   103,   103,   103,   103,   103,   103,   103,
+          103,   103,   103,   103], device='cuda:0')
+#> Output Mask: torch.Size([64]), tensor([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], device='cuda:0')
+
+({'NDCG@5': 0.57551, 'NDCG@10': 0.53909, 'NDCG@100': 0.43841, 'NDCG@1000': 0.42544}, {'MAP@5': 0.00742, 'MAP@10': 0.01263, 'MAP@100': 0.07285, 'MAP@1000': 0.20191}, {'Recall@5': 0.00861, 'Recall@10': 0.01559, 'Recall@100': 0.11066, 'Recall@1000': 0.4094}, {'P@5': 0.636, 'P@10': 0.588, 'P@100': 0.4674, 'P@1000': 0.196}) {'MRR@5': 0.79133, 'MRR@10': 0.80022, 'MRR@100': 0.80022, 'MRR@1000': 0.80022}
