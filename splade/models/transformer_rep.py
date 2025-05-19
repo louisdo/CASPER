@@ -532,6 +532,95 @@ class PhraseSplade(SiameseBasePhrase):
 
 
 
+class PhraseSpladev2(SiameseBasePhrase):
+    """PhraseSPLADE model
+    """
+
+    def __init__(self, model_type_or_dir, model_type_or_dir_q=None, freeze_d_model=False, agg="max", fp16=True):
+        super().__init__(model_type_or_dir=model_type_or_dir,
+                         output="MLM",
+                         match="dot_product",
+                         model_type_or_dir_q=model_type_or_dir_q,
+                         freeze_d_model=freeze_d_model,
+                         fp16=fp16)
+        self.output_dim = self.transformer_rep.transformer.config.vocab_size  # output dim = vocab size = 30522 for BERT
+        assert agg in ("sum", "max")
+        self.agg = agg
+
+    def encode(self, tokens, is_q):
+        out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+        if self.agg == "sum":
+            return torch.sum(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
+        else:
+            values, _ = torch.max(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
+            return values
+            # 0 masking also works with max because all activations are positive
+
+    def forward(self, **kwargs):
+        """forward takes as inputs 1 or 2 dict
+        "d_kwargs" => contains all inputs for document encoding
+        "q_kwargs" => contains all inputs for query encoding ([OPTIONAL], e.g. for indexing)
+        """
+
+        with torch.cuda.amp.autocast() if self.fp16 else NullContextManager():
+            out = {}
+            do_d, do_q = "d_kwargs" in kwargs, "q_kwargs" in kwargs
+            if do_d:
+                d_rep = self.encode(kwargs["d_kwargs"], is_q=False)
+                if self.cosine:  # normalize embeddings
+                    d_rep = normalize(d_rep)
+
+                d_rep_tokens = d_rep[...,:self.original_bert_vocab_size]
+                d_rep_phrases = d_rep[...,self.original_bert_vocab_size:]
+
+                out.update({"d_rep": d_rep})
+            if do_q:
+                q_rep = self.encode(kwargs["q_kwargs"], is_q=True)
+                if self.cosine:  # normalize embeddings
+                    q_rep = normalize(q_rep)
+
+                q_rep_tokens = q_rep[...,:self.original_bert_vocab_size]
+                q_rep_phrases = q_rep[...,self.original_bert_vocab_size:]
+
+                out.update({"q_rep": q_rep})
+            if do_d and do_q:
+                if "nb_negatives" in kwargs:
+                    raise NotImplementedError
+                    # in the cas of negative scoring, where there are several negatives per query
+                    bs = q_rep.shape[0]
+                    d_rep = d_rep.reshape(bs, kwargs["nb_negatives"], -1)  # shape (bs, nb_neg, out_dim)
+                    q_rep = q_rep.unsqueeze(1)  # shape (bs, 1, out_dim)
+
+                    score = torch.sum(q_rep_tokens * d_rep_tokens, dim=-1)  # shape (bs, nb_neg)
+                    score_phrase = torch.sum(q_rep_phrases * d_rep_phrases, dim=-1)  # shape (bs, nb_neg)
+                else:
+                    if "score_batch" in kwargs:
+                        score_tokens = torch.matmul(q_rep_tokens, d_rep_tokens.t())  # shape (bs_q, bs_d)
+                        score_phrases = torch.matmul(q_rep_phrases, d_rep_phrases.t())  # shape (bs_q, bs_d)
+                    else:
+                        score_tokens = torch.sum(q_rep_tokens * d_rep_tokens, dim=1, keepdim=True)  # shape (bs, )
+                        score_phrases = torch.sum(q_rep_phrases * d_rep_phrases, dim=1, keepdim=True)  # shape (bs, )
+                        
+                # out.update({"score": 0.8 * score + 0.2 * score_phrase})
+                out.update({"score_phrases": score_phrases, "score_tokens": score_tokens, "score": score_phrases + score_tokens})
+        return out
+
+
+class PhraseSpladev3(PhraseSpladev2):
+    def encode(self, tokens, is_q):
+        out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+        if self.agg == "sum":
+            return torch.sum(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
+        else:
+            out_tokens = out[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
+            out_phrases = out[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+            values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
+            values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
+
+            values = torch.cat([values_tokens, values_phrases], dim = -1)
+            return values
+            # 0 masking also works with max because all activations are positive
+
 # class SiameseBasePhrasev2(torch.nn.Module, ABC):
 
 #     def __init__(self, model_type_or_dir, output, match="dot_product", model_type_or_dir_q=None, freeze_d_model=False,

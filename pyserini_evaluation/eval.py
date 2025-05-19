@@ -67,7 +67,7 @@ def init_searcher(index_path):
 
 
 
-def encode_queries(queries, ids = None, add_onehot = False):
+def encode_queries(queries, ids = None, add_onehot = False, weight_tokens = 1.0, weight_phrases = 1.0):
     with torch.no_grad():
         batch_tokens = SPLADE["tokenizer"](queries, return_tensors="pt", truncation = True, padding = True, max_length=256).to(DEVICE)
         if SPLADE["is_maxsim"]:
@@ -120,7 +120,8 @@ def encode_queries(queries, ids = None, add_onehot = False):
             _indices_onehot = None
             d_onehot = {}
 
-        d = {SPLADE["reverse_voc"][k]: v for k, v in d.items()}
+        d = {SPLADE["reverse_voc"][k]: (v * (weight_tokens if k < BERT_ORIGINAL_VOCAB_SIZE else weight_phrases)) for k, v in d.items()}
+        # d = {SPLADE["reverse_voc"][k]: (v * (1 if k < 30522 else 0.5)) for k, v in d.items() if v >= 5}
         # d = merge_dicts(d, d_added)
         d_onehot = {SPLADE["reverse_voc"][k]: v for k, v in d_onehot.items()}
         d_indices = {SPLADE["reverse_voc"][k]: v for k, v in zip(col, _indices)} if _indices is not None else None
@@ -428,6 +429,8 @@ def main():
     parser.add_argument("--batch_size", type = int, default = 100)
     parser.add_argument("--save_metadata_for_debugging", type = str2bool, default = False)
     parser.add_argument("--add_onehot", type = str2bool, default = False)
+    parser.add_argument("--weight_tokens", type = float, default = 1.0)
+    parser.add_argument("--weight_phrases", type = float, default = 1.0)
 
     args = parser.parse_args()
 
@@ -438,8 +441,8 @@ def main():
     batch_size = args.batch_size
     save_metadata_for_debugging = args.save_metadata_for_debugging
     add_onehot = args.add_onehot
-
-    print("yoyoyoyoyo", add_onehot)
+    weight_tokens = args.weight_tokens
+    weight_phrases = args.weight_phrases
 
     if dataset_name in ["trec_dl_2019", "trec_dl_2020"]:
         index_path = os.path.join(index_folder, f"msmarco__{splade_model_name}")
@@ -501,7 +504,8 @@ def main():
     for i in tqdm(range(0, len(queries_texts), batch_size)):
         batch_queries = queries_texts[i:i+batch_size]
         batch_queries_ids = queries_ids[i:i+batch_size]
-        temp = encode_queries(queries = batch_queries, ids = batch_queries_ids, add_onehot=add_onehot)
+        temp = encode_queries(queries = batch_queries, ids = batch_queries_ids, add_onehot=add_onehot,
+                              weight_tokens=weight_tokens, weight_phrases = weight_phrases)
         encoded_queries.extend(temp)
 
 
@@ -509,6 +513,7 @@ def main():
     all_search_results = []
     for line in tqdm(encoded_queries):
         encoded_query = line["vector"]
+        encoded_query = {item[0]: item[1] for item in Counter(encoded_query).most_common(1024)}
         jquery = create_jquery(encoded_query=encoded_query, searcher = SEARCHER["searcher"])
         
         top_k = 1000 if not SPLADE["is_maxsim"] else 100

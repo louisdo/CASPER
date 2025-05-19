@@ -1,0 +1,12 @@
+# @package _global_
+
+init_dict:
+  model_type_or_dir: lamdo/distilbert-base-uncased-word-30kaddedwordsfroms2orc-mlm-70000steps
+  model_type_or_dir_q: null
+  freeze_d_model: 0
+  agg: max
+  fp16: true
+
+config:
+  tokenizer_type: lamdo/distilbert-base-uncased-word-30kaddedwordsfroms2orc-mlm-70000steps
+

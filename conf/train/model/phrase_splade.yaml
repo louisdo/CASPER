@@ -1,12 +1,18 @@
 # @package _global_
 
+# lamdo/distilbert-base-uncased-phrase-60kaddedphrasesfroms2orc-mlm-150000steps # mlm training, priortize phrase (85% of phrases are masked)
+# lamdo/bert-base-uncased-phrase-60kaddedphrasesfroms2orc-mlm-150000steps # same as above, but with bert
+# lamdo/distilbert-base-uncased-phrase-60kaddedphrasesfroms2orc-mlm-150000steps-v2 # mlm training, phrases and tokens are treated equally
+# lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64 (previously 32)
+# lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfrommsmarco-mlm-70000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64 (previously 32), using msmarco to create phrase vocab and do pretraining
+
 init_dict:
-  model_type_or_dir: lamdo/distilbert-base-uncased-phrase-60kaddedphrasesfroms2orc-mlm-150000steps
+  model_type_or_dir: lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
   model_type_or_dir_q: null
   freeze_d_model: 0
   agg: max
   fp16: true
 
 config:
-  tokenizer_type: lamdo/distilbert-base-uncased-phrase-60kaddedphrasesfroms2orc-mlm-150000steps
+  tokenizer_type: lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
 

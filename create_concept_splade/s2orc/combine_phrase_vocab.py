@@ -1,4 +1,5 @@
 # python combine_phrase_vocab.py --input_folder /scratch/lamdo/s2orc_phrase_vocab --output_file ./phrase_vocab_100k.json
+# python combine_phrase_vocab.py --input_folder /scratch/lamdo/s2orc_phrase_vocab --output_file ./phrase_vocab_30k.json --max_num_phrases 30000
 
 import json, os
 from tqdm import tqdm

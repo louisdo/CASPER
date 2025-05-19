@@ -1,4 +1,4 @@
-from splade.models.transformer_rep import SpladeMaxSim, Splade
+from splade.models.transformer_rep import SpladeMaxSim, Splade, PhraseSpladev3
 
 model_name_2_path = {
     "splade_normal": "/scratch/lamdo/splade_maxsim_ckpts/splade_normal/debug/checkpoint/model",
@@ -17,6 +17,7 @@ model_name_2_path = {
     "splade_maxsim_150k_lowregv4": "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv4/debug/checkpoint/model",
     "splade_maxsim_150k_lowregv5": "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv5/debug/checkpoint/model", # similar to v4, but lower regularization
     "splade_maxsim_100k_lowregv6": "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_100k_lowregv6/debug/checkpoint/model",
+    "splade_maxsim_150k_lowregv6": "/scratch/lamdo/splade_maxsim_ckpts/splade_maxsim_150k_lowregv6/debug/checkpoint/model",
     "splade_normal_150k_lowreg_ensembledistil": "/scratch/lamdo/splade_maxsim_ckpts/splade_normal_150k_lowreg_ensembledistil/debug/checkpoint/model",
     # "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_10/debug/checkpoint/model", # first version, 4.4k phrases added
     # "phrase_splade": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_11/debug/checkpoint/model", # second version, 14k phrases added 
@@ -34,8 +35,25 @@ model_name_2_path = {
     "phrase_splade_36": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_36/debug/checkpoint/model",
     "phrase_splade_37": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_37/debug/checkpoint/model",
     "phrase_splade_38": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_38/debug/checkpoint/model",
+    "phrase_splade_39": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_39/debug/checkpoint/model", # pretrain from distilbert (prioritize phrase), new dataset from s2orc (custom loss)
+    "phrase_splade_40": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_40/debug/checkpoint/model", # same with 39, but with bert
+    "phrase_splade_41": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_41/debug/checkpoint/model", # pretrain from distilbert (phrase and tokens are pretrained equally), new dataset from s2orc (normal splade loss)
+    "phrase_splade_42": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_42/debug/checkpoint/model", # pretrain from distilbert (phrase and tokens are pretrained equally), new dataset from s2orc (custom loss)
+    "phrase_splade_43": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_43/debug/checkpoint/model",
+    "phrase_splade_44": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_44/debug/checkpoint/model",
+    "phrase_splade_45": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_45/debug/checkpoint/model", # # pretrain from distilbert (prioritize phrase) with s2orc, 30k phrases chosen from s2orc (phrase vocab bulding algorithm -- maximum coverage), SPLADE training with our new dataset
+    "phrase_splade_46": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_46/debug/checkpoint/model", # # pretrain from distilbert (prioritize phrase) with msmarco, 30k phrases chosen from msmarco (phrase vocab bulding algorithm -- maximum coverage), SPLADE training with msmarco
+    "phrase_splade_47": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_47/debug/checkpoint/model", # pretty much the same as 45, with adjusted loss function and regularization
+    "phrase_splade_48": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_48/debug/checkpoint/model", # similar to 46 but with regular SPLADE loss and not our custom loss
+    "phrase_splade_49": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_49/debug/checkpoint/model",
+    "phrase_splade_50": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_50/debug/checkpoint/model",
+    "phrase_splade_51": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_51/debug/checkpoint/model", # similar to 45, but without weight in loss (cl_tokens + cl_phrases + reg_total)
+    "phrase_splade_52": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_52/debug/checkpoint/model",
+    "phrase_splade_53": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_53/debug/checkpoint/model",
+    "splade_addedword_1": "/scratch/lamdo/phrase_splade_checkpoints/phrase_addedword_1/debug/checkpoint/model",
     "eru_kg": "/scratch/lamdo/splade_checkpoints/experiments_combined_references_v8-1/debug/checkpoint/model",
-    "normal_splade_pretrains2orc": "/scratch/lamdo/phrase_splade_checkpoints/normal_splade_pretrains2orc/debug/checkpoint/model"
+    "normal_splade_pretrains2orc": "/scratch/lamdo/phrase_splade_checkpoints/normal_splade_pretrains2orc/debug/checkpoint/model",
+    "splade_max_1": "/scratch/lamdo/phrase_splade_checkpoints/splade_max_1/debug/checkpoint/model"
 }
 
 model_name_2_model_class = {
@@ -55,6 +73,7 @@ model_name_2_model_class = {
     "splade_maxsim_150k_lowregv4": SpladeMaxSim,
     "splade_maxsim_150k_lowregv5": SpladeMaxSim,
     "splade_maxsim_100k_lowregv6": SpladeMaxSim,
+    "splade_maxsim_150k_lowregv6": Splade,
     "splade_normal_150k_lowreg_ensembledistil": Splade,
     "phrase_splade": Splade,
     "phrase_splade_26": Splade,
@@ -67,8 +86,25 @@ model_name_2_model_class = {
     "phrase_splade_36": Splade,
     "phrase_splade_37": Splade,
     "phrase_splade_38": Splade,
+    "phrase_splade_39": Splade,
+    "phrase_splade_40": Splade,
+    "phrase_splade_41": Splade,
+    "phrase_splade_42": Splade,
+    "phrase_splade_43": Splade,
+    "phrase_splade_44": Splade,
+    "phrase_splade_45": Splade,
+    "phrase_splade_46": Splade,
+    "phrase_splade_47": Splade,
+    "phrase_splade_48": Splade,
+    "phrase_splade_49": Splade,
+    "phrase_splade_50": Splade,
+    "phrase_splade_51": Splade,
+    "phrase_splade_52": PhraseSpladev3,
+    "phrase_splade_53": PhraseSpladev3,
+    "splade_addedword_1": Splade,
     "eru_kg": Splade,
-    "normal_splade_pretrains2orc": Splade
+    "normal_splade_pretrains2orc": Splade,
+    "splade_max_1": Splade
 }
 
 model_name_2_is_maxsim = {
@@ -88,6 +124,7 @@ model_name_2_is_maxsim = {
     "splade_maxsim_150k_lowregv4": True,
     "splade_maxsim_150k_lowregv5": True,
     "splade_maxsim_100k_lowregv6": True,
+    "splade_maxsim_150k_lowregv6": False,
     "splade_normal_150k_lowreg_ensembledistil": False,
     "phrase_splade": False,
     "phrase_splade_26": False,
@@ -100,6 +137,23 @@ model_name_2_is_maxsim = {
     "phrase_splade_36": False,
     "phrase_splade_37": False,
     "phrase_splade_38": False,
+    "phrase_splade_39": False,
+    "phrase_splade_40": False,
+    "phrase_splade_41": False,
+    "phrase_splade_42": False,
+    "phrase_splade_43": False,
+    "phrase_splade_44": False,
+    "phrase_splade_45": False,
+    "phrase_splade_46": False,
+    "phrase_splade_47": False,
+    "phrase_splade_48": False,
+    "phrase_splade_49": False,
+    "phrase_splade_50": False,
+    "phrase_splade_51": False,
+    "phrase_splade_52": False,
+    "phrase_splade_53": False,
+    "splade_addedword_1": False,
     "eru_kg": False,
-    "normal_splade_pretrains2orc": False
+    "normal_splade_pretrains2orc": False,
+    "splade_max_1": False
 }

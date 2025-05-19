@@ -6,7 +6,8 @@ import torch
 from omegaconf import DictConfig, OmegaConf
 
 from ..losses.pairwise import DistilKLLoss, PairwiseNLL, DistilMarginMSE, DistilMarginMSEv2, \
-    InBatchPairwiseNLL, InBatchPairwiseNLLv2, InBatchPairwiseNLLPhraseSplade, InBatchPairwiseNLLNoHardNeg
+    InBatchPairwiseNLL, InBatchPairwiseNLLv2, InBatchPairwiseNLLPhraseSplade, InBatchPairwiseNLLNoHardNeg, \
+    InBatchPairwiseNLLPhraseSpladev2
 from ..losses.pointwise import BCEWithLogitsLoss
 
 
@@ -190,8 +191,8 @@ def get_loss(config):
         loss = InBatchPairwiseNLL()
     elif config["loss"] == "InBatchPairwiseNLLv2":
         loss = InBatchPairwiseNLLv2()
-    # elif config["loss"] == "InBatchPairwiseNLLPhraseSpladev2":
-    #     loss = InBatchPairwiseNLLPhraseSpladev2()
+    elif config["loss"] == "InBatchPairwiseNLLPhraseSpladev2":
+        loss = InBatchPairwiseNLLPhraseSpladev2()
     elif config["loss"] == "InBatchPairwiseNLLPhraseSplade":
         loss = InBatchPairwiseNLLPhraseSplade()
     elif config["loss"] == "InBatchPairwiseNLLNoHardNeg":

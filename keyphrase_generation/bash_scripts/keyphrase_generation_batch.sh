@@ -1,5 +1,5 @@
 models=(
-    phrase_splade_38
+    phrase_splade_39
 )
 datasets=(
     "semeval" "inspec" "nus" "krapivin" #"kp20k" 

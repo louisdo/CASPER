@@ -2,8 +2,8 @@
 defaults:  # (these specify which config FILES to use)
   ############## TRAIN ###################################
   - train/config: phrase_splade
-  - train/data: phrase_splade
-  - train/model: phrase_splade #splade_pretrain_from_distilbert
+  - train/data: msmarco #phrase_splade
+  - train/model: phrase_splade_msmarco #splade_pretrain_from_distilbert
   ############## INDEX ###################################
   - index: toy
   ############## RETRIEVE ################################
@@ -13,7 +13,7 @@ defaults:  # (these specify which config FILES to use)
 
 # Direct PARAMETER setting
 config:  # to be provided for each run
-  checkpoint_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_38/debug/checkpoint"
-  index_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_38/debug/index"
-  out_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_38/debug/out"
+  checkpoint_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_53/debug/checkpoint"
+  index_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_53/debug/index"
+  out_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_53/debug/out"
   fp16: false

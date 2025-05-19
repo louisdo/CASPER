@@ -1,5 +1,6 @@
 import random, os
 from tqdm import tqdm
+from langdetect import detect as detect_language
 
 def maybe_create_folder(folder_path):
     """
@@ -23,25 +24,58 @@ def maybe_create_folder(folder_path):
         print(f"Folder already exists: {folder_path}")
         return False
 
+
+def check_document_high_quality(doc):
+    # high quality here means lang is english and is long enough
+    # if detect_language(doc) != "en":
+    #     return False
+    
+    if len(doc.split(" ")) < 30:
+        return False
+
+    return True
+
+
 if __name__ == "__main__":
 
+    # files = {
+    #     "erukgds": "/scratch/lamdo/unArxive/keyphrase_informativeness_combined_references/triplets_hardneg/raw.tsv",
+    #     "kp": "/scratch/lamdo/phrase_splade_datasets/kp/raw.tsv",
+    #     "kp1m": "/scratch/lamdo/phrase_splade_datasets/kp1m/raw.tsv",
+    #     "cocit": "/scratch/lamdo/unArxive/cocit_training/raw.tsv",
+    #     "fos": "/scratch/lamdo/phrase_splade_datasets/fos/raw.tsv",
+    #     "mesh": "/scratch/lamdo/phrase_splade_datasets/mesh_descriptors/raw.tsv"
+    # }
+
+    # max_documents = {
+    #     "erukgds": 1500000,
+    #     # "kp": 500000,
+    #     "cocit": 500000,
+    #     "kp1m": 1000000
+    #     # "fos": 250000,
+    #     # "mesh": 250000
+    # }
+
     files = {
-        "erukgds": "/scratch/lamdo/unArxive/keyphrase_informativeness_combined_references/triplets_hardneg/raw.tsv",
-        "kp": "/scratch/lamdo/phrase_splade_datasets/kp/raw.tsv",
+        # "erukgds": "/scratch/lamdo/unArxive/keyphrase_informativeness_combined_references/triplets_hardneg/raw.tsv",
+        # "kp": "/scratch/lamdo/phrase_splade_datasets/kp/raw.tsv",
         "kp1m": "/scratch/lamdo/phrase_splade_datasets/kp1m/raw.tsv",
-        "cocit": "/scratch/lamdo/unArxive/cocit_training/raw.tsv",
-        "fos": "/scratch/lamdo/phrase_splade_datasets/fos/raw.tsv",
-        "mesh": "/scratch/lamdo/phrase_splade_datasets/mesh_descriptors/raw.tsv"
+        # "cocit": "/scratch/lamdo/unArxive/cocit_training/raw.tsv",
+        # "fos": "/scratch/lamdo/phrase_splade_datasets/fos/raw.tsv",
+        # "mesh": "/scratch/lamdo/phrase_splade_datasets/mesh_descriptors/raw.tsv"
+        "cocit": "/scratch/lamdo/s2orc/processed/cocit_triplets/raw.tsv",
+        "title": "/scratch/lamdo/s2orc/processed/title_abstract_triplets/raw.tsv", 
+        "query": "/scratch/lamdo/s2orc/processed/query_triplets/raw.tsv",
+        "cc": "/scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw.tsv"
+    }
+    max_documents = {
+        "kp1m": 1500000,
+        "cocit": 1500000,
+        "title": 1500000,
+        "query": 1500000,
+        "cc": 1500000
     }
 
-    max_documents = {
-        "erukgds": 1500000,
-        # "kp": 500000,
-        "cocit": 500000,
-        "kp1m": 1000000
-        # "fos": 250000,
-        # "mesh": 250000
-    }
 
     data_types_to_include = list(sorted(max_documents.keys()))
     data_types_to_include_str = "+".join(data_types_to_include)
@@ -54,12 +88,18 @@ if __name__ == "__main__":
     all_lines = []
     for data_type in data_types_to_include:
         file = files[data_type]
+        data_type_lines = []
         with open(file) as infile:
             for i, line in enumerate(tqdm(infile, desc = f"Reading '{data_type}'")):
-                if i == max_documents[data_type]: 
-                    print(f"Stop. Need to read only {max_documents[data_type]} for data type {data_type}")
-                    break
-                all_lines.append(line)
+                splitted_line = line.strip().split("\t")
+                if len(splitted_line) != 3: continue
+
+                query, pos, neg = splitted_line
+                if check_document_high_quality(pos) and check_document_high_quality(neg): 
+                    data_type_lines.append(line)
+
+        sampled_data_type_lines = random.sample(data_type_lines, k = min(len(data_type_lines), max_documents[data_type]))
+        all_lines.extend(sampled_data_type_lines)
 
     random.shuffle(all_lines)
 

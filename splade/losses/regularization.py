@@ -1,5 +1,6 @@
 import torch
 
+ORIGINAL_BERT_VOCAB_SIZE = 30522
 
 class L1:
 
@@ -28,6 +29,20 @@ class FLOPS:
 
     def __call__(self, batch_rep):
         return torch.sum(torch.mean(torch.abs(batch_rep), dim=0) ** 2)
+    
+class FLOPSPhrase:
+    def __init__(self, phrase_reg_magnifier = 5):
+        self.phrase_reg_magnifier = phrase_reg_magnifier
+
+    def __call__(self, batch_rep):
+        batch_rep_tokens = batch_rep[...,:ORIGINAL_BERT_VOCAB_SIZE]
+        batch_rep_phrases = batch_rep[..., ORIGINAL_BERT_VOCAB_SIZE:]
+
+        tokens_reg = torch.sum(torch.mean(torch.abs(batch_rep_tokens), dim=0) ** 2)
+        phrases_reg = torch.sum(torch.mean(torch.abs(batch_rep_phrases), dim=0) ** 2)
+
+        return tokens_reg + self.phrase_reg_magnifier * phrases_reg
+
 
 
 class RegWeightScheduler:
@@ -75,6 +90,9 @@ def init_regularizer(reg, **kwargs):
         return L1()
     elif reg == "FLOPS":
         return FLOPS()
+    elif reg.startswith("FLOPSPhrase--"):
+        phrase_reg_magnifier = int(reg.replace("FLOPSPhrase--", ""))
+        return FLOPSPhrase(phrase_reg_magnifier=phrase_reg_magnifier)
     elif reg == "L2":
         return L2()
     else:

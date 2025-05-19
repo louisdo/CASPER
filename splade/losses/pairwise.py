@@ -90,6 +90,17 @@ class InBatchPairwiseNLLPhraseSplade:
 
 
 
+class InBatchPairwiseNLLPhraseSpladev2(InBatchPairwiseNLLPhraseSplade):
+    def __call__(self, out_d):
+        loss_phrases = self.helper(out_d=out_d, field_name="score_phrases", use_hardneg=False)
+        loss_tokens = self.helper(out_d=out_d, field_name="score_tokens", use_hardneg=True)
+
+        # return (loss + loss_tokens) / 2
+
+        # return loss + 0.1 * loss_tokens
+        return loss_phrases + loss_tokens #* 0.1
+
+
 class InBatchPairwiseNLLNoHardNeg:
     """in batch negatives version
     """

@@ -33,27 +33,6 @@ def simple_tokenize(text: str, lower = False, remove_title = True):
     return [tok for tok in res if tok]
 
 
-def create_embedding_and_mlm_for_added_phrases(phrases_to_add, model, tokenizer, to_skip_tokens):
-    tokenized_phrases_to_add = [tokenizer(phrase, add_special_tokens=False) for phrase in phrases_to_add]
-
-    phrases_to_add_embeddings = []
-
-    word_embeddings = model.distilbert.embeddings.word_embeddings.weight.data.detach()
-
-    for i in range(len(phrases_to_add)):
-        input_ids = tokenized_phrases_to_add[i]["input_ids"]
-        input_ids = [inpid for inpid in input_ids if inpid not in to_skip_tokens]
-
-        phrase_embedding = torch.mean(word_embeddings[input_ids], dim = 0)
-
-        phrases_to_add_embeddings.append(phrase_embedding)
-
-
-    return {
-        "embeddings": phrases_to_add_embeddings
-    }
-
-
 def check_exist_in_vocab(phrase, model_vocab):
     if phrase in model_vocab: return True
 
@@ -72,23 +51,19 @@ def check_exist_in_phrase_vocab(phrase, phrase_vocab):
 
 
 def create_model_with_added_phrase_vocab(phrase_vocab, model_name = "distilbert/distilbert-base-uncased", max_added_phrases = 20000):
-    assert model_name == "distilbert/distilbert-base-uncased"
+    assert model_name in ["distilbert/distilbert-base-uncased", "bert-base-uncased"]
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForMaskedLM.from_pretrained(model_name)   
-
-    vocab = tokenizer.vocab
-    to_skip_tokens = [vocab.get(punc) for punc in string.punctuation]  + [vocab.get(word) for word in STOPWORDS]
-    to_skip_tokens = set([tok for tok in to_skip_tokens if tok is not None])
 
     with torch.no_grad():
 
         model_vocab = tokenizer.vocab
         phrases_to_add = [phrase for phrase in tqdm(phrase_vocab, desc = "Filtering phrases (check with vocab)") if not check_exist_in_vocab(phrase, model_vocab)]
-        phrases_to_add_ = [phrases_to_add[i] for i in tqdm(range(len(phrases_to_add)), desc = "Filtering phrases (check with self)") if not check_exist_in_phrase_vocab(phrases_to_add[i], phrases_to_add[:i])][:max_added_phrases]
-        phrases_to_add = phrases_to_add_
-        with open("created_vocab.json", "w") as f:
-            json.dump(phrases_to_add, f, indent = 4)
+        # phrases_to_add_ = [phrases_to_add[i] for i in tqdm(range(len(phrases_to_add)), desc = "Filtering phrases (check with self)") if not check_exist_in_phrase_vocab(phrases_to_add[i], phrases_to_add[:i])][:max_added_phrases]
+        # phrases_to_add = phrases_to_add
+        # with open("created_vocab.json", "w") as f:
+        #     json.dump(phrases_to_add, f, indent = 4)
 
         num_added_toks = tokenizer.add_tokens(phrases_to_add)
         print(f"Added {num_added_toks} tokens")
@@ -100,7 +75,9 @@ def create_model_with_added_phrase_vocab(phrase_vocab, model_name = "distilbert/
 
 
 if __name__ == "__main__":
-    vocab_path = "/home/lamdo/splade/create_concept_splade/s2orc/phrase_vocab_100k.json"
+    # vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/phrase_vocab_s2orc_gitig_.json"
+    # vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/word_vocab_s2orc_gitig_.json"
+    vocab_path = "/home/lamdo/splade/create_concept_splade/s2orc/phrase_vocab_30k.json"
 
     with open(vocab_path) as f:
         phrase_counter = json.load(f)
@@ -112,11 +89,16 @@ if __name__ == "__main__":
 
     tokenizer, model = create_model_with_added_phrase_vocab(
         phrase_vocab=phrase_vocab,
-        max_added_phrases=60000
+        max_added_phrases=60000,
+        model_name="distilbert/distilbert-base-uncased"
     )
 
     print(model.distilbert.embeddings.word_embeddings.weight.shape)
 
-    model_name_on_hf = "lamdo/distilbert-base-uncased-phrase-60kaddedphrasesfroms2orc"
+    model_name_on_hf = "lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orcfreqbased"
     tokenizer.push_to_hub(model_name_on_hf)
     model.push_to_hub(model_name_on_hf)
+
+    # model_name = "/scratch/lamdo/distilbert-base-uncased-word-30kaddedwordsfroms2orc/"
+    # tokenizer.save_pretrained(model_name)
+    # model.save_pretrained(model_name)
