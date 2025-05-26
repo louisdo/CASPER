@@ -2,25 +2,26 @@ NUM_CHUNKS=1
 OUT_FOLDER=/scratch/lamdo/beir_splade/
 
 STORE_DOCUMENTS_IN_RAW=0
-
+ADD_BM25=0
 
 datasets=(
     scifact 
     scidocs 
     nfcorpus 
-    # doris_mae
-    # acm_cr
-    # cfscube
-    # trec-covid
-    arguana 
-    fiqa
+    doris_mae
+    acm_cr
+    cfscube
+    trec-covid
+    # arguana 
+    # fiqa
     # msmarco
 )
 models=(
     # "phrase_splade_27"
     # "phrase_splade_33"
     # splade_addedword_1
-    phrase_splade_53
+    phrase_splade_56
+    # splade_normal_150k_lowreg
     # "eru_kg"
     # "splade_maxsim_150k_lowregv6"
     # normal_splade_pretrains2orc
@@ -42,7 +43,7 @@ for dataset in "${datasets[@]}"; do
 
         # create representation
         for chunk_idx in $(seq 0 $((${NUM_CHUNKS} - 1))); do
-            CUDA_VISIBLE_DEVICES=2 \
+            CUDA_VISIBLE_DEVICES=1 \
             python index.py \
             --dataset $dataset \
             --model_name $model \
@@ -50,7 +51,8 @@ for dataset in "${datasets[@]}"; do
             --num_chunks $NUM_CHUNKS \
             --chunk_idx $chunk_idx \
             --remove_collections_folder 1 \
-            --store_documents_in_raw $STORE_DOCUMENTS_IN_RAW
+            --store_documents_in_raw $STORE_DOCUMENTS_IN_RAW \
+            --add_bm25 $ADD_BM25
         done
 
         # do indexing

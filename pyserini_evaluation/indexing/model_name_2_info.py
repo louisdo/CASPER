@@ -48,8 +48,11 @@ model_name_2_path = {
     "phrase_splade_49": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_49/debug/checkpoint/model",
     "phrase_splade_50": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_50/debug/checkpoint/model",
     "phrase_splade_51": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_51/debug/checkpoint/model", # similar to 45, but without weight in loss (cl_tokens + cl_phrases + reg_total)
-    "phrase_splade_52": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_52/debug/checkpoint/model",
+    "phrase_splade_52": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_52/debug/checkpoint/model", # new architecture, max pooling for token and mean pooling for concepts
     "phrase_splade_53": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_53/debug/checkpoint/model",
+    "phrase_splade_54": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_54/debug/checkpoint/model",
+    "phrase_splade_55": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_55/debug/checkpoint/model", # same as model 52, but using a different pretrain checkpoint, with phrase vocabulary is chosen based on frequency instead of the vocab building algorithm
+    "phrase_splade_56": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_56/debug/checkpoint/model", # same as model 52, but using a different pretrain checkpoint (60k phrases)
     "splade_addedword_1": "/scratch/lamdo/phrase_splade_checkpoints/phrase_addedword_1/debug/checkpoint/model",
     "eru_kg": "/scratch/lamdo/splade_checkpoints/experiments_combined_references_v8-1/debug/checkpoint/model",
     "normal_splade_pretrains2orc": "/scratch/lamdo/phrase_splade_checkpoints/normal_splade_pretrains2orc/debug/checkpoint/model",
@@ -101,6 +104,9 @@ model_name_2_model_class = {
     "phrase_splade_51": Splade,
     "phrase_splade_52": PhraseSpladev3,
     "phrase_splade_53": PhraseSpladev3,
+    "phrase_splade_54": PhraseSpladev3,
+    "phrase_splade_55": PhraseSpladev3,
+    "phrase_splade_56": PhraseSpladev3,
     "splade_addedword_1": Splade,
     "eru_kg": Splade,
     "normal_splade_pretrains2orc": Splade,
@@ -152,6 +158,9 @@ model_name_2_is_maxsim = {
     "phrase_splade_51": False,
     "phrase_splade_52": False,
     "phrase_splade_53": False,
+    "phrase_splade_54": False,
+    "phrase_splade_55": False,
+    "phrase_splade_56": False,
     "splade_addedword_1": False,
     "eru_kg": False,
     "normal_splade_pretrains2orc": False,

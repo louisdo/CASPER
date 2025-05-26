@@ -1,16 +1,14 @@
 import json, sys, torch, argparse, os, pytrec_eval, logging
 sys.path.append("../")
 import pandas as pd
+import numpy as np
 from pyserini.search.lucene import LuceneImpactSearcher
-from pyserini.pyclass import JFloat, JInt, JHashMap
-from pyserini_evaluation.indexing.index import init_model, SPLADE
-from pyserini_evaluation.indexing.utils import torch_csr_to_scipy_csr, merge_dicts
-from pyserini_evaluation.indexing.model_name_2_info import model_name_2_path, model_name_2_model_class, model_name_2_is_maxsim
+from pyserini.pyclass import JInt, JHashMap, JArrayList
+from pyserini_evaluation.indexing.index import init_model, SPLADE, init_bm25_model, BM25_MODEL, BM25
 from typing import List, Dict, Tuple
 from tqdm import tqdm
 from collections import Counter
-from scipy.sparse import csr_matrix, vstack, save_npz, load_npz
-from transformers import AutoTokenizer
+from scipy.sparse import csr_matrix, vstack, load_npz
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +23,12 @@ MAX_LENGTH = 256
 BERT_ORIGINAL_VOCAB_SIZE = 30522
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+
+
+def load_bm25_model(model_path):
+    if not BM25_MODEL["model"]:
+        model = BM25.load_model(model_path)
+        BM25_MODEL["model"] = model
 
 
 def create_jquery(encoded_query, searcher, fields = {}):
@@ -67,7 +71,7 @@ def init_searcher(index_path):
 
 
 
-def encode_queries(queries, ids = None, add_onehot = False, weight_tokens = 1.0, weight_phrases = 1.0):
+def encode_queries(queries, ids = None, add_onehot = False, weight_tokens = 1.0, weight_phrases = 1.0, add_bm25 = False):
     with torch.no_grad():
         batch_tokens = SPLADE["tokenizer"](queries, return_tensors="pt", truncation = True, padding = True, max_length=256).to(DEVICE)
         if SPLADE["is_maxsim"]:
@@ -120,6 +124,11 @@ def encode_queries(queries, ids = None, add_onehot = False, weight_tokens = 1.0,
             _indices_onehot = None
             d_onehot = {}
 
+        if add_bm25:
+            bm25_rep = BM25_MODEL["model"].get_term_scores(queries[i])
+            bm25_rep = {SPLADE["voc"][k]: v for k,v in bm25_rep.items()}
+            print(bm25_rep)
+            d = {k: v + 0.1 * bm25_rep.get(k, 0) for k, v in d.items()}
         d = {SPLADE["reverse_voc"][k]: (v * (weight_tokens if k < BERT_ORIGINAL_VOCAB_SIZE else weight_phrases)) for k, v in d.items()}
         # d = {SPLADE["reverse_voc"][k]: (v * (1 if k < 30522 else 0.5)) for k, v in d.items() if v >= 5}
         # d = merge_dicts(d, d_added)
@@ -420,17 +429,31 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
+def create_jarray_from_list(input_list):
+    res = JArrayList()
+    for item in input_list:
+        res.add(item)
+
+    return res
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--splade_model_name", type = str, default = "splade_maxsim")
     parser.add_argument("--index_folder", type = str, required=True)
     parser.add_argument("--work_dir", type = str, default = "../")
     parser.add_argument("--dataset", type = str, required=True)
-    parser.add_argument("--batch_size", type = int, default = 100)
+    parser.add_argument("--batch_size", type = int, default = 32)
     parser.add_argument("--save_metadata_for_debugging", type = str2bool, default = False)
     parser.add_argument("--add_onehot", type = str2bool, default = False)
     parser.add_argument("--weight_tokens", type = float, default = 1.0)
     parser.add_argument("--weight_phrases", type = float, default = 1.0)
+    parser.add_argument("--threads", type = int, default = 8)
+    parser.add_argument("--mode", type = str, choices = ["eval", "predict"])
+    parser.add_argument("--num_chunks", type=int, default = 4)
+    parser.add_argument("--chunk_idx", type = int, default = 0)
+    parser.add_argument("--add_bm25", type = str2bool, default = False)
+    parser.add_argument("--bm25_models_folder", type = str, default = None)
 
     args = parser.parse_args()
 
@@ -443,6 +466,12 @@ def main():
     add_onehot = args.add_onehot
     weight_tokens = args.weight_tokens
     weight_phrases = args.weight_phrases
+    threads = args.threads
+    mode = args.mode
+    num_chunks = args.num_chunks
+    chunk_idx = args.chunk_idx
+    add_bm25 = args.add_bm25
+    bm25_models_folder = args.bm25_models_folder
 
     if dataset_name in ["trec_dl_2019", "trec_dl_2020"]:
         index_path = os.path.join(index_folder, f"msmarco__{splade_model_name}")
@@ -483,73 +512,115 @@ def main():
         queries = [json.loads(line) for line in f]
         queries = [line for line in queries if line["_id"] in qrels]
 
+    if mode == "predict":
+        chunk_indices = np.array_split(np.arange(len(queries)), num_chunks)[chunk_idx]
+        queries = [queries[i] for i in chunk_indices]
     
 
+        # init splade model
+        init_model(model_name = splade_model_name)
+        SPLADE["voc"] = {k.replace(" ", "-"): v for k, v in SPLADE["tokenizer"].vocab.items()}
 
-    # init splade model
-    init_model(model_name = splade_model_name)
+        if add_bm25:
+            bm25_model_filename = f"{dataset_name}__{splade_model_name}.pkl" if dataset_name not in ["trec_dl_2019", "trec_dl_2020"] else f"msmarco__{splade_model_name}.pkl"
+            bm25_model_path = os.path.join(bm25_models_folder, bm25_model_filename)
+            load_bm25_model(bm25_model_path)
 
-    # init searcher
-    init_searcher(index_path = index_path)
+        # init searcher
+        init_searcher(index_path = index_path)
 
-    splade_vocab = SPLADE["tokenizer"].vocab
-    SEARCHER["splade_vocab"] = splade_vocab
-    SEARCHER["vocab_length"] = len(splade_vocab)
+        splade_vocab = SPLADE["tokenizer"].vocab
+        SEARCHER["splade_vocab"] = splade_vocab
+        SEARCHER["vocab_length"] = len(splade_vocab)
 
-    queries_texts = [line["text"] for line in queries]
-    queries_ids = [line["_id"] for line in queries]
+        queries_texts = [line["text"] for line in queries]
+        queries_ids = [line["_id"] for line in queries]
 
-    # encode the queries
-    encoded_queries = []
-    for i in tqdm(range(0, len(queries_texts), batch_size)):
-        batch_queries = queries_texts[i:i+batch_size]
-        batch_queries_ids = queries_ids[i:i+batch_size]
-        temp = encode_queries(queries = batch_queries, ids = batch_queries_ids, add_onehot=add_onehot,
-                              weight_tokens=weight_tokens, weight_phrases = weight_phrases)
-        encoded_queries.extend(temp)
+        # encode the queries
+        encoded_queries = []
+        for i in tqdm(range(0, len(queries_texts), batch_size)):
+            batch_queries = queries_texts[i:i+batch_size]
+            batch_queries_ids = queries_ids[i:i+batch_size]
+            temp = encode_queries(queries = batch_queries, ids = batch_queries_ids, add_onehot=add_onehot,
+                                weight_tokens=weight_tokens, weight_phrases = weight_phrases, add_bm25=add_bm25)
+            encoded_queries.extend(temp)
+
+        assert len(queries_ids) == len(encoded_queries)
+
+        all_jqueries = []
+        all_jqids = []
+        for query_id, line in zip(queries_ids, encoded_queries):
+            encoded_query = line["vector"]
+            encoded_query = {item[0]: item[1] for item in Counter(encoded_query).most_common(1024)}
+            jquery = create_jquery(encoded_query=encoded_query, searcher = SEARCHER["searcher"])
+
+            all_jqueries.append(jquery)
+            all_jqids.append(query_id)
 
 
-    # do the search
-    all_search_results = []
-    for line in tqdm(encoded_queries):
-        encoded_query = line["vector"]
-        encoded_query = {item[0]: item[1] for item in Counter(encoded_query).most_common(1024)}
-        jquery = create_jquery(encoded_query=encoded_query, searcher = SEARCHER["searcher"])
-        
         top_k = 1000 if not SPLADE["is_maxsim"] else 100
-        hits = SEARCHER["searcher"].object.search(jquery, top_k)
 
-        if not SPLADE["is_maxsim"]:
-            formatted_results = []
-            for hit in hits:
-                to_append = {
-                    "docid": hit.docid,
-                    "score": hit.score
-                }
-                formatted_results.append(to_append)
-        else:
-            formatted_results = do_reranking_v2(
-                full_encoded_query_info=line,
-                hits = hits,
-                add_onehot=add_onehot
-            )
+        all_hits = {}
+        for i in tqdm(range(0, len(all_jqueries), batch_size), desc = "Running batch search"):
+            batch_jqueries = create_jarray_from_list(all_jqueries[i:i+batch_size])
+            batch_jqids = create_jarray_from_list(all_jqids[i:i+batch_size])
 
-        all_search_results.append(formatted_results)
+            to_update = SEARCHER["searcher"].object.batch_search(batch_jqueries, batch_jqids, top_k, threads)
+            to_update = {r.getKey(): r.getValue() for r in to_update.entrySet().toArray()}
+            all_hits.update(to_update)
 
-    # then evaluate
-    predictions = convert_to_pytrec_eval_format(queries = queries_ids, all_search_results=all_search_results, type = "prediction")
-    evaluation_result = evaluate(qrels = qrels, results = predictions, k_values = [5, 10, 100, 1000])
-    mrr_result = mrr(qrels = qrels, results = predictions, k_values = [5, 10, 100, 1000])
+        # do the search
+        all_search_results = []
+        for query_id in queries_ids:
+            hits = all_hits[query_id]
+            if not SPLADE["is_maxsim"]:
+                formatted_results = []
+                for hit in hits:
+                    to_append = {
+                        "docid": hit.docid,
+                        "score": hit.score
+                    }
+                    formatted_results.append(to_append)
+            else:
+                formatted_results = do_reranking_v2(
+                    full_encoded_query_info=line,
+                    hits = hits,
+                    add_onehot=add_onehot
+                )
 
-    print(evaluation_result, mrr_result)
+            all_search_results.append(formatted_results)
 
-    if save_metadata_for_debugging:
-        with open(os.path.join("./metadata/",  f"{dataset_name}__{splade_model_name}"), "w") as f:
+        # then evaluate
+        predictions = convert_to_pytrec_eval_format(queries = queries_ids, all_search_results=all_search_results, type = "prediction")
+        
+        metadata_path = os.path.join("./metadata/",  f"{dataset_name}__{splade_model_name}")
+        with open(metadata_path, "w" if chunk_idx == 0 else "a") as f:
             metadata_to_save = {
-                "encoded_queries": encoded_queries,
+                "chunk_idx": chunk_idx,
                 "predictions": predictions
             }
+
+            if save_metadata_for_debugging:
+                metadata_to_save["encoded_queries"] = encoded_queries
+
             json.dump(metadata_to_save, f)
+            f.write("\n")
+
+
+    elif mode == "eval":
+        metadata_path = os.path.join("./metadata/",  f"{dataset_name}__{splade_model_name}")
+
+        predictions = {}
+        with open(metadata_path) as f:
+            for line in f:
+                jline = json.loads(line)
+                to_update = jline.get("predictions", {})
+                predictions.update(to_update)
+
+        evaluation_result = evaluate(qrels = qrels, results = predictions, k_values = [5, 10, 100, 1000])
+        mrr_result = mrr(qrels = qrels, results = predictions, k_values = [5, 10, 100, 1000])
+
+        print(evaluation_result, mrr_result)
 
 
 

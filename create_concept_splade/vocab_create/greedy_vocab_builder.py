@@ -1,4 +1,5 @@
 # python greedy_vocab_builder.py --input_folder /scratch/lamdo/msmarco_phrase_vocab/ --num_phrases 30000 --output_file phrase_vocab_msmarco_gitig_.json
+# python greedy_vocab_builder.py --input_folder /scratch/lamdo/msmarco_phrase_vocab/ --num_phrases 30000 --output_file phrase_vocab_msmarco_gitig_.json
 # python greedy_vocab_builder.py --input_folder /scratch/lamdo/s2orc_word_vocab/ --num_phrases 30000 --output_file word_vocab_s2orc_gitig_.json --apply_word_check 1
 import json, os, heapq, string, re
 from argparse import ArgumentParser

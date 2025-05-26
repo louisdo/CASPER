@@ -7,7 +7,7 @@ from omegaconf import DictConfig, OmegaConf
 
 from ..losses.pairwise import DistilKLLoss, PairwiseNLL, DistilMarginMSE, DistilMarginMSEv2, \
     InBatchPairwiseNLL, InBatchPairwiseNLLv2, InBatchPairwiseNLLPhraseSplade, InBatchPairwiseNLLNoHardNeg, \
-    InBatchPairwiseNLLPhraseSpladev2
+    InBatchPairwiseNLLPhraseSpladev2, InBatchPairwiseNLLPhraseSpladev3, InBatchPairwiseNLLPhraseSpladev4
 from ..losses.pointwise import BCEWithLogitsLoss
 
 
@@ -191,10 +191,14 @@ def get_loss(config):
         loss = InBatchPairwiseNLL()
     elif config["loss"] == "InBatchPairwiseNLLv2":
         loss = InBatchPairwiseNLLv2()
-    elif config["loss"] == "InBatchPairwiseNLLPhraseSpladev2":
-        loss = InBatchPairwiseNLLPhraseSpladev2()
     elif config["loss"] == "InBatchPairwiseNLLPhraseSplade":
         loss = InBatchPairwiseNLLPhraseSplade()
+    elif config["loss"] == "InBatchPairwiseNLLPhraseSpladev2":
+        loss = InBatchPairwiseNLLPhraseSpladev2()
+    elif config["loss"] == "InBatchPairwiseNLLPhraseSpladev3":
+        loss = InBatchPairwiseNLLPhraseSpladev3()
+    elif config["loss"] == "InBatchPairwiseNLLPhraseSpladev4":
+        loss = InBatchPairwiseNLLPhraseSpladev4()
     elif config["loss"] == "InBatchPairwiseNLLNoHardNeg":
         loss = InBatchPairwiseNLLNoHardNeg()
     elif config["loss"] == "BCE":

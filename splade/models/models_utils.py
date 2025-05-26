@@ -1,7 +1,7 @@
 import json
 from omegaconf import DictConfig
 
-from ..models.transformer_rep import Splade, SpladeDoc, SpladeTopK, SpladeLexical, SpladeMaxSim, PhraseSplade, PhraseSpladev2, PhraseSpladev3
+from ..models.transformer_rep import Splade, SpladeDoc, SpladeTopK, SpladeLexical, SpladeMaxSim, PhraseSplade, PhraseSpladev2, PhraseSpladev3, PhraseSpladev4
 
 
 def get_model(config: DictConfig, init_dict: DictConfig):
@@ -16,7 +16,8 @@ def get_model(config: DictConfig, init_dict: DictConfig):
         "splade_maxsim": SpladeMaxSim,
         "phrase_splade": PhraseSplade,
         "phrase_splade_v2": PhraseSpladev2,
-        "phrase_splade_v3": PhraseSpladev3
+        "phrase_splade_v3": PhraseSpladev3,
+        "phrase_splade_v4": PhraseSpladev4
     }
     try:
         model_class = model_map[config["matching_type"]]

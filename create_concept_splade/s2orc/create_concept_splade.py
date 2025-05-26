@@ -65,6 +65,8 @@ def create_model_with_added_phrase_vocab(phrase_vocab, model_name = "distilbert/
         # with open("created_vocab.json", "w") as f:
         #     json.dump(phrases_to_add, f, indent = 4)
 
+        phrases_to_add = phrases_to_add[:max_added_phrases]
+
         num_added_toks = tokenizer.add_tokens(phrases_to_add)
         print(f"Added {num_added_toks} tokens")
 
@@ -77,7 +79,7 @@ def create_model_with_added_phrase_vocab(phrase_vocab, model_name = "distilbert/
 if __name__ == "__main__":
     # vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/phrase_vocab_s2orc_gitig_.json"
     # vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/word_vocab_s2orc_gitig_.json"
-    vocab_path = "/home/lamdo/splade/create_concept_splade/s2orc/phrase_vocab_30k.json"
+    vocab_path = "/home/lamdo/splade/create_concept_splade/s2orc/phrase_vocab_100k.json"
 
     with open(vocab_path) as f:
         phrase_counter = json.load(f)
@@ -95,7 +97,7 @@ if __name__ == "__main__":
 
     print(model.distilbert.embeddings.word_embeddings.weight.shape)
 
-    model_name_on_hf = "lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orcfreqbased"
+    model_name_on_hf = "lamdo/distilbert-base-uncased-phrase-60kaddedphrasesfroms2orcfreqbased"
     tokenizer.push_to_hub(model_name_on_hf)
     model.push_to_hub(model_name_on_hf)
 

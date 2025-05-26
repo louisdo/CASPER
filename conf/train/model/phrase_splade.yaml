@@ -5,6 +5,9 @@
 # lamdo/distilbert-base-uncased-phrase-60kaddedphrasesfroms2orc-mlm-150000steps-v2 # mlm training, phrases and tokens are treated equally
 # lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64 (previously 32)
 # lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfrommsmarco-mlm-70000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64 (previously 32), using msmarco to create phrase vocab and do pretraining
+# lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orcfreqbased-mlm-70000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64 (previously 32). Phrase vocab is frequency based
+# lamdo/distilbert-base-uncased-phrase-60kaddedphrasesfroms2orcfreqbased-mlm-150000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 32. Phrase vocab is frequency based. Phrase vocab size is 60k
+
 
 init_dict:
   model_type_or_dir: lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps

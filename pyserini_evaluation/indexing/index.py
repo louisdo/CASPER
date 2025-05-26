@@ -3,7 +3,7 @@ sys.path.append("../../")
 import numpy as np
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 from pyserini_evaluation.indexing.model_name_2_info import model_name_2_path, model_name_2_model_class, model_name_2_is_maxsim
-
+from pyserini_evaluation.indexing.bm25_model import BM25
 from tqdm import tqdm
 from memory_profiler import profile 
 from copy import deepcopy
@@ -14,6 +14,10 @@ SPLADE = {
     "reverse_voc": None,
     "model_name": None,
     "is_maxsim": None
+}
+
+BM25_MODEL = {
+    "model": None
 }
 
 MAX_LENGTH = 256
@@ -51,8 +55,9 @@ def init_model(model_name):
 
 
 
-def get_representation(batch, is_q, store_documents_in_raw = False):
+def get_representation(batch, is_q, store_documents_in_raw = False, add_bm25 = False):
     text_batch = [f"{line['title']} | {line['text']}" for line in batch]
+
     batch_tokens = SPLADE["tokenizer"](text_batch, return_tensors="pt", truncation = True, padding = True, max_length = MAX_LENGTH).to(DEVICE)
     with torch.no_grad():
         if SPLADE["is_maxsim"]:
@@ -73,6 +78,10 @@ def get_representation(batch, is_q, store_documents_in_raw = False):
         doc_rep = batch_doc_rep[i].detach().cpu()
         doc_token_indices = batch_doc_token_indices[i].detach().cpu() if batch_doc_token_indices is not None else None
 
+        if add_bm25:
+            bm25_rep = BM25_MODEL["model"].get_term_scores(text_batch[i])
+        else: bm25_rep = {}
+
         try:
             # get the number of non-zero dimensions in the rep:
             col = torch.nonzero(doc_rep).squeeze().tolist()
@@ -81,6 +90,7 @@ def get_representation(batch, is_q, store_documents_in_raw = False):
             _indices = doc_token_indices[col].tolist() if doc_token_indices is not None else None
             d = {k: int(v * 100) for k, v in zip(col, weights)}
             d = {SPLADE["reverse_voc"][k]: v for k, v in d.items()}
+            d = {k: v + 0.1 * bm25_rep.get(k, 0) for k,v in d.items()}
             d_indices = {SPLADE["reverse_voc"][k]: v for k, v in zip(col, _indices)} if _indices is not None else None
 
             del col, weights, _indices
@@ -108,8 +118,17 @@ def get_representation(batch, is_q, store_documents_in_raw = False):
     # return res
 
 
+def init_bm25_model(splade_model_dir, corpus, save_path):
+    model = BM25(corpus = corpus, splade_model_dir=splade_model_dir)
+
+    BM25_MODEL["model"] = model
+
+    model.save_model(save_path)
+
+
+
 # @profile
-def prepare_data(documents, batch_size = 100, is_q = False, store_documents_in_raw = False, chunk_idx = None):
+def prepare_data(documents, batch_size = 100, is_q = False, store_documents_in_raw = False, chunk_idx = None, add_bm25 = False):
 
     # all_representations = []
     # with open(outfile, "w") as f:
@@ -119,7 +138,8 @@ def prepare_data(documents, batch_size = 100, is_q = False, store_documents_in_r
         representations = get_representation(
             documents[i:i+batch_size], 
             is_q = is_q, 
-            store_documents_in_raw = store_documents_in_raw
+            store_documents_in_raw = store_documents_in_raw,
+            add_bm25 = add_bm25
         )
 
         for rep in representations:
@@ -134,7 +154,13 @@ def prepare_data(documents, batch_size = 100, is_q = False, store_documents_in_r
             # for rep in representations:
             #     json_string = json.dumps(rep)
             #     f.write(json_string + "\n")
-
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
             
 
 
@@ -148,10 +174,11 @@ def main():
     parser.add_argument("--batch_size", type = int, default = 100)
     parser.add_argument("--is_q", type = bool, default = False)
     # parser.add_argument("--chunking_size", type = int, default = 10000)
-    parser.add_argument("--remove_collections_folder", type = bool, default = False)
-    parser.add_argument("--store_documents_in_raw", type = bool, default = False)
+    parser.add_argument("--remove_collections_folder", type = str2bool, default = False)
+    parser.add_argument("--store_documents_in_raw", type = str2bool, default = False)
     parser.add_argument("--num_chunks", type = int, default = 4)
     parser.add_argument("--chunk_idx", type = int, required = True)
+    parser.add_argument("--add_bm25", type = str2bool, default = False)
 
     args = parser.parse_args()
 
@@ -166,6 +193,7 @@ def main():
     store_documents_in_raw = args.store_documents_in_raw
     num_chunks = args.num_chunks
     chunk_idx = args.chunk_idx
+    add_bm25 = args.add_bm25
 
     dataset_name_2_relative_path = {
         "scifact": "data/beir/scifact",
@@ -194,6 +222,12 @@ def main():
         for line in f:
             jline = json.loads(line)
             corpus.append(jline)
+
+    if add_bm25:
+        bm25_model_path = os.path.join(outfolder, "bm25_models", f"{dataset_name}__{model_name}.pkl")
+        init_bm25_model(splade_model_dir=model_name_2_path[model_name], 
+                        corpus = [f"{line['title']} | {line['text']}" for line in corpus],
+                        save_path=bm25_model_path)
     
     print("Corpus length", len(corpus))
 
@@ -210,7 +244,8 @@ def main():
         batch_size=batch_size,
         is_q=is_q,
         store_documents_in_raw=store_documents_in_raw,
-        chunk_idx=chunk_idx
+        chunk_idx=chunk_idx,
+        add_bm25 = add_bm25
     )
 
     with open(outfile, "w") as f:

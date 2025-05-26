@@ -565,6 +565,7 @@ class PhraseSpladev2(SiameseBasePhrase):
         with torch.cuda.amp.autocast() if self.fp16 else NullContextManager():
             out = {}
             do_d, do_q = "d_kwargs" in kwargs, "q_kwargs" in kwargs
+            phrase_scale = None
             if do_d:
                 d_rep = self.encode(kwargs["d_kwargs"], is_q=False)
                 if self.cosine:  # normalize embeddings
@@ -572,6 +573,8 @@ class PhraseSpladev2(SiameseBasePhrase):
 
                 d_rep_tokens = d_rep[...,:self.original_bert_vocab_size]
                 d_rep_phrases = d_rep[...,self.original_bert_vocab_size:]
+
+                phrase_scale = self.original_bert_vocab_size / (d_rep.size(-1) - self.original_bert_vocab_size)
 
                 out.update({"d_rep": d_rep})
             if do_q:
@@ -581,6 +584,8 @@ class PhraseSpladev2(SiameseBasePhrase):
 
                 q_rep_tokens = q_rep[...,:self.original_bert_vocab_size]
                 q_rep_phrases = q_rep[...,self.original_bert_vocab_size:]
+
+                phrase_scale = self.original_bert_vocab_size / (d_rep.size(-1) - self.original_bert_vocab_size)
 
                 out.update({"q_rep": q_rep})
             if do_d and do_q:
@@ -602,13 +607,58 @@ class PhraseSpladev2(SiameseBasePhrase):
                         score_phrases = torch.sum(q_rep_phrases * d_rep_phrases, dim=1, keepdim=True)  # shape (bs, )
                         
                 # out.update({"score": 0.8 * score + 0.2 * score_phrase})
-                out.update({"score_phrases": score_phrases, "score_tokens": score_tokens, "score": score_phrases + score_tokens})
+                out.update({"score_phrases": score_phrases, 
+                            "score_tokens": score_tokens, 
+                            "score": score_phrases + score_tokens,
+                            "phrase_scale": phrase_scale})
         return out
 
 
 class PhraseSpladev3(PhraseSpladev2):
     def encode(self, tokens, is_q):
         out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+        if self.agg == "sum":
+            return torch.sum(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
+        else:
+            out_tokens = out[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
+            out_phrases = out[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+            values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
+            values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
+
+            values = torch.cat([values_tokens, values_phrases], dim = -1)
+            return values
+            # 0 masking also works with max because all activations are positive
+
+class PhraseSpladev4(PhraseSpladev2):
+    def __init__(self, model_type_or_dir, model_type_or_dir_q=None, freeze_d_model=False, agg="max", fp16=True):
+        super().__init__(
+            model_type_or_dir=model_type_or_dir,
+            model_type_or_dir_q=model_type_or_dir_q,
+            freeze_d_model=freeze_d_model,
+            agg = agg,
+            fp16 = fp16
+        )
+
+        self.mask_single_token = torch.ones([1, self.output_dim])
+        self.mask_single_phrase = torch.ones([1, self.output_dim])
+
+
+    def create_token_phrase_mask(self, tokens):
+        input_ids = tokens["input_ids"] # (bs, pad_len)
+        mask = torch.where((input_ids < self.original_bert_vocab_size).unsqueeze(-1), 
+                           self.mask_single_token.to(input_ids.device), 
+                           self.mask_single_phrase.to(input_ids.device))
+        
+        return mask
+
+
+
+    def encode(self, tokens, is_q):
+        out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+
+        token_phrase_mask = self.create_token_phrase_mask(tokens)
+        out = out * token_phrase_mask
+
         if self.agg == "sum":
             return torch.sum(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
         else:

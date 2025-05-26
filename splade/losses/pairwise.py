@@ -99,6 +99,40 @@ class InBatchPairwiseNLLPhraseSpladev2(InBatchPairwiseNLLPhraseSplade):
 
         # return loss + 0.1 * loss_tokens
         return loss_phrases + loss_tokens #* 0.1
+    
+class InBatchPairwiseNLLPhraseSpladev3(InBatchPairwiseNLLPhraseSpladev2):
+    # when using call, automatically use phrase scale
+    def helper(self, out_d, field_name, use_hardneg = True, use_phrase_scale = True):
+        in_batch_scores, neg_scores = out_d[f"pos_{field_name}"], out_d[f"neg_{field_name}"]
+
+        if use_phrase_scale:
+            in_batch_scores *= out_d["pos_phrase_scale"]
+            neg_scores *= out_d["neg_phrase_scale"] # different name for phrase scale, but should be the same
+
+        # here in_batch_scores is a matrix of size bs * (bs / nb_gpus)
+        nb_columns = in_batch_scores.shape[1]
+        nb_gpus = int(in_batch_scores.shape[0] / nb_columns)
+        if use_hardneg:
+            temp = torch.cat([in_batch_scores, neg_scores], dim=1)  # concat neg score from BM25 sampling
+            # shape (batch_size, batch_size/nb_gpus + 1)
+        else:
+            zero_neg_scores = torch.zeros_like(neg_scores)
+            temp = torch.cat([in_batch_scores, zero_neg_scores], dim=1) # shape (batch_size, batch_size/nb_gpus + 1)
+
+        scores = self.logsoftmax(temp)
+        return torch.mean(-scores[torch.arange(in_batch_scores.shape[0]),
+                                  torch.arange(nb_columns).repeat(nb_gpus)])
+
+
+class InBatchPairwiseNLLPhraseSpladev4(InBatchPairwiseNLLPhraseSplade):
+    def __call__(self, out_d):
+        loss_phrases = self.helper(out_d=out_d, field_name="score_phrases", use_hardneg=True)
+        loss_tokens = self.helper(out_d=out_d, field_name="score_tokens", use_hardneg=True)
+
+        # return (loss + loss_tokens) / 2
+
+        # return loss + 0.1 * loss_tokens
+        return loss_phrases + loss_tokens #* 0.1
 
 
 class InBatchPairwiseNLLNoHardNeg:
