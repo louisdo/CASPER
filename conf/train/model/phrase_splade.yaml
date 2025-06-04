@@ -7,7 +7,9 @@
 # lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfrommsmarco-mlm-70000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64 (previously 32), using msmarco to create phrase vocab and do pretraining
 # lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orcfreqbased-mlm-70000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64 (previously 32). Phrase vocab is frequency based
 # lamdo/distilbert-base-uncased-phrase-60kaddedphrasesfroms2orcfreqbased-mlm-150000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 32. Phrase vocab is frequency based. Phrase vocab size is 60k
-
+# lamdo/distilbert-base-uncased-phrase-15kaddedphrasesfroms2orc-mlm-70000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64. Phrase vocab is built via maximum coverage. Phrase vocab size is 15k
+# lamdo/distilbert-base-uncased-phrase-15kaddedphrasesfroms2orcfreqbased-mlm-70000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64. Phrase vocab is frequency based. Phrase vocab size is 15k
+# lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc_cs-mlm-26000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64. Train with s2orc CS corpus. Phrase vocab is built via maximum coverage. Phrase vocab size is 30k
 
 init_dict:
   model_type_or_dir: lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps

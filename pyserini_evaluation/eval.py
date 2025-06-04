@@ -70,8 +70,35 @@ def init_searcher(index_path):
 
 
 
+def splade_pooling(out, tokens, class_name = "Splade"):
+    if class_name not in ["Spladev3", "Spladev4", "Spladev5"]:
+        # only Spladev3 has this special pooling function
+        out_tokens = out[..., :30522] # shape (bs, pad_len, original_bert_vocab_size)
+        out_phrases = out[..., 30522:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+        values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
+        values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
 
-def encode_queries(queries, ids = None, add_onehot = False, weight_tokens = 1.0, weight_phrases = 1.0, add_bm25 = False):
+        values = torch.cat([values_tokens, values_phrases], dim = -1)
+        return values
+    
+    else:
+        # if not Spladev3, this apply max pooling like this
+        values, _ = torch.max(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
+        return values
+
+def encode_batch_mask_special_tokens(tokens, model, puncid, is_q = False):
+    out = model.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+    out = torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1)
+
+    mask = ~torch.isin(tokens["input_ids"], puncid)
+    out = out * mask.unsqueeze(-1)
+
+    model_class_name = model.__class__.__name__
+    return splade_pooling(out, tokens, class_name = model_class_name)
+
+
+
+def encode_queries(queries, ids = None, add_onehot = False, weight_tokens = 1.0, weight_phrases = 1.0, add_bm25 = False, mask_special_tokens = False):
     with torch.no_grad():
         batch_tokens = SPLADE["tokenizer"](queries, return_tensors="pt", truncation = True, padding = True, max_length=256).to(DEVICE)
         if SPLADE["is_maxsim"]:
@@ -89,7 +116,9 @@ def encode_queries(queries, ids = None, add_onehot = False, weight_tokens = 1.0,
             # batch_doc_rep_full = [item.to_sparse_csr().cpu() for item in batch_doc_rep_full]
             # batch_doc_rep_full = [torch_csr_to_scipy_csr(item) for item in batch_doc_rep_full]
         else:
-            batch_doc_rep = SPLADE["model"].encode(batch_tokens, is_q = True)
+            if not mask_special_tokens:
+                batch_doc_rep = SPLADE["model"].encode(batch_tokens, is_q = True)
+            else: batch_doc_rep = encode_batch_mask_special_tokens(batch_tokens, SPLADE["model"], SPLADE["puncid"], is_q = True)
             batch_doc_token_indices = None
             batch_doc_pad_len = None
             batch_doc_rep_full = None
@@ -195,7 +224,9 @@ def mrr(
         top_hits[query_id] = sorted(doc_scores.items(), key=lambda item: item[1], reverse=True)[0:k_max]
 
     for query_id in top_hits:
-        query_relevant_docs = set([doc_id for doc_id in qrels[query_id] if qrels[query_id][doc_id] > 0])
+        if query_id in qrels:
+            query_relevant_docs = set([doc_id for doc_id in qrels[query_id] if qrels[query_id][doc_id] > 0])
+        else: query_relevant_docs = set([])
         for k in k_values:
             for rank, hit in enumerate(top_hits[query_id][0:k]):
                 if hit[0] in query_relevant_docs:
@@ -454,6 +485,7 @@ def main():
     parser.add_argument("--chunk_idx", type = int, default = 0)
     parser.add_argument("--add_bm25", type = str2bool, default = False)
     parser.add_argument("--bm25_models_folder", type = str, default = None)
+    parser.add_argument("--mask_special_tokens", type = str2bool, default = False)
 
     args = parser.parse_args()
 
@@ -472,6 +504,7 @@ def main():
     chunk_idx = args.chunk_idx
     add_bm25 = args.add_bm25
     bm25_models_folder = args.bm25_models_folder
+    mask_special_tokens = args.mask_special_tokens
 
     if dataset_name in ["trec_dl_2019", "trec_dl_2020"]:
         index_path = os.path.join(index_folder, f"msmarco__{splade_model_name}")
@@ -491,7 +524,9 @@ def main():
         "cfscube": "data/cfscube/cfscube",
         "trec_dl_2019": "data/msmarco/trec_dl_2019",
         "trec_dl_2020": "data/msmarco/trec_dl_2020",
-        "acm_cr": "data/acm_cr/acm_cr"
+        "acm_cr": "data/acm_cr/acm_cr",
+        "litsearch": "data/litsearch/litsearch",
+        "relish": "data/relish/relish"
     }
 
     queries_path = os.path.join(
@@ -520,6 +555,10 @@ def main():
         # init splade model
         init_model(model_name = splade_model_name)
         SPLADE["voc"] = {k.replace(" ", "-"): v for k, v in SPLADE["tokenizer"].vocab.items()}
+
+        if mask_special_tokens:
+            import string
+            SPLADE["puncid"] = torch.tensor([SPLADE["tokenizer"].vocab["[SEP]"], SPLADE["tokenizer"].vocab["[CLS]"]]).to(DEVICE)
 
         if add_bm25:
             bm25_model_filename = f"{dataset_name}__{splade_model_name}.pkl" if dataset_name not in ["trec_dl_2019", "trec_dl_2020"] else f"msmarco__{splade_model_name}.pkl"

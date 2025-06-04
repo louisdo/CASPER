@@ -1,4 +1,5 @@
-# python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/cocit_triplets/triplets_intermediate.tsv --metadata_file /scratch/lvnguyen/splade_keyphrases_expansion/dataset/s2orc_papers_metadata.jsonl --output_file /scratch/lamdo/s2orc/processed/cocit_triplets/raw.tsv
+# python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/cocit_triplets/triplets_intermediate.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/cocit_triplets/raw.tsv
+# python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/cocit_triplets/triplets_intermediate.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/cocit_triplets/raw_cs.tsv --fos_filter "Computer Science"
 import json, os, random, string
 from argparse import ArgumentParser
 from tqdm import tqdm
@@ -12,12 +13,17 @@ def main():
     parser.add_argument("--input_file", type = str, required = True)
     parser.add_argument("--metadata_file", type = str, required = True)
     parser.add_argument("--output_file", type = str, required = True)
+    parser.add_argument("--fos_filter", type = str, default = None, help = "Comma-separated list of Field of Studies to keep")
 
     args = parser.parse_args()
 
     input_file = args.input_file
     metadata_file = args.metadata_file
     output_file = args.output_file
+    fos_filter = args.fos_filter
+
+    fos_filter = [fos.strip() for fos in fos_filter.split(",")] if fos_filter else None
+
 
     triplets_intermediate = []
     with open(input_file) as f:
@@ -31,14 +37,19 @@ def main():
 
     
     corpus_id_2_text = {}
+    if fos_filter is not None: fos_filter_corpus_ids = set()
+    else: fos_filter_corpus_ids = None
     with open(metadata_file) as f:
         error_count = 0
         for i, line in enumerate(tqdm(f, desc = "Reading metadata file")):
             try:
                 jline = json.loads(line)
-                corpus_id = jline.get("corpusId")
+                corpus_id = int(jline.get("corpusId"))
                 title = jline.get("title")
                 abstract = jline.get("abstract")
+
+                if fos_filter is not None and any([fos in jline.get("fieldsOfStudy") for fos in fos_filter]):
+                    fos_filter_corpus_ids.add(corpus_id)
 
                 if not corpus_id or not title: continue
 
@@ -56,6 +67,7 @@ def main():
         for line in tqdm(triplets_intermediate):
             query_corpus_id, pos_corpus_id, neg_corpus_id = line
 
+            if pos_corpus_id not in fos_filter_corpus_ids: continue
 
             query_metadata = corpus_id_2_text.get(query_corpus_id)
             pos_metadata = corpus_id_2_text.get(pos_corpus_id)

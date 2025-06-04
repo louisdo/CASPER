@@ -1,28 +1,31 @@
-NUM_CHUNKS=2
+NUM_CHUNKS=1
 INDEX_FOLDER=/scratch/lamdo/beir_splade/indexes/
 BM25_MODELS_FOLDER=/scratch/lamdo/beir_splade/bm25_models/
 ADD_BM25=0
+MASK_SPECIAL_TOKENS=0
 
-CUDA_DEVICE=1
+CUDA_DEVICE=0
 
 datasets=(
-    scifact  
-    scidocs 
-    nfcorpus  
-    trec-covid 
+    # scifact  
+    # scidocs 
+    # nfcorpus  
+    # trec-covid 
     doris_mae 
-    cfscube
-    acm_cr
+    # cfscube
+    # acm_cr 
     # arguana 
     # fiqa
     # msmarco
     # trec_dl_2019
     # trec_dl_2020
+    # litsearch
+    # relish
 )
 models=(
     # "phrase_splade_27"
     # "phrase_splade_33"
-    phrase_splade_55
+    phrase_splade_69
     # splade_normal_150k_lowreg
     # splade_addedword_1
     # "eru_kg"
@@ -32,7 +35,14 @@ models=(
     # splade_max_1
 )
 weight_tokens=( 1 )
-weight_phrases=( 0.1 0.5 )
+weight_phrases=( 
+    0.05
+    0.1 
+    # 0.25  
+    # 0.5 
+    # 0.75
+    # 1
+)
 
 for wtoken in "${weight_tokens[@]}"; do 
     for wphrase in "${weight_phrases[@]}"; do 

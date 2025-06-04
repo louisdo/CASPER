@@ -33,6 +33,7 @@ def main():
     output_file = args.output_file
     max_samples_from_each_paper = args.max_samples_from_each_paper
 
+
     files = os.listdir(input_folder)
     files = [os.path.join(input_folder, file) for file in files if file.endswith(".jsonl")]
 
@@ -49,10 +50,11 @@ def main():
                 sampled_jline_cocit = random.sample(jline_cocit, k = min(len(jline_cocit), max_samples_from_each_paper))
 
                 for cocit in sampled_jline_cocit:
+                    if len(cocit) < 2 or not all_references: continue
                     neg = get_negative_citation(cocit, all_references)
                     if not neg:
                         continue
-
+                    
                     pair = random.sample(cocit, k = 2)
                     triplet = pair + [neg]
 

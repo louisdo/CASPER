@@ -1,4 +1,5 @@
 # python process_dataset.py --input_folder /scratch/lamdo/s2orc/processed/extracted_metadata --output_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/triplets_intermediate.tsv
+# python process_dataset.py --input_folder /scratch/lamdo/s2orc/processed/extracted_metadata --output_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/triplets_intermediate_cs.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --fos_filter "Computer Science"
 import json, os, random
 from argparse import ArgumentParser
 from tqdm import tqdm
@@ -41,6 +42,7 @@ def main():
     input_folder = args.input_folder
     max_samples_from_each_paper = args.max_samples_from_each_paper
     output_file = args.output_file
+
 
     files = os.listdir(input_folder)
     files = [os.path.join(input_folder, file) for file in files if file.endswith(".jsonl")]

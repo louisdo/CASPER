@@ -87,6 +87,15 @@ class InBatchPairwiseNLLPhraseSplade:
         # return (loss + loss_tokens) / 2
 
         return loss + 0.1 * loss_tokens
+    
+class InBatchPairwiseNLLPhraseSpladev1_1(InBatchPairwiseNLLPhraseSplade):
+    def __call__(self, out_d):
+        loss = self.helper(out_d=out_d, field_name="score", use_hardneg=False)
+        loss_tokens = self.helper(out_d=out_d, field_name="score_tokens", use_hardneg=True)
+
+        # return (loss + loss_tokens) / 2
+
+        return loss + loss_tokens
 
 
 
@@ -99,6 +108,26 @@ class InBatchPairwiseNLLPhraseSpladev2(InBatchPairwiseNLLPhraseSplade):
 
         # return loss + 0.1 * loss_tokens
         return loss_phrases + loss_tokens #* 0.1
+    
+class InBatchPairwiseNLLPhraseSpladev2_1(InBatchPairwiseNLLPhraseSplade):
+    def __call__(self, out_d):
+        loss_phrases = self.helper(out_d=out_d, field_name="score_phrases", use_hardneg=False)
+        loss_tokens = self.helper(out_d=out_d, field_name="score_tokens", use_hardneg=True)
+
+        # return (loss + loss_tokens) / 2
+
+        # return loss + 0.1 * loss_tokens
+        return loss_tokens + 0.1 * loss_phrases
+
+class InBatchPairwiseNLLPhraseSpladev2_2(InBatchPairwiseNLLPhraseSplade):
+    def __call__(self, out_d):
+        loss_phrases = self.helper(out_d=out_d, field_name="score_phrases", use_hardneg=False)
+        loss_tokens = self.helper(out_d=out_d, field_name="score_tokens", use_hardneg=True)
+
+        # return (loss + loss_tokens) / 2
+
+        # return loss + 0.1 * loss_tokens
+        return loss_tokens + 2 * loss_phrases
     
 class InBatchPairwiseNLLPhraseSpladev3(InBatchPairwiseNLLPhraseSpladev2):
     # when using call, automatically use phrase scale

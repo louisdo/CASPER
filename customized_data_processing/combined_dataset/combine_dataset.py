@@ -60,20 +60,31 @@ if __name__ == "__main__":
         # "erukgds": "/scratch/lamdo/unArxive/keyphrase_informativeness_combined_references/triplets_hardneg/raw.tsv",
         # "kp": "/scratch/lamdo/phrase_splade_datasets/kp/raw.tsv",
         "kp1m": "/scratch/lamdo/phrase_splade_datasets/kp1m/raw.tsv",
+        "kp20k": "/scratch/lamdo/phrase_splade_datasets/kp20k/raw.tsv",
         # "cocit": "/scratch/lamdo/unArxive/cocit_training/raw.tsv",
         # "fos": "/scratch/lamdo/phrase_splade_datasets/fos/raw.tsv",
         # "mesh": "/scratch/lamdo/phrase_splade_datasets/mesh_descriptors/raw.tsv"
         "cocit": "/scratch/lamdo/s2orc/processed/cocit_triplets/raw.tsv",
+        "cocit_cs": "/scratch/lamdo/s2orc/processed/cocit_triplets/raw_cs.tsv",
         "title": "/scratch/lamdo/s2orc/processed/title_abstract_triplets/raw.tsv", 
+        "title_cs": "/scratch/lamdo/s2orc/processed/title_abstract_triplets/raw_cs.tsv", 
         "query": "/scratch/lamdo/s2orc/processed/query_triplets/raw.tsv",
-        "cc": "/scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw.tsv"
+        "query_cs": "/scratch/lamdo/s2orc/processed/query_triplets/raw_cs.tsv",
+        "cc": "/scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw.tsv",
+        "cc_cs": "/scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw_cs.tsv"
     }
     max_documents = {
-        "kp1m": 1500000,
-        "cocit": 1500000,
-        "title": 1500000,
-        "query": 1500000,
-        "cc": 1500000
+        # "kp1m": 1500000,
+        # "cocit": 1500000,
+        # "title": 1500000,
+        # "query": 1500000,
+        # "cc": 1500000
+
+        "kp20k": 300000,
+        "cocit_cs": 300000,
+        "title_cs": 300000,
+        "query_cs": 300000,
+        "cc_cs": 300000
     }
 
 

@@ -1,4 +1,4 @@
-from splade.models.transformer_rep import SpladeMaxSim, Splade, PhraseSpladev3
+from splade.models.transformer_rep import SpladeMaxSim, Splade, PhraseSpladev3, PhraseSpladev4, PhraseSpladev5
 
 model_name_2_path = {
     "splade_normal": "/scratch/lamdo/splade_maxsim_ckpts/splade_normal/debug/checkpoint/model",
@@ -53,6 +53,18 @@ model_name_2_path = {
     "phrase_splade_54": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_54/debug/checkpoint/model",
     "phrase_splade_55": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_55/debug/checkpoint/model", # same as model 52, but using a different pretrain checkpoint, with phrase vocabulary is chosen based on frequency instead of the vocab building algorithm
     "phrase_splade_56": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_56/debug/checkpoint/model", # same as model 52, but using a different pretrain checkpoint (60k phrases)
+    
+    "phrase_splade_58": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_58/debug/checkpoint/model",
+    "phrase_splade_60": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_60/debug/checkpoint/model",
+    "phrase_splade_61": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_61/debug/checkpoint/model",
+    "phrase_splade_62": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_62/debug/checkpoint/model",
+    "phrase_splade_63": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_63/debug/checkpoint/model",
+    "phrase_splade_64": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_64/debug/checkpoint/model",
+    "phrase_splade_65": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_65/debug/checkpoint/model",
+    "phrase_splade_66": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_66/debug/checkpoint/model",
+    "phrase_splade_67": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_67/debug/checkpoint/model",
+    "phrase_splade_68": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_68/debug/checkpoint/model",
+    "phrase_splade_69": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_69/debug/checkpoint/model",
     "splade_addedword_1": "/scratch/lamdo/phrase_splade_checkpoints/phrase_addedword_1/debug/checkpoint/model",
     "eru_kg": "/scratch/lamdo/splade_checkpoints/experiments_combined_references_v8-1/debug/checkpoint/model",
     "normal_splade_pretrains2orc": "/scratch/lamdo/phrase_splade_checkpoints/normal_splade_pretrains2orc/debug/checkpoint/model",
@@ -107,6 +119,18 @@ model_name_2_model_class = {
     "phrase_splade_54": PhraseSpladev3,
     "phrase_splade_55": PhraseSpladev3,
     "phrase_splade_56": PhraseSpladev3,
+
+    "phrase_splade_58": PhraseSpladev3,
+    "phrase_splade_60": PhraseSpladev3,
+    "phrase_splade_61": PhraseSpladev4,
+    "phrase_splade_62": PhraseSpladev5,
+    "phrase_splade_63": PhraseSpladev3,
+    "phrase_splade_64": PhraseSpladev3,
+    "phrase_splade_65": PhraseSpladev3,
+    "phrase_splade_66": PhraseSpladev3,
+    "phrase_splade_67": PhraseSpladev3,
+    "phrase_splade_68": PhraseSpladev3,
+    "phrase_splade_69": PhraseSpladev3,
     "splade_addedword_1": Splade,
     "eru_kg": Splade,
     "normal_splade_pretrains2orc": Splade,
@@ -161,6 +185,18 @@ model_name_2_is_maxsim = {
     "phrase_splade_54": False,
     "phrase_splade_55": False,
     "phrase_splade_56": False,
+
+    "phrase_splade_58": False,
+    "phrase_splade_60": False,
+    "phrase_splade_61": False,
+    "phrase_splade_62": False,
+    "phrase_splade_63": False,
+    "phrase_splade_64": False,
+    "phrase_splade_65": False,
+    "phrase_splade_66": False,
+    "phrase_splade_67": False,
+    "phrase_splade_68": False,
+    "phrase_splade_69": False,
     "splade_addedword_1": False,
     "eru_kg": False,
     "normal_splade_pretrains2orc": False,

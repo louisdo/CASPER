@@ -52,10 +52,34 @@ def init_model(model_name):
     else:
         print("model already loaded")
 
+def splade_pooling(out, tokens, class_name = "Splade"):
+    if class_name not in ["Spladev3", "Spladev4", "Spladev5"]:
+        # only Spladev3 has this special pooling function
+        out_tokens = out[..., :30522] # shape (bs, pad_len, original_bert_vocab_size)
+        out_phrases = out[..., 30522:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+        values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
+        values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
+
+        values = torch.cat([values_tokens, values_phrases], dim = -1)
+        return values
+    
+    else:
+        # if not Spladev3, this apply max pooling like this
+        values, _ = torch.max(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
+        return values
+
+def encode_batch_mask_special_tokens(tokens, model, puncid, is_q = False):
+    out = model.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+    out = torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1)
+
+    mask = ~torch.isin(tokens["input_ids"], puncid)
+    out = out * mask.unsqueeze(-1)
+
+    model_class_name = model.__class__.__name__
+    return splade_pooling(out, tokens, class_name = model_class_name)
 
 
-
-def get_representation(batch, is_q, store_documents_in_raw = False, add_bm25 = False):
+def get_representation(batch, is_q, store_documents_in_raw = False, add_bm25 = False, mask_special_tokens = False):
     text_batch = [f"{line['title']} | {line['text']}" for line in batch]
 
     batch_tokens = SPLADE["tokenizer"](text_batch, return_tensors="pt", truncation = True, padding = True, max_length = MAX_LENGTH).to(DEVICE)
@@ -68,7 +92,10 @@ def get_representation(batch, is_q, store_documents_in_raw = False, add_bm25 = F
                 )
 
         else:
-            batch_doc_rep = SPLADE["model"].encode(batch_tokens, is_q = is_q)
+            if not mask_special_tokens:
+                batch_doc_rep = SPLADE["model"].encode(batch_tokens, is_q = is_q)
+            else:
+                batch_doc_rep = encode_batch_mask_special_tokens(batch_tokens, SPLADE["model"], SPLADE["puncid"], is_q = is_q)
             batch_doc_token_indices = None
     
     assert len(batch) == batch_doc_rep.size(0)
@@ -128,7 +155,8 @@ def init_bm25_model(splade_model_dir, corpus, save_path):
 
 
 # @profile
-def prepare_data(documents, batch_size = 100, is_q = False, store_documents_in_raw = False, chunk_idx = None, add_bm25 = False):
+def prepare_data(documents, batch_size = 100, is_q = False, store_documents_in_raw = False, chunk_idx = None, add_bm25 = False,
+                 mask_special_tokens = False):
 
     # all_representations = []
     # with open(outfile, "w") as f:
@@ -139,7 +167,8 @@ def prepare_data(documents, batch_size = 100, is_q = False, store_documents_in_r
             documents[i:i+batch_size], 
             is_q = is_q, 
             store_documents_in_raw = store_documents_in_raw,
-            add_bm25 = add_bm25
+            add_bm25 = add_bm25,
+            mask_special_tokens = mask_special_tokens
         )
 
         for rep in representations:
@@ -179,6 +208,7 @@ def main():
     parser.add_argument("--num_chunks", type = int, default = 4)
     parser.add_argument("--chunk_idx", type = int, required = True)
     parser.add_argument("--add_bm25", type = str2bool, default = False)
+    parser.add_argument("--mask_special_tokens", type = str2bool, default = False)
 
     args = parser.parse_args()
 
@@ -194,6 +224,7 @@ def main():
     num_chunks = args.num_chunks
     chunk_idx = args.chunk_idx
     add_bm25 = args.add_bm25
+    mask_special_tokens = args.mask_special_tokens
 
     dataset_name_2_relative_path = {
         "scifact": "data/beir/scifact",
@@ -205,10 +236,16 @@ def main():
         "msmarco": "data/msmarco/msmarco",
         "doris_mae": "data/doris_mae/doris_mae",
         "cfscube": "data/cfscube/cfscube",
-        "acm_cr": "data/acm_cr/acm_cr"
+        "acm_cr": "data/acm_cr/acm_cr",
+        "litsearch": "data/litsearch/litsearch",
+        "relish": "data/relish/relish"
     }
 
     init_model(model_name=model_name)
+
+    if mask_special_tokens:
+        import string
+        SPLADE["puncid"] = torch.tensor([SPLADE["tokenizer"].vocab["[SEP]"], SPLADE["tokenizer"].vocab["[CLS]"]]).to(DEVICE)
 
     # load corpus
     corpus_path = os.path.join(
@@ -245,7 +282,8 @@ def main():
         is_q=is_q,
         store_documents_in_raw=store_documents_in_raw,
         chunk_idx=chunk_idx,
-        add_bm25 = add_bm25
+        add_bm25 = add_bm25,
+        mask_special_tokens=mask_special_tokens
     )
 
     with open(outfile, "w") as f:

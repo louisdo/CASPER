@@ -43,7 +43,17 @@ class FLOPSPhrase:
 
         return tokens_reg + self.phrase_reg_magnifier * phrases_reg
 
+class FLOPSPhrasev2:
+    def __call__(self, batch_rep):
+        batch_rep_tokens = batch_rep[...,:ORIGINAL_BERT_VOCAB_SIZE]
+        batch_rep_phrases = batch_rep[..., ORIGINAL_BERT_VOCAB_SIZE:]
 
+        tokens_reg = torch.sum(torch.mean(torch.abs(batch_rep_tokens), dim=0) ** 2)
+        phrases_reg = torch.sum(torch.mean(torch.abs(batch_rep_phrases), dim=0) ** 2)
+
+        scale = batch_rep_tokens.size(-1) / batch_rep_phrases.size(-1)
+
+        return tokens_reg + scale * phrases_reg
 
 class RegWeightScheduler:
     """same scheduling as in: Minimizing FLOPs to Learn Efficient Sparse Representations
@@ -90,6 +100,8 @@ def init_regularizer(reg, **kwargs):
         return L1()
     elif reg == "FLOPS":
         return FLOPS()
+    elif reg =="FLOPSPhrasev2":
+        return FLOPSPhrasev2()
     elif reg.startswith("FLOPSPhrase--"):
         phrase_reg_magnifier = int(reg.replace("FLOPSPhrase--", ""))
         return FLOPSPhrase(phrase_reg_magnifier=phrase_reg_magnifier)
