@@ -1,5 +1,7 @@
 # python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/title_abstract_triplets/triplets_intermediate.tsv --metadata_file /scratch/lvnguyen/splade_keyphrases_expansion/dataset/s2orc_papers_metadata.jsonl --output_file /scratch/lamdo/s2orc/processed/title_abstract_triplets/raw.tsv
 # python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/title_abstract_triplets/triplets_intermediate.tsv --output_file /scratch/lamdo/s2orc/processed/title_abstract_triplets/raw_cs.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --fos_filter "Computer Science"
+
+# python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/title_abstract_triplets/triplets_intermediate_cs_fullsize.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/title_abstract_triplets/raw_cs_fullsize.tsv
 import json, os, random, string
 from argparse import ArgumentParser
 from tqdm import tqdm
@@ -65,7 +67,7 @@ def main():
     with open(output_file, "w") as f:
         for line in tqdm(triplets_intermediate):
             query, pos, neg_corpus_id = line
-            if process_title(query) not in fos_filter_titles: continue
+            if fos_filter_titles is not None and process_title(query) not in fos_filter_titles: continue
 
             if not query or not pos: continue
 

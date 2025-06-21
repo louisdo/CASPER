@@ -16,9 +16,9 @@ warmup_steps: 6000
 max_length: 256
 fp16: false
 augment_pairs: in_batch_negatives
-matching_type: splade #phrase_splade_v2 #  splade
+matching_type: phrase_splade_v3 #phrase_splade_v2 #  splade
 monitoring_ckpt: loss  # or e.g. MRR@10
-loss: InBatchPairwiseNLL #InBatchPairwiseNLLPhraseSpladev2 #InBatchPairwiseNLLNoHardNeg
+loss: InBatchPairwiseNLLPhraseSpladev2_2 #InBatchPairwiseNLLPhraseSpladev2 #InBatchPairwiseNLLNoHardNeg
 regularizer:
   FLOPS:
     lambda_q:  0.0003 #5e-3 # 0.05

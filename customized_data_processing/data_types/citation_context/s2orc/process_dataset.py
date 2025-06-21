@@ -1,5 +1,7 @@
 # python process_dataset.py --input_folder /scratch/lamdo/s2orc/processed/extracted_metadata --output_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/triplets_intermediate.tsv
 # python process_dataset.py --input_folder /scratch/lamdo/s2orc/processed/extracted_metadata --output_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/triplets_intermediate_cs.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --fos_filter "Computer Science"
+
+# python process_dataset.py --input_folder /scratch/lamdo/s2orc/processed/extracted_metadata --output_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/triplets_intermediate_large.tsv --max_samples_from_each_paper 100000000
 import json, os, random
 from argparse import ArgumentParser
 from tqdm import tqdm

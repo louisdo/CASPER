@@ -1,5 +1,7 @@
 # python prepare_training_dataset.py --output_file /scratch/lamdo/s2orc/processed/query_triplets/raw.tsv
 # python prepare_training_dataset.py --output_file /scratch/lamdo/s2orc/processed/query_triplets/raw_cs.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --fos_filter "Computer Science"
+
+# python prepare_training_dataset.py --output_file /scratch/lamdo/s2orc/processed/query_triplets/raw_cs_fullsize.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --fos_filter "Computer Science"
 import random, json
 from datasets import load_dataset
 from tqdm import tqdm

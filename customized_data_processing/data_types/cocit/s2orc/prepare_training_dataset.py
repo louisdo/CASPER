@@ -1,5 +1,7 @@
 # python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/cocit_triplets/triplets_intermediate.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/cocit_triplets/raw.tsv
 # python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/cocit_triplets/triplets_intermediate.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/cocit_triplets/raw_cs.tsv --fos_filter "Computer Science"
+
+# python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/cocit_triplets/triplets_intermediate_large.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/cocit_triplets/raw_cs_fullsize.tsv --fos_filter "Computer Science"
 import json, os, random, string
 from argparse import ArgumentParser
 from tqdm import tqdm
@@ -67,7 +69,7 @@ def main():
         for line in tqdm(triplets_intermediate):
             query_corpus_id, pos_corpus_id, neg_corpus_id = line
 
-            if pos_corpus_id not in fos_filter_corpus_ids: continue
+            if fos_filter_corpus_ids is not None and pos_corpus_id not in fos_filter_corpus_ids: continue
 
             query_metadata = corpus_id_2_text.get(query_corpus_id)
             pos_metadata = corpus_id_2_text.get(pos_corpus_id)

@@ -1,5 +1,5 @@
 SPLADE_CONFIG_NAME="config_phrase_splade" \
-CUDA_VISIBLE_DEVICES=0 \
+CUDA_VISIBLE_DEVICES=1 \
 python3 -m splade.train
 
 

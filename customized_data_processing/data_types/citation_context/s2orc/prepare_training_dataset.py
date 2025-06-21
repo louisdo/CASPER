@@ -1,6 +1,7 @@
 # python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/triplets_intermediate.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw.tsv
 # python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/triplets_intermediate.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw_cs.tsv --fos_filter "Computer Science"
 
+# python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/triplets_intermediate_large.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw_cs_fullsize.tsv --fos_filter "Computer Science"
 import json, string
 from argparse import ArgumentParser
 from tqdm import tqdm
@@ -20,7 +21,7 @@ def main():
     metadata_file = args.metadata_file
     output_file = args.output_file
     fos_filter = args.fos_filter
-
+ 
     fos_filter = [fos.strip() for fos in fos_filter.split(",")] if fos_filter else None
 
     triplets_intermediate = []
@@ -61,13 +62,12 @@ def main():
 
         print("Number of errors in metadata", error_count)
 
-
     with open(output_file, "w") as f:
         for line in tqdm(triplets_intermediate):
             query, pos_corpus_id, neg_corpus_id = line
             
             if not query: continue
-            if pos_corpus_id not in fos_filter_corpus_ids: continue
+            if fos_filter_corpus_ids is not None and pos_corpus_id not in fos_filter_corpus_ids: continue
 
             pos_metadata = corpus_id_2_text.get(pos_corpus_id)
             neg_metadata = corpus_id_2_text.get(neg_corpus_id)

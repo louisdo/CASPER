@@ -13,7 +13,7 @@ defaults:  # (these specify which config FILES to use)
 
 # Direct PARAMETER setting
 config:  # to be provided for each run
-  checkpoint_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_addedword_1/debug/checkpoint"
-  index_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_addedword_1/debug/index"
-  out_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_addedword_1/debug/out"
+  checkpoint_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_addedword_2/debug/checkpoint"
+  index_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_addedword_2/debug/index"
+  out_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_addedword_2/debug/out"
   fp16: false

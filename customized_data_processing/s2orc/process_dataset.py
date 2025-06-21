@@ -9,6 +9,10 @@ from process_dataset_utils import extract_data_from_paper, maybe_create_folder
 
 DATASET_NAME = "s2orc"
 
+CORPUS_IDS_TO_KEEP = {
+    "fos_filter_corpus_ids": None
+}
+
 
 def remove_file(file_path):
     """
@@ -68,6 +72,11 @@ def process_each_file(path):
     with gzip.open(path,'rt') as f:
         for paper in tqdm(f):
             paper = json.loads(paper)
+
+            if CORPUS_IDS_TO_KEEP["fos_filter_corpus_ids"] is not None and paper["corpusid"] not in CORPUS_IDS_TO_KEEP["fos_filter_corpus_ids"]:
+                continue
+
+
             extracted_data = extract_data_from_paper(paper)
             all_extracted_data.append(extracted_data)
 
@@ -79,14 +88,43 @@ def main():
     parser.add_argument("--api_key", type = str, required = True)
     parser.add_argument("--output_folder", type = str, required = True)
     parser.add_argument("--max_files", type = int, default = 10)
+    parser.add_argument("--fos_filter", type = str, default = None)
+    parser.add_argument("--metadata_file", type = str, default = None)
 
     args = parser.parse_args()
 
     api_key = args.api_key
     output_folder = args.output_folder
     max_files = args.max_files
+    fos_filter = args.fos_filter
+    metadata_file = args.metadata_file
 
-    extracted_metadata_folder = os.path.join(output_folder, "extracted_metadata")
+    fos_filter = [fos.strip() for fos in fos_filter.split(",")] if fos_filter else None
+    if fos_filter is not None:
+        assert metadata_file is not None and os.path.exists(metadata_file)
+
+        CORPUS_IDS_TO_KEEP["fos_filter_corpus_ids"] = set()
+
+        with open(metadata_file) as f:
+            error_count = 0
+            for i, line in enumerate(tqdm(f, desc = "Reading metadata file")):
+                try:
+                    jline = json.loads(line)
+                    corpus_id = int(jline.get("corpusId"))
+
+                    if fos_filter is not None and any([fos in jline.get("fieldsOfStudy") for fos in fos_filter]):
+                        CORPUS_IDS_TO_KEEP["fos_filter_corpus_ids"].add(corpus_id)
+                except Exception:
+                    error_count += 1
+
+            print("Number of errors in metadata", error_count)
+
+
+    if fos_filter is None:
+        extracted_metadata_folder = os.path.join(output_folder, "extracted_metadata")
+    else:
+        fos_string = "+".join([fos.lower() for fos in fos_filter])
+        extracted_metadata_folder = os.path.join(output_folder, f"extracted_metadata_{fos_string}")
     maybe_create_folder(extracted_metadata_folder)
 
 
@@ -107,6 +145,8 @@ def main():
                 f.write("\n")
 
         # remove_file(shard_path)
+
+    
 
 
 if __name__ == "__main__":

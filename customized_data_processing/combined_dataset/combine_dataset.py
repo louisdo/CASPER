@@ -66,26 +66,80 @@ if __name__ == "__main__":
         # "mesh": "/scratch/lamdo/phrase_splade_datasets/mesh_descriptors/raw.tsv"
         "cocit": "/scratch/lamdo/s2orc/processed/cocit_triplets/raw.tsv",
         "cocit_cs": "/scratch/lamdo/s2orc/processed/cocit_triplets/raw_cs.tsv",
+        "cocit_cs_fullsize": "/scratch/lamdo/s2orc/processed/cocit_triplets/raw_cs_fullsize.tsv",
         "title": "/scratch/lamdo/s2orc/processed/title_abstract_triplets/raw.tsv", 
         "title_cs": "/scratch/lamdo/s2orc/processed/title_abstract_triplets/raw_cs.tsv", 
+        "title_cs_fullsize": "/scratch/lamdo/s2orc/processed/title_abstract_triplets/raw_cs_fullsize.tsv", 
         "query": "/scratch/lamdo/s2orc/processed/query_triplets/raw.tsv",
         "query_cs": "/scratch/lamdo/s2orc/processed/query_triplets/raw_cs.tsv",
+        "query_cs_fullsize": "/scratch/lamdo/s2orc/processed/query_triplets/raw_cs_fullsize.tsv",
         "cc": "/scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw.tsv",
-        "cc_cs": "/scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw_cs.tsv"
+        "cc_cs": "/scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw_cs.tsv",
+        "cc_cs_fullsize": "/scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw_cs_fullsize.tsv",
+
+        "aol": "/scratch/lamdo/phrase_splade_datasets/aol_concept_annotations/raw.tsv"
     }
     max_documents = {
+        # full set
         # "kp1m": 1500000,
         # "cocit": 1500000,
         # "title": 1500000,
         # "query": 1500000,
         # "cc": 1500000
 
-        "kp20k": 300000,
-        "cocit_cs": 300000,
-        "title_cs": 300000,
-        "query_cs": 300000,
-        "cc_cs": 300000
+        # domain-specific set: CS
+        # "kp20k": 300000,
+        # "cocit_cs": 300000,
+        # "title_cs": 300000,
+        # "query_cs": 300000,
+        # "cc_cs": 300000,
+
+        # ablation - no keyphrase
+        # "cocit": 1500000,
+        # "title": 1500000,
+        # "query": 1500000,
+        # "cc": 1500000,
+
+        # ablation - no co-citation
+        # "kp1m": 1500000,
+        # "title": 1500000,
+        # "query": 1500000,
+        # "cc": 1500000,
+
+        # ablation - no title
+        # "kp1m": 1500000,
+        # "cocit": 1500000,
+        # "query": 1500000,
+        # "cc": 1500000,
+
+        # ablation - no query
+        # "kp1m": 1500000,
+        # "cocit": 1500000,
+        # "title": 1500000,
+        # "cc": 1500000,
+
+        # ablation - no citation context
+        # "kp1m": 1500000,
+        # "cocit": 1500000,
+        # "title": 1500000,
+        # "query": 1500000,
+
+        # cs full size
+        # "kp20k": 1500000,
+        # "cocit_cs_fullsize": 1500000,
+        # "title_cs_fullsize": 1500000,
+        # "query_cs_fullsize": 1500000,
+        # "cc_cs_fullsize": 1500000,
+
+
+
+        # for aol APPLY_CHECK=False, for others, APPLY_CHECK=True
+        "cocit": 1500000,
+        "cc": 1500000,
+        "aol": 1500000
     }
+
+    APPLY_CHECK = False
 
 
     data_types_to_include = list(sorted(max_documents.keys()))
@@ -106,8 +160,11 @@ if __name__ == "__main__":
                 if len(splitted_line) != 3: continue
 
                 query, pos, neg = splitted_line
-                if check_document_high_quality(pos) and check_document_high_quality(neg): 
-                    data_type_lines.append(line)
+                if APPLY_CHECK:
+                    if check_document_high_quality(pos) and check_document_high_quality(neg): 
+                        data_type_lines.append(line)
+                else: data_type_lines.append(line)
+        print(len(all_lines))
 
         sampled_data_type_lines = random.sample(data_type_lines, k = min(len(data_type_lines), max_documents[data_type]))
         all_lines.extend(sampled_data_type_lines)

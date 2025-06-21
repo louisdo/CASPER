@@ -10,24 +10,28 @@ datasets=(
     # scifact  
     # scidocs 
     # nfcorpus  
-    # trec-covid 
     doris_mae 
-    # cfscube
-    # acm_cr 
+    # trec-covid 
+    cfscube
+    acm_cr 
     # arguana 
     # fiqa
     # msmarco
     # trec_dl_2019
     # trec_dl_2020
-    # litsearch
+    litsearch
     # relish
 )
 models=(
     # "phrase_splade_27"
     # "phrase_splade_33"
-    phrase_splade_69
+    # phrase_splade_73
+    # phrase_splade_74
+    # phrase_splade_75
+    # phrase_splade_76
+    phrase_splade_78
     # splade_normal_150k_lowreg
-    # splade_addedword_1
+    # splade_addedword_2
     # "eru_kg"
     # "splade_maxsim_150k_lowregv6"
     # normal_splade_pretrains2orc
@@ -36,9 +40,9 @@ models=(
 )
 weight_tokens=( 1 )
 weight_phrases=( 
-    0.05
-    0.1 
-    # 0.25  
+    # 0.05
+    # 0.1 
+    0.25  
     # 0.5 
     # 0.75
     # 1

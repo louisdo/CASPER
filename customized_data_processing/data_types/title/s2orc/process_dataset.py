@@ -1,4 +1,6 @@
 # python process_dataset.py --input_folder /scratch/lamdo/s2orc/processed/extracted_metadata --output_file /scratch/lamdo/s2orc/processed/title_abstract_triplets/triplets_intermediate.tsv
+
+# python process_dataset.py --input_folder "/scratch/lamdo/s2orc/processed/extracted_metadata_computer science" --output_file /scratch/lamdo/s2orc/processed/title_abstract_triplets/triplets_intermediate_cs_fullsize.tsv
 import json, random, os
 from argparse import ArgumentParser
 from tqdm import tqdm

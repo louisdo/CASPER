@@ -1,4 +1,7 @@
 # python process_dataset.py --input_folder /scratch/lamdo/s2orc/processed/extracted_metadata --output_file /scratch/lamdo/s2orc/processed/cocit_triplets/triplets_intermediate.tsv
+# python process_dataset.py --input_folder "/scratch/lamdo/s2orc/processed/extracted_metadata_computer science" --output_file /scratch/lamdo/s2orc/processed/cocit_triplets/triplets_intermediate_cs_fullsize.tsv --max_samples_from_each_paper 1000000000
+
+# python process_dataset.py --input_folder /scratch/lamdo/s2orc/processed/extracted_metadata --output_file /scratch/lamdo/s2orc/processed/cocit_triplets/triplets_intermediate_large.tsv --max_samples_from_each_paper 1000000000
 import json, os, random
 from argparse import ArgumentParser
 from tqdm import tqdm

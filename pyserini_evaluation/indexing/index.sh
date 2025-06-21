@@ -8,24 +8,25 @@ MASK_SPECIAL_TOKENS=0
 CUDA_DEVICE=0
 
 datasets=(
-    scifact 
-    scidocs 
-    nfcorpus 
+    # scifact 
+    # scidocs 
+    # nfcorpus 
     litsearch
     acm_cr
     doris_mae
-    trec-covid
+    # trec-covid
     cfscube
+    # relish
     # arguana 
     # fiqa
     # msmarco
-    # relish
 )
 models=(
     # "phrase_splade_27"
     # "phrase_splade_33"
-    # splade_addedword_1
-    phrase_splade_69
+    # splade_addedword_2
+    # phrase_splade_76
+    phrase_splade_78
     # splade_normal_150k_lowreg
     # "eru_kg"
     # "splade_maxsim_150k_lowregv6"
