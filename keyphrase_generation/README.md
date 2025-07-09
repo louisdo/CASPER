@@ -4,6 +4,8 @@
 To run the main keyphrase evaluation script, execute the following command:
 
 ```bash
+mkdir _gitig_samples
+mkdir _gitig_results
 bash keyphrase_generation/bash_scripts/kpeval_evaluation.sh
 ````
 
