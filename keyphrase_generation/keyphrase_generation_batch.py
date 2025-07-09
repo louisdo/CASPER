@@ -12,7 +12,7 @@ def main():
     parser = ArgumentParser()
     parser.add_argument("--splade_model_name", type = str, default = "phrase_splade")
     parser.add_argument("--dataset_name", type = str, default = "semeval")
-    parser.add_argument("--output_folder", type = str, default = "/scratch/lamdo/phrase_splade_keyphrase_generation_results")
+    parser.add_argument("--output_folder", type = str, default = "/scratch/lvnguyen/phrase_splade_keyphrase_generation_results")
 
     args = parser.parse_args()
 

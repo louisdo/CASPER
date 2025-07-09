@@ -33,8 +33,21 @@ from datasets import load_dataset
 #     return present_keyphrases_data, absent_keyphrases_data
 
 def download_kp20k(): 
-    dataset = load_dataset("midas/kp20k", "generation", split="test")
-    return [" ".join(dataset[idx]['document']) for idx in range(len(dataset))]
+    import pandas as pd
+    try: 
+        dataset = pd.read_json("hf://datasets/memray/kp20k/test.json", lines=True)
+    except: 
+        dataset = load_dataset("memray/kp20k", split="test").to_pandas()
+    
+    all_titles = list(dataset['title'])
+    all_abstracts = list(dataset['abstract'])
+
+    sources = [f"{title} . {abstract}" for title, abstract in zip(all_titles, all_abstracts)]
+    return sources
+
+# def download_kp20k(): 
+#     dataset = load_dataset("midas/kp20k", "generation", split="test")
+#     return [" ".join(dataset[idx]['document']) for idx in range(len(dataset))]
 
 def download_all_source(file): 
     file_name = file.split('/')[-1]
@@ -54,6 +67,7 @@ def download_all_source(file):
 def convert_file_(file, output = "_gitig_samples/", top_k = 10):
     data = json.load(open(file)) 
     sources = download_all_source(file)
+    print(len(data), len(sources))
     assert len(data) == len(sources)
 
     all_keyphrases_data = []

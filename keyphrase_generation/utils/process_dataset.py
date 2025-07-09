@@ -205,7 +205,11 @@ def process_dataset(dataset_name):
         
     #     return processed_dataset
     if dataset_name == "kp20k":
-        df = pd.read_json("hf://datasets/memray/kp20k/test.json", lines=True)
+        try: 
+            df = pd.read_json("hf://datasets/memray/kp20k/test.json", lines=True)
+        except: 
+            df = load_dataset("memray/kp20k", split="test").to_pandas()
+    
 
         processed_dataset = []
         for line in df.to_dict("records"):
@@ -236,7 +240,10 @@ def process_dataset(dataset_name):
         
         return processed_dataset
     elif dataset_name == "nus":
-        df = pd.read_json("hf://datasets/memray/nus/test.json", lines=True)
+        try: 
+            df = pd.read_json("hf://datasets/memray/nus/test.json", lines=True)
+        except: 
+            df = load_dataset("memray/nus", split="test").to_pandas()
 
         processed_dataset = []
         for line in df.to_dict("records"):
@@ -284,10 +291,12 @@ def process_dataset(dataset_name):
 
         #     processed_dataset.append(processed_line)
 
-        # return processed_dataset
-    
+        # return processed_dataset  
     elif dataset_name == "semeval":
-        df = pd.read_json("hf://datasets/memray/semeval/test.json", lines=True)
+        try: 
+            df = pd.read_json("hf://datasets/memray/semeval/test.json", lines=True)
+        except: 
+            df = load_dataset("memray/semeval", split="test").to_pandas()
 
         processed_dataset = []
         for line in df.to_dict("records"):
@@ -338,7 +347,10 @@ def process_dataset(dataset_name):
         # return processed_dataset
 
     elif dataset_name == "inspec":
-        df = pd.read_json("hf://datasets/memray/inspec/test.json", lines=True)
+        try: 
+            df = pd.read_json("hf://datasets/memray/inspec/test.json", lines=True)
+        except: 
+            df = load_dataset("memray/inspec", split="test").to_pandas()
 
         processed_dataset = []
         for line in df.to_dict("records"):
@@ -388,7 +400,10 @@ def process_dataset(dataset_name):
 
         # return processed_dataset
     elif dataset_name == "krapivin":
-        df = pd.read_json("hf://datasets/memray/krapivin/test.json", lines=True)
+        try: 
+            df = pd.read_json("hf://datasets/memray/krapivin/test.json", lines=True)
+        except: 
+            df = load_dataset("memray/krapivin", split="test").to_pandas()
 
         processed_dataset = []
         for line in df.to_dict("records"):
@@ -1004,7 +1019,12 @@ def process_dataset(dataset_name):
     elif dataset_name == "combined_kg":
         processed_dataset = []
         for ds_name in ["semeval", "inspec", "nus", "krapivin"]:
-            df = pd.read_json(f"hf://datasets/memray/{ds_name}/test.json", lines=True)
+            # df = pd.read_json(f"hf://datasets/memray/{ds_name}/test.json", lines=True)
+
+            try: 
+                df = pd.read_json(f"hf://datasets/memray/{ds_name}/test.json", lines=True)
+            except: 
+                df = load_dataset(f"memray/{ds_name}", split="test").to_pandas()
 
             for line in df.to_dict("records"):
                 doc_id = line.get("name")

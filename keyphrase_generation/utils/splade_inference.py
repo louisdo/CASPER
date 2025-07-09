@@ -2,7 +2,7 @@ import torch, sys, traceback
 sys.path.append("/home/lamdo/keyphrase_informativeness_test/splade")
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 from collections import Counter
-from splade.models.transformer_rep import Splade
+from splade.models.transformer_rep import PhraseSpladev3 as Splade
 from utils.model_name_2_model_info import MODEL_NAME_2_MODEL_INFO
 
 

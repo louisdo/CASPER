@@ -112,6 +112,7 @@ class SemanticMatchingMetric(KeyphraseMetric):
         for m in ['p', 'r', 'f1']:
             score_dict[f'present_semantic_{m}'] = []
             score_dict[f'absent_semantic_{m}'] = []
+            score_dict[f'all_semantic_{m}'] = []
         
         for data_idx, (src_l, trg_l, pred_l) in \
                 enumerate(tqdm(zip(source, target, preds),
@@ -141,12 +142,14 @@ class SemanticMatchingMetric(KeyphraseMetric):
             # save the predicted keyphrases
             filtered_pred_token_2dlist = [kp_tokens for kp_tokens, is_unique
                                           in zip(pred_token_2dlist, is_unique_mask) if is_unique]
-            result = {'id': data_idx, 'present': [], 'absent': [], 'present_ref': [], 'absent_ref': []}
+            result = {'id': data_idx, 'present': [], 'absent': [], "all": [], 'present_ref': [], 'absent_ref': [], "all_ref": []}
             for kp_tokens, is_present in zip(filtered_pred_token_2dlist, is_present_mask):
                 if is_present:
                     result['present'] += [' '.join(kp_tokens)]
                 else:
                     result['absent'] += [' '.join(kp_tokens)]
+                result['all'] += [' '.join(kp_tokens)]
+                
             
             filtered_pred_token_2dlist = [kp_tokens for kp_tokens in trg_token_2dlist]
             for kp_tokens, is_present in zip(trg_token_2dlist, is_present_mask_gt):
@@ -154,16 +157,20 @@ class SemanticMatchingMetric(KeyphraseMetric):
                     result['present_ref'] += [' '.join(kp_tokens)]
                 else:
                     result['absent_ref'] += [' '.join(kp_tokens)]
+                result['all_ref'] += [' '.join(kp_tokens)]
+
             predicted_keyphrases.append(result)
             
             present_preds_stemmed = [' '.join(x) for x in present_filtered_stemmed_pred_token_2dlist]
             assert len(result['present']) == len(present_preds_stemmed)
             absent_preds_stemmed = [' '.join(x) for x in absent_filtered_stemmed_pred_token_2dlist]
             assert len(result['absent']) == len(absent_preds_stemmed)
+            all_preds_stemmed = present_preds_stemmed + absent_preds_stemmed
             present_labels_stemmed = [' '.join(x) for x in present_unique_stemmed_trg_token_2dlist]
             assert len(result['present_ref']) == len(present_labels_stemmed)
             absent_labels_stemmed = [' '.join(x) for x in absent_unique_stemmed_trg_token_2dlist]
             assert len(result['absent_ref']) == len(absent_labels_stemmed)
+            all_labels_stemmed = present_labels_stemmed + absent_labels_stemmed
             
             # calculate semantic matching scores
             all_pkp_scores = self.evaluate_single_example(result['present'],
@@ -174,8 +181,13 @@ class SemanticMatchingMetric(KeyphraseMetric):
                                                         absent_preds_stemmed,
                                                         result['absent_ref'],
                                                         absent_labels_stemmed)
+            all_scores = self.evaluate_single_example(result['all'],
+                                                        all_preds_stemmed,
+                                                        result['all_ref'],
+                                                        all_labels_stemmed)
             for m in ['p', 'r', 'f1']:
                 score_dict[f'present_semantic_{m}'].append(all_pkp_scores[m])
                 score_dict[f'absent_semantic_{m}'].append(all_akp_scores[m])
+                score_dict[f'all_semantic_{m}'].append(all_scores[m])
             
         return score_dict

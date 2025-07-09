@@ -11,7 +11,7 @@ KeyphraseMetric.invalidate_unk = True
 
 # standard exact matching metrics: f1 and ranking metrics
 import metrics.exact_matching_metric
-ExactMatchingMetric.k_list = [5, 'M', 'O']
+ExactMatchingMetric.k_list = [5, 10, 'M', 'O']
 
 
 # rouge
