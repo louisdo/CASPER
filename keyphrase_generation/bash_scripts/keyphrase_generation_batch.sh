@@ -1,9 +1,9 @@
 models=(
-    phrase_splade_39
+    phrase_splade_71
 )
 datasets=(
-    "semeval" "inspec" "nus" "krapivin" #"kp20k" 
-    # kp20k
+    # "semeval" "inspec" "nus" "krapivin" #"kp20k" 
+    "kp20k"
 )
 
 for model in "${models[@]}"; do

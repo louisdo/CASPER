@@ -14,4 +14,6 @@ MODEL_NAME_2_MODEL_INFO = {
     "phrase_splade_37": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_37/debug/checkpoint/model",
     "phrase_splade_38": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_38/debug/checkpoint/model",
     "phrase_splade_39": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_39/debug/checkpoint/model",
+    "phrase_splade_71": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_71/debug/checkpoint/model",
+    "phrase_splade_aol": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_aol/debug/checkpoint/model"
 }
