@@ -2,31 +2,34 @@ NUM_CHUNKS=1
 OUT_FOLDER=/scratch/lamdo/beir_splade/
 
 STORE_DOCUMENTS_IN_RAW=0
-ADD_BM25=0
+ADD_BM25=1
 MASK_SPECIAL_TOKENS=0
 
-CUDA_DEVICE=0
+CUDA_DEVICE=1
 
 datasets=(
     # scifact 
     # scidocs 
     # nfcorpus 
-    litsearch
-    acm_cr
-    doris_mae
-    # trec-covid
-    cfscube
+    # litsearch
+    # acm_cr
+    # doris_mae
+    trec-covid
+    # cfscube
     # relish
     # arguana 
     # fiqa
     # msmarco
+
+    # doris_mae_taxoindex
+    # cfscube_taxoindex
 )
 models=(
     # "phrase_splade_27"
     # "phrase_splade_33"
-    # splade_addedword_2
-    # phrase_splade_76
-    phrase_splade_78
+    # splade_addedword_1
+    phrase_splade_71
+    # phrase_splade_84
     # splade_normal_150k_lowreg
     # "eru_kg"
     # "splade_maxsim_150k_lowregv6"

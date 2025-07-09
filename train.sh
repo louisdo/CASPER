@@ -11,3 +11,8 @@ python3 -m splade.train
 SPLADE_CONFIG_NAME="config_addedword_splade" \
 CUDA_VISIBLE_DEVICES=0 \
 python3 -m splade.train
+
+
+SPLADE_CONFIG_NAME="config_phrase_splade_taxoindex" \
+CUDA_VISIBLE_DEVICES=2 \
+python3 -m splade.train

@@ -1,7 +1,7 @@
 # python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/triplets_intermediate.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw.tsv
 # python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/triplets_intermediate.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw_cs.tsv --fos_filter "Computer Science"
 
-# python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/triplets_intermediate_large.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw_cs_fullsize.tsv --fos_filter "Computer Science"
+# python prepare_training_dataset.py --input_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/triplets_intermediate_large.tsv --metadata_file /scratch/lamdo/s2orc/processed/metadata_from_api/metadata_from_api.jsonl --output_file /scratch/lamdo/s2orc/processed/citation_contexts_triplets/raw_cs_fullsize.tsv --fos_filter "Computer Science" --require_abstract 0
 import json, string
 from argparse import ArgumentParser
 from tqdm import tqdm
@@ -14,6 +14,7 @@ def main():
     parser.add_argument("--metadata_file", type = str, required = True)
     parser.add_argument("--output_file", type = str, required = True)
     parser.add_argument("--fos_filter", type = str, default = None, help = "Comma-separated list of Field of Studies to keep")
+    parser.add_argument("--require_abstract", type = int, default = 1)
 
     args = parser.parse_args()
 
@@ -21,6 +22,7 @@ def main():
     metadata_file = args.metadata_file
     output_file = args.output_file
     fos_filter = args.fos_filter
+    require_abstract = args.require_abstract
  
     fos_filter = [fos.strip() for fos in fos_filter.split(",")] if fos_filter else None
 
@@ -75,16 +77,24 @@ def main():
             if not pos_metadata or not neg_metadata: continue
 
             pos_title = pos_metadata.get("title", "").strip(PUNCTUATION)
+            pos_title = pos_title if pos_title else ""
             pos_abstract = pos_metadata.get("abstract", "")
             pos_abstract = pos_abstract if pos_abstract else ""
-            pos = pos_title + ". " + pos_abstract if pos_title else None
+            if require_abstract:
+                pos = pos_title + ". " + pos_abstract if pos_title and pos_abstract else None
+            else:
+                pos = pos_title + ". " + pos_abstract if pos_title else None
             if not pos: continue
 
 
             neg_title = neg_metadata.get("title", "").strip(PUNCTUATION)
+            neg_title = neg_title if neg_title else ""
             neg_abstract = neg_metadata.get("abstract", "")
             neg_abstract = neg_abstract if neg_abstract else ""
-            neg = neg_title + ". " + neg_abstract if neg_title else None
+            if require_abstract:
+                neg = neg_title + ". " + neg_abstract if neg_title and neg_abstract else None
+            else:
+                neg = neg_title + ". " + neg_abstract if neg_title else None
             if not neg: continue
 
             query = query.replace("\n", " ")

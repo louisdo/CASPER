@@ -536,13 +536,14 @@ class PhraseSpladev2(SiameseBasePhrase):
     """PhraseSPLADE model
     """
 
-    def __init__(self, model_type_or_dir, model_type_or_dir_q=None, freeze_d_model=False, agg="max", fp16=True):
+    def __init__(self, model_type_or_dir, model_type_or_dir_q=None, freeze_d_model=False, agg="max", fp16=True, original_bert_vocab_size = 30522):
         super().__init__(model_type_or_dir=model_type_or_dir,
                          output="MLM",
                          match="dot_product",
                          model_type_or_dir_q=model_type_or_dir_q,
                          freeze_d_model=freeze_d_model,
-                         fp16=fp16)
+                         fp16=fp16,
+                         original_bert_vocab_size=original_bert_vocab_size)
         self.output_dim = self.transformer_rep.transformer.config.vocab_size  # output dim = vocab size = 30522 for BERT
         assert agg in ("sum", "max")
         self.agg = agg
@@ -628,6 +629,22 @@ class PhraseSpladev3(PhraseSpladev2):
             values = torch.cat([values_tokens, values_phrases], dim = -1)
             return values
             # 0 masking also works with max because all activations are positive
+
+class PhraseSpladev3_2(PhraseSpladev2):
+    def encode(self, tokens, is_q):
+        out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+        if self.agg == "sum":
+            return torch.sum(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
+        else:
+            out_tokens = out[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
+            out_phrases = out[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+
+            attention_mask = tokens["attention_mask"].unsqueeze(-1)
+            values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * attention_mask, dim=1) # shape (bs, original_bert_vocab_size)
+            values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * attention_mask, dim=1) / (torch.sum(tokens["attention_mask"], dim = 1, keepdim=True) ** 0.5) # shape (bs, vocab_size - original_bert_vocab_size)
+
+            values = torch.cat([values_tokens, values_phrases], dim = -1)
+            return values
 
 
 class PhraseSpladev4(PhraseSpladev2):

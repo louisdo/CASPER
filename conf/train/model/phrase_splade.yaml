@@ -11,13 +11,23 @@
 # lamdo/distilbert-base-uncased-phrase-15kaddedphrasesfroms2orcfreqbased-mlm-70000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64. Phrase vocab is frequency based. Phrase vocab size is 15k
 # lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc_cs-mlm-26000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64. Train with s2orc CS corpus. Phrase vocab is built via maximum coverage. Phrase vocab size is 30k
 
+
+# lamdo/scibert-base-uncased-phrase-30kaddedphrasesfroms2orc_cs-mlm-26000steps  # mlm training, priortize phrase (85% of phrases are masked), batch size 64. Train with s2orc CS corpus. Phrase vocab is built via maximum coverage. Phrase vocab size is 30k. Using SciBERT instead of distilbert
+# lamdo/scibert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64 (previously 32). Using SciBERT instead of distilbert
+
+
+# lamdo/bert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps # mlm training, priortize phrase (85% of phrases are masked), batch size 64 (previously 32). Using BERT instead of distilbert
+
+# "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_71/debug/checkpoint/model" # CASPER, after training with FRIEREN
+
 init_dict:
-  model_type_or_dir: lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
+  model_type_or_dir: lamdo/bert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
   model_type_or_dir_q: null
   freeze_d_model: 0
   agg: max
   fp16: true
+  original_bert_vocab_size: 30522
 
 config:
-  tokenizer_type: lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
+  tokenizer_type: lamdo/bert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
 

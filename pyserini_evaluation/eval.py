@@ -71,6 +71,7 @@ def init_searcher(index_path):
 
 
 def splade_pooling(out, tokens, class_name = "Splade"):
+    raise NotImplementedError
     if class_name not in ["Spladev3", "Spladev4", "Spladev5"]:
         # only Spladev3 has this special pooling function
         out_tokens = out[..., :30522] # shape (bs, pad_len, original_bert_vocab_size)
@@ -526,7 +527,10 @@ def main():
         "trec_dl_2020": "data/msmarco/trec_dl_2020",
         "acm_cr": "data/acm_cr/acm_cr",
         "litsearch": "data/litsearch/litsearch",
-        "relish": "data/relish/relish"
+        "relish": "data/relish/relish",
+
+        "cfscube_taxoindex":"data/cfscube/cfscube_taxoindex",
+        "doris_mae_taxoindex": "data/doris_mae/doris_mae_taxoindex",
     }
 
     queries_path = os.path.join(
@@ -656,7 +660,7 @@ def main():
                 to_update = jline.get("predictions", {})
                 predictions.update(to_update)
 
-        evaluation_result = evaluate(qrels = qrels, results = predictions, k_values = [5, 10, 100, 1000])
+        evaluation_result = evaluate(qrels = qrels, results = predictions, k_values = [5, 10, 50, 100, 1000])
         mrr_result = mrr(qrels = qrels, results = predictions, k_values = [5, 10, 100, 1000])
 
         print(evaluation_result, mrr_result)

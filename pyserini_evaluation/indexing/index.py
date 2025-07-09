@@ -2,7 +2,7 @@ import torch, sys, json, argparse, os, time, traceback
 sys.path.append("../../")
 import numpy as np
 from transformers import AutoModelForMaskedLM, AutoTokenizer
-from pyserini_evaluation.indexing.model_name_2_info import model_name_2_path, model_name_2_model_class, model_name_2_is_maxsim
+from pyserini_evaluation.indexing.model_name_2_info import model_name_2_path, model_name_2_model_class, model_name_2_is_maxsim, model_name_2_original_bert_vocab_size
 from pyserini_evaluation.indexing.bm25_model import BM25
 from tqdm import tqdm
 from memory_profiler import profile 
@@ -29,14 +29,18 @@ def init_model(model_name):
         print(f"Loading {model_name} for the first time. This will be done only once for {model_name}")
         model_type_or_dir = model_name_2_path.get(model_name)
         model_class = model_name_2_model_class.get(model_name)
+        original_bert_vocab_size = model_name_2_original_bert_vocab_size.get(model_name, 30522)
         is_maxsim = model_name_2_is_maxsim.get(model_name)
 
         if model_type_or_dir is None and model_class is None:
             raise NotImplementedError
 
 
-
-        model = model_class(model_type_or_dir, agg="max").to(DEVICE)
+        try:
+            model = model_class(model_type_or_dir, agg="max", original_bert_vocab_size = original_bert_vocab_size).to(DEVICE)
+        except Exception:
+            model = model_class(model_type_or_dir, agg="max").to(DEVICE)
+            
         for param in model.parameters():
             param.requires_grad = False
         model.eval()
@@ -238,7 +242,10 @@ def main():
         "cfscube": "data/cfscube/cfscube",
         "acm_cr": "data/acm_cr/acm_cr",
         "litsearch": "data/litsearch/litsearch",
-        "relish": "data/relish/relish"
+        "relish": "data/relish/relish",
+
+        "cfscube_taxoindex": "data/cfscube/cfscube_taxoindex",
+        "doris_mae_taxoindex": "data/doris_mae/doris_mae_taxoindex",
     }
 
     init_model(model_name=model_name)

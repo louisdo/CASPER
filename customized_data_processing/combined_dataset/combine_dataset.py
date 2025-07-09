@@ -124,19 +124,20 @@ if __name__ == "__main__":
         # "title": 1500000,
         # "query": 1500000,
 
+        # for cs full size: APPLY_CHECK=False, for others, APPLY_CHECK=True
         # cs full size
-        # "kp20k": 1500000,
-        # "cocit_cs_fullsize": 1500000,
-        # "title_cs_fullsize": 1500000,
-        # "query_cs_fullsize": 1500000,
-        # "cc_cs_fullsize": 1500000,
+        "kp20k": 1500000,
+        "cocit_cs_fullsize": 1500000,
+        "title_cs_fullsize": 1500000,
+        "query_cs_fullsize": 1500000,
+        "cc_cs_fullsize": 1500000,
 
 
 
         # for aol APPLY_CHECK=False, for others, APPLY_CHECK=True
-        "cocit": 1500000,
-        "cc": 1500000,
-        "aol": 1500000
+        # "cocit": 1500000,
+        # "cc": 1500000,
+        # "aol": 1500000
     }
 
     APPLY_CHECK = False

@@ -1,0 +1,34 @@
+# @package config
+
+lr: 2e-5
+seed: 123 #1238 #1237 #1236 #1235 #123
+gradient_accumulation_steps: 1
+weight_decay: 0.01
+validation_metrics: [ MRR@10, recall@100, recall@200, recall@500 ]
+pretrained_no_yamlconfig: false
+nb_iterations: 1000 # 30000 for unarxive_intro_relatedwork_1citationpersentence
+train_batch_size: 20  # number of gpus needs to divide this
+eval_batch_size: 600
+index_retrieve_batch_size: 500
+record_frequency: 5000
+train_monitoring_freq: 100
+warmup_steps: 100
+max_length: 256
+fp16: false
+augment_pairs: in_batch_negatives
+matching_type: phrase_splade_v3 # phrase_splade_v4 # phrase_splade_v3 #splade #phrase_splade_v2
+monitoring_ckpt: loss  # or e.g. MRR@10
+loss: InBatchPairwiseNLLPhraseSpladev2_2 #InBatchPairwiseNLLPhraseSpladev1_1 # InBatchPairwiseNLL # InBatchPairwiseNLLPhraseSpladev2  #InBatchPairwiseNLLNoHardNeg
+regularizer:
+  # FLOPSPhrase--5:
+  #   lambda_q:  0.0003 #5e-3 # 0.05
+  #   lambda_d:  0.0001 #3e-3 # 0.03 
+  #   T: 50000 # 30000 for unarxive_intro_relatedwork_1citationpersentence
+  #   targeted_rep: rep
+  #   reg: FLOPSPhrase--5
+  FLOPS:
+    lambda_q:  0.0003 #5e-3 # 0.05
+    lambda_d:  0.0001 #3e-3 # 0.03 
+    T: 100 # 30000 for unarxive_intro_relatedwork_1citationpersentence
+    targeted_rep: rep
+    reg: FLOPS

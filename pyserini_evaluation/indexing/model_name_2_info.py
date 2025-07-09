@@ -1,4 +1,4 @@
-from splade.models.transformer_rep import SpladeMaxSim, Splade, PhraseSpladev3, PhraseSpladev4, PhraseSpladev5
+from splade.models.transformer_rep import SpladeMaxSim, Splade, PhraseSpladev2, PhraseSpladev3, PhraseSpladev4, PhraseSpladev5
 
 model_name_2_path = {
     "splade_normal": "/scratch/lamdo/splade_maxsim_ckpts/splade_normal/debug/checkpoint/model",
@@ -74,6 +74,18 @@ model_name_2_path = {
     "phrase_splade_76": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_76/debug/checkpoint/model",
     "phrase_splade_77": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_77/debug/checkpoint/model",
     "phrase_splade_78": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_78/debug/checkpoint/model",
+    "phrase_splade_79": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_79/debug/checkpoint/model",
+    "phrase_splade_80": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_80/debug/checkpoint/model",
+    "phrase_splade_81": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_81/debug/checkpoint/model",
+
+    "phrase_splade_83": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_83/debug/checkpoint/model",
+    "phrase_splade_84": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_84/debug/checkpoint/model",
+    "phrase_splade_85": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_85/debug/checkpoint/model",
+    "phrase_splade_86": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_86/debug/checkpoint/model",
+
+
+    "phrase_splade_71_cfscube_taxoindex": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_71_cfscube_taxoindex/debug/checkpoint/model",
+
     "splade_addedword_1": "/scratch/lamdo/phrase_splade_checkpoints/phrase_addedword_1/debug/checkpoint/model",
     "splade_addedword_2": "/scratch/lamdo/phrase_splade_checkpoints/phrase_addedword_2/debug/checkpoint/model",
     "eru_kg": "/scratch/lamdo/splade_checkpoints/experiments_combined_references_v8-1/debug/checkpoint/model",
@@ -150,6 +162,17 @@ model_name_2_model_class = {
     "phrase_splade_76": PhraseSpladev3,
     "phrase_splade_77": PhraseSpladev3,
     "phrase_splade_78": PhraseSpladev3,
+    "phrase_splade_79": PhraseSpladev3,
+    "phrase_splade_80": PhraseSpladev3,
+    "phrase_splade_81": PhraseSpladev3,
+
+    "phrase_splade_83": PhraseSpladev2,
+    "phrase_splade_84": PhraseSpladev2,
+    "phrase_splade_85": PhraseSpladev2,
+    "phrase_splade_86": PhraseSpladev2,
+
+    "phrase_splade_71_cfscube_taxoindex": PhraseSpladev3,
+
     "splade_addedword_1": Splade,
     "splade_addedword_2": PhraseSpladev3,
     "eru_kg": Splade,
@@ -226,9 +249,28 @@ model_name_2_is_maxsim = {
     "phrase_splade_76": False,
     "phrase_splade_77": False,
     "phrase_splade_78": False,
+    "phrase_splade_79": False,
+    "phrase_splade_80": False,
+    "phrase_splade_81": False,
+
+    "phrase_splade_83": False,
+    "phrase_splade_84": False,
+    "phrase_splade_85": False,
+    "phrase_splade_86": False,
+
+
+    "phrase_splade_71_cfscube_taxoindex": False,
+
     "splade_addedword_1": False,
     "splade_addedword_2": False,
     "eru_kg": False,
     "normal_splade_pretrains2orc": False,
     "splade_max_1": False
+}
+
+
+# if not specified, will default to 30522
+model_name_2_original_bert_vocab_size = {
+    "phrase_splade_83": 31090,
+    "phrase_splade_86": 31090
 }

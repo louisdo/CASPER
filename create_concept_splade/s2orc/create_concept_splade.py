@@ -51,7 +51,7 @@ def check_exist_in_phrase_vocab(phrase, phrase_vocab):
 
 
 def create_model_with_added_phrase_vocab(phrase_vocab, model_name = "distilbert/distilbert-base-uncased", max_added_phrases = 20000):
-    assert model_name in ["distilbert/distilbert-base-uncased", "bert-base-uncased"]
+    # assert model_name in ["distilbert/distilbert-base-uncased", "bert-base-uncased"]
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForMaskedLM.from_pretrained(model_name)   
@@ -81,7 +81,23 @@ if __name__ == "__main__":
     # vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/word_vocab_s2orc_gitig_.json"
     # vocab_path = "/home/lamdo/splade/create_concept_splade/s2orc/phrase_vocab_100k.json"
     # vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/phrase_vocab_s2orc_15k_gitig_.json"
-    vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/phrase_vocab_s2orc_cs_30k_gitig_.json"
+
+    # vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/phrase_vocab_s2orc_cs_30k_gitig_.json"
+    # model_name = "distilbert/distilbert-base-uncased"
+    # model_name_on_hf = "lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc_cs"
+
+    # vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/phrase_vocab_s2orc_gitig_.json"
+    # model_name = "allenai/scibert_scivocab_uncased"
+    # model_name_on_hf = "lamdo/scibert-base-uncased-phrase-30kaddedphrasesfroms2orc"
+
+    # vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/phrase_vocab_s2orc_cs_30k_gitig_.json"
+    # model_name = "allenai/scibert_scivocab_uncased"
+    # model_name_on_hf = "lamdo/scibert-base-uncased-phrase-30kaddedphrasesfroms2orc_cs"
+
+
+    vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/phrase_vocab_s2orc_gitig_.json"
+    model_name = "bert-base-uncased"
+    model_name_on_hf = "lamdo/bert-base-uncased-phrase-30kaddedphrasesfroms2orc"
 
     with open(vocab_path) as f:
         phrase_counter = json.load(f)
@@ -94,12 +110,11 @@ if __name__ == "__main__":
     tokenizer, model = create_model_with_added_phrase_vocab(
         phrase_vocab=phrase_vocab,
         max_added_phrases=30000,
-        model_name="distilbert/distilbert-base-uncased"
+        model_name=model_name
     )
 
-    print(model.distilbert.embeddings.word_embeddings.weight.shape)
+    print(model)
 
-    model_name_on_hf = "lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc_cs"
     tokenizer.push_to_hub(model_name_on_hf)
     model.push_to_hub(model_name_on_hf)
 

@@ -1,0 +1,19 @@
+# FILES
+defaults:  # (these specify which config FILES to use)
+  ############## TRAIN ###################################
+  - train/config: phrase_splade_taxoindex
+  - train/data: phrase_splade_taxoindex
+  - train/model: phrase_splade_taxoindex #splade_pretrain_from_distilbert
+  ############## INDEX ###################################
+  - index: toy
+  ############## RETRIEVE ################################
+  - retrieve_evaluate: toy
+  ############### FLOPS ##################################
+  - flops: toy
+
+# Direct PARAMETER setting
+config:  # to be provided for each run
+  checkpoint_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_71_cfscube_taxoindex/debug/checkpoint" # phrase_splade_78
+  index_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_71_cfscube_taxoindex/debug/index"
+  out_dir: "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_71_cfscube_taxoindex/debug/out"
+  fp16: false
