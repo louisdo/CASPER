@@ -1,7 +1,9 @@
 # python greedy_vocab_builder.py --input_folder /scratch/lamdo/msmarco_phrase_vocab/ --num_phrases 30000 --output_file phrase_vocab_msmarco_gitig_.json
 # python greedy_vocab_builder.py --input_folder /scratch/lamdo/msmarco_phrase_vocab/ --num_phrases 30000 --output_file phrase_vocab_msmarco_gitig_.json
 # python greedy_vocab_builder.py --input_folder /scratch/lamdo/s2orc_word_vocab/ --num_phrases 30000 --output_file word_vocab_s2orc_gitig_.json --apply_word_check 1
+# python greedy_vocab_builder.py --input_folder /scratch/lamdo/s2orc_phrase_vocab/ --num_phrases 5000 --output_file phrase_vocab_s2orc_5k_gitig_.json
 # python greedy_vocab_builder.py --input_folder /scratch/lamdo/s2orc_phrase_vocab/ --num_phrases 15000 --output_file phrase_vocab_s2orc_15k_gitig_.json
+# python greedy_vocab_builder.py --input_folder /scratch/lamdo/s2orc_phrase_vocab/ --num_phrases 60000 --output_file phrase_vocab_s2orc_60k_gitig_.json
 # python greedy_vocab_builder.py --input_folder /scratch/lamdo/s2orc_cs_phrase_vocab/ --num_phrases 30000 --output_file phrase_vocab_s2orc_cs_30k_gitig_.json --phrase_min_frequency 10
 import json, os, heapq, string, re
 from argparse import ArgumentParser

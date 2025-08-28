@@ -83,6 +83,14 @@ model_name_2_path = {
     "phrase_splade_85": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_85/debug/checkpoint/model",
     "phrase_splade_86": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_86/debug/checkpoint/model",
 
+    "phrase_splade_87": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_87/debug/checkpoint/model",
+    "phrase_splade_88": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_88/debug/checkpoint/model",
+    "phrase_splade_89": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_89/debug/checkpoint/model",
+    "phrase_splade_90": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_90/debug/checkpoint/model",
+    "phrase_splade_91": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_91/debug/checkpoint/model",
+    "phrase_splade_92": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_92/debug/checkpoint/model",
+    "phrase_splade_93": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_93/debug/checkpoint/model",
+
 
     "phrase_splade_71_cfscube_taxoindex": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_71_cfscube_taxoindex/debug/checkpoint/model",
 
@@ -172,6 +180,13 @@ model_name_2_model_class = {
     "phrase_splade_86": PhraseSpladev2,
 
     "phrase_splade_71_cfscube_taxoindex": PhraseSpladev3,
+    "phrase_splade_87": PhraseSpladev3,
+    "phrase_splade_88": PhraseSpladev3,
+    "phrase_splade_89": PhraseSpladev3,
+    "phrase_splade_90": PhraseSpladev3,
+    "phrase_splade_91": PhraseSpladev3,
+    "phrase_splade_92": PhraseSpladev3,
+    "phrase_splade_93": PhraseSpladev3,
 
     "splade_addedword_1": Splade,
     "splade_addedword_2": PhraseSpladev3,
@@ -257,6 +272,15 @@ model_name_2_is_maxsim = {
     "phrase_splade_84": False,
     "phrase_splade_85": False,
     "phrase_splade_86": False,
+
+
+    "phrase_splade_87": False,
+    "phrase_splade_88": False,
+    "phrase_splade_89": False,
+    "phrase_splade_90": False,
+    "phrase_splade_91": False,
+    "phrase_splade_92": False,
+    "phrase_splade_93": False,
 
 
     "phrase_splade_71_cfscube_taxoindex": False,

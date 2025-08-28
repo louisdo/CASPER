@@ -246,6 +246,8 @@ def main():
 
         "cfscube_taxoindex": "data/cfscube/cfscube_taxoindex",
         "doris_mae_taxoindex": "data/doris_mae/doris_mae_taxoindex",
+        
+        "irb": "data/irb",
     }
 
     init_model(model_name=model_name)

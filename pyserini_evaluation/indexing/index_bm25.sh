@@ -9,7 +9,7 @@ datasets=(
     # litsearch
     # acm_cr
     # doris_mae
-    trec-covid
+    # trec-covid
     # cfscube
     # relish
     # arguana 
@@ -18,6 +18,8 @@ datasets=(
 
     # doris_mae_taxoindex
     # cfscube_taxoindex
+
+    irb
 )
 
 for dataset in "${datasets[@]}"; do

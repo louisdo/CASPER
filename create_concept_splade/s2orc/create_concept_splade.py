@@ -95,9 +95,21 @@ if __name__ == "__main__":
     # model_name_on_hf = "lamdo/scibert-base-uncased-phrase-30kaddedphrasesfroms2orc_cs"
 
 
+    # vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/phrase_vocab_s2orc_gitig_.json"
+    # model_name = "bert-base-uncased"
+    # model_name_on_hf = "lamdo/bert-base-uncased-phrase-30kaddedphrasesfroms2orc"
+
+    # vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/phrase_vocab_s2orc_60k_gitig_.json"
+    # model_name = "distilbert/distilbert-base-uncased"
+    # model_name_on_hf = "lamdo/distilbert-base-uncased-phrase-60kaddedphrasesfroms2orc"
+
+    # vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/phrase_vocab_s2orc_5k_gitig_.json"
+    # model_name = "distilbert/distilbert-base-uncased"
+    # model_name_on_hf = "lamdo/distilbert-base-uncased-phrase-5kaddedphrasesfroms2orc"
+
     vocab_path = "/home/lamdo/splade/create_concept_splade/vocab_create/phrase_vocab_s2orc_gitig_.json"
-    model_name = "bert-base-uncased"
-    model_name_on_hf = "lamdo/bert-base-uncased-phrase-30kaddedphrasesfroms2orc"
+    model_name = "Luyu/co-condenser-marco"
+    model_name_on_hf = "lamdo/cocondenser-phrase-30kaddedphrasesfroms2orc"
 
     with open(vocab_path) as f:
         phrase_counter = json.load(f)
@@ -109,7 +121,7 @@ if __name__ == "__main__":
 
     tokenizer, model = create_model_with_added_phrase_vocab(
         phrase_vocab=phrase_vocab,
-        max_added_phrases=30000,
+        max_added_phrases=60000,
         model_name=model_name
     )
 

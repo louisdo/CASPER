@@ -5,7 +5,7 @@ datasets=(
     # scidocs 
     # nfcorpus  
     # doris_mae 
-    trec-covid 
+    # trec-covid 
     # cfscube
     # acm_cr 
     # arguana 
@@ -19,6 +19,7 @@ datasets=(
 
     # doris_mae_taxoindex
     # cfscube_taxoindex
+    irb
 )
 
 for wtoken in "${weight_tokens[@]}"; do 

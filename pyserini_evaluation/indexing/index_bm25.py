@@ -56,6 +56,8 @@ def main():
 
         "cfscube_taxoindex": "data/cfscube/cfscube_taxoindex",
         "doris_mae_taxoindex": "data/doris_mae/doris_mae_taxoindex",
+        
+        "irb": "data/irb",
     }
 
 
@@ -88,7 +90,7 @@ def main():
 
             to_write = {
                 "id": docid,
-                "contents":  content
+                "contents":  " ".join(content.split()[:1000])
             }
 
             json.dump(to_write, f)

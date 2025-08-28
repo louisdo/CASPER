@@ -7,7 +7,7 @@ import argparse
 import gin
 import sys
 import os
-sys.path.append('/home/lvnguyen/research/Efficient-Storage-for-Large-IR-Systems') # Change to your Efficient-Storage-for-Large-IR-Systems dir
+sys.path.append('./') # Change to your Efficient-Storage-for-Large-IR-Systems dir
 
 class NpEncoder(json.JSONEncoder):
     def default(self, obj):

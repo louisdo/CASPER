@@ -1,0 +1,7 @@
+mode,data size,NDCG@10,R@1000
+single,600k,25.1,78.55
+multi,600k,24.2,75.5
+single,1.5M,24.875,79.425
+multi,1.5M,25.15,77.475
+single,2.9M,25.375,79.05
+multi,3.6M,26.95,78.375

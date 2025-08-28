@@ -1,7 +1,7 @@
-NUM_CHUNKS=1
+NUM_CHUNKS=3
 INDEX_FOLDER=/scratch/lamdo/beir_splade/indexes/
 BM25_MODELS_FOLDER=/scratch/lamdo/beir_splade/bm25_models/
-ADD_BM25=1
+ADD_BM25=0
 MASK_SPECIAL_TOKENS=0
 
 CUDA_DEVICE=2
@@ -11,16 +11,16 @@ datasets=(
     # scidocs 
     # nfcorpus  
     # doris_mae 
-    trec-covid 
+    # trec-covid 
     # cfscube
     # acm_cr  
     # arguana 
     # fiqa
     # msmarco
     # trec_dl_2019
-    # trec_dl_2020
+    # /# trec_dl_2020
     # litsearch
-    # relish
+    relish
 
 
     # doris_mae_taxoindex
@@ -29,29 +29,33 @@ datasets=(
 models=(
     # "phrase_splade_27"
     # "phrase_splade_33"
-    # phrase_splade_73
+    # phrase_splade_55
+    # phrase_splade_91
     # phrase_splade_74
     # phrase_splade_75
     # phrase_splade_76
-    phrase_splade_71
+    # phrase_splade_87
+    # phrase_splade_92
+    # phrase_splade_88
     # splade_normal_150k_lowreg
     # splade_addedword_1 
     # "eru_kg"
     # "splade_maxsim_150k_lowregv6"
     # normal_splade_pretrains2orc
     # original_spladev2_max
+    original_spladev2
     # splade_max_1
 )
 weight_tokens=( 1 )
 weight_phrases=( 
-    # 0.05
+    # 0
     # 0.1
     # 0.2
-    0.25  
+    # 0.25  
     # 0.3
     # 0.5 
     # 0.75
-    # 1
+    1
 )
 
 for wtoken in "${weight_tokens[@]}"; do 
@@ -85,7 +89,7 @@ for wtoken in "${weight_tokens[@]}"; do
                 --num_chunks $NUM_CHUNKS --chunk_idx $chunk_idx \
                 --add_bm25 $ADD_BM25 \
                 --bm25_models_folder $BM25_MODELS_FOLDER \
-                --mode eval > results/$model-$dataset-t${wtoken}p${wphrase}-bm25_${ADD_BM25}.txt
+                --mode eval > results_ablationadjustingbeta/$model-$dataset-t${wtoken}p${wphrase}-bm25_${ADD_BM25}.txt
             done
         done
     done

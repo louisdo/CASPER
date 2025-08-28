@@ -1,0 +1,7 @@
+setting,NDCG@10,R@1000
+Full,36.75,80.325
+-keyphrase,35.5875,80.7
+-cocitation,34.075,76.7375
+-title,35.225,80.225
+-query,36.45,79.675
+-citation context,32.4375,65.9625

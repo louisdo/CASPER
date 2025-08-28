@@ -172,7 +172,7 @@ def main():
     parser.add_argument("--index_folder", type = str, required=True)
     parser.add_argument("--work_dir", type = str, default = "../")
     parser.add_argument("--dataset", type = str, required=True)
-    parser.add_argument("--batch_size", type = int, default = 32)
+    parser.add_argument("--batch_size", type = int, default = 1)
     parser.add_argument("--threads", type = int, default = 8)
 
     args = parser.parse_args()
@@ -207,6 +207,8 @@ def main():
 
         "cfscube_taxoindex":"data/cfscube/cfscube_taxoindex",
         "doris_mae_taxoindex": "data/doris_mae/doris_mae_taxoindex",
+
+        "irb": "data/irb"
     }
 
     queries_path = os.path.join(
@@ -229,7 +231,7 @@ def main():
         queries = [json.loads(line) for line in f]
         queries = [line for line in queries if line["_id"] in qrels]
 
-    top_k = 1000
+    top_k = 100
     all_hits = {}
     for i in range(0, len(queries), batch_size):
         batch = queries[i:i+batch_size]

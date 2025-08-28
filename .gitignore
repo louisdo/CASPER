@@ -11,3 +11,4 @@ data/
 pyserini_evaluation/metadata/
 *.txt
 keyphrase_generation/splade
+outputs/
