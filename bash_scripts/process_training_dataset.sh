@@ -1,0 +1,1 @@
+python src/process_training_dataset.py --output_file /scratch/lamdo/scirepeval/collections.txt --max_documents 20000000
