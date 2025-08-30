@@ -1,16 +1,18 @@
 datasets=(
-    scifact 
-    scidocs 
-    nfcorpus 
-    trec-covid 
-    doris_mae 
-    cfscube
-    acm_cr
+    # scifact 
+    # scidocs 
+    # nfcorpus 
+    # trec-covid 
+    # doris_mae 
+    # cfscube
+    # acm_cr
     # arguana 
     # fiqa
     # msmarco
     # trec_dl_2019
     # trec_dl_2020
+    # litsearch
+    relish
 )
 
 for dataset in "${datasets[@]}"; do

@@ -10,6 +10,8 @@ from model_name_2_model_info import model_name_2_model_dir
 
 logger = logging.getLogger(__name__)
 
+DATASETS_WITH_LONG_QUERY = ["doris_mae"]
+
 
 def convert_to_pytrec_eval_format(queries, all_search_results, type = "relevance"):
     """
@@ -180,10 +182,11 @@ def main():
     with Run().context(RunConfig(nranks=1, experiment=dataset_name, root = experiment_path)):
 
         config = ColBERTConfig(
-            query_maxlen=256,
+            query_maxlen= 180 if dataset_name in DATASETS_WITH_LONG_QUERY else 64,
             doc_maxlen=256,
         )
         searcher = Searcher(index=f"{dataset_name}.nbits=2", config=config)
+
         queries = Queries(data = _queries)
         ranking = searcher.search_all(queries, k=1000)
         ranking_dict = ranking.todict()

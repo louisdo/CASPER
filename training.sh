@@ -6,9 +6,29 @@ python training.py \
     --nranks 1 \
     --batch_size 24 \
     --experiment_folder /scratch/lamdo/colbert/experiments \
-    --experiment_name combined_cc+cocit+kp1m+query+title
+    --experiment_name combined_cc+cocit+kp1m+query+title 
 
 
+
+export CUDA_VISIBLE_DEVICES=2
+python training.py \
+    --triples_path /scratch/lamdo/phrase_splade_datasets/combined_cc+cocit+kp1m+query+title/colbert_training_format/triples.train.jsonl \
+    --queries_path /scratch/lamdo/phrase_splade_datasets/combined_cc+cocit+kp1m+query+title/colbert_training_format/queries.train.tsv \
+    --collection_path /scratch/lamdo/phrase_splade_datasets/combined_cc+cocit+kp1m+query+title/colbert_training_format/corpus.train.tsv \
+    --nranks 1 \
+    --batch_size 20 \
+    --experiment_folder /scratch/lamdo/colbert/experiments \
+    --experiment_name combined_cc+cocit+kp1m+query+title_v2 \
+    --checkpoint lamdo/distilbert-s2orc-mlm-80000steps
+
+CUDA_VISIBLE_DEVICES=2 python training.py \
+--triples_path /scratch/lamdo/phrase_splade_datasets/combined_cc_cs+cocit_cs+kp20k+query_cs+title_cs/colbert_training_format/triples.train.jsonl \
+--queries_path /scratch/lamdo/phrase_splade_datasets/combined_cc_cs+cocit_cs+kp20k+query_cs+title_cs/colbert_training_format/queries.train.tsv \
+--collection_path /scratch/lamdo/phrase_splade_datasets/combined_cc_cs+cocit_cs+kp20k+query_cs+title_cs/colbert_training_format/corpus.train.tsv \
+--nranks 1 \
+--batch_size 20 \
+--experiment_folder /scratch/lamdo/colbert/experiments \
+--experiment_name combined_cc_cs+cocit_cs+kp20k+query_cs+title_cs
 
 
 

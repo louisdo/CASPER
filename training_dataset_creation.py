@@ -1,4 +1,5 @@
 # python training_dataset_creation.py --input_folder /scratch/lamdo/phrase_splade_datasets/combined_cc+cocit+kp1m+query+title
+# python training_dataset_creation.py --input_folder /scratch/lamdo/phrase_splade_datasets/combined_cc_cs+cocit_cs+kp20k+query_cs+title_cs
 import os, hashlib, json
 from tqdm import tqdm
 from argparse import ArgumentParser

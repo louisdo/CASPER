@@ -37,7 +37,8 @@ def write_to_jsonl(filename, data):
 def main():
     parser = ArgumentParser()
     parser.add_argument("--dataset_name", type = str, default = "scifact", choices=["scifact", "scidocs", "nfcorpus", 
-                                                                                    "trec-covid", "doris_mae", "cfscube", "acm_cr"])
+                                                                                    "trec-covid", "doris_mae", "cfscube", "acm_cr",
+                                                                                    "litsearch", "relish"])
     parser.add_argument("--source_folder", type = str, required=True)
     parser.add_argument("--output_folder", type = str, required=True)
 
@@ -57,7 +58,9 @@ def main():
         "trec-covid": f"{source_folder}/beir/trec-covid",
         "doris_mae": f"{source_folder}/doris_mae/doris_mae",
         "cfscube": f"{source_folder}/cfscube/cfscube",
-        "acm_cr": f"{source_folder}/acm_cr/acm_cr"
+        "acm_cr": f"{source_folder}/acm_cr/acm_cr",
+        "litsearch": f"{source_folder}/litsearch/litsearch",
+        "relish": f"{source_folder}/relish/relish",
     }
 
     dataset_output_folder = os.path.join(output_folder, dataset_name)
