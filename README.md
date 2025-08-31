@@ -47,7 +47,7 @@ We employ ERU-KG, an unsupervised keyphrase generation/extraction model for extr
 ```bash
 # The scientific corpus is splitted into slices (indicated by num_slices)
 # In this example, we run the script with current_slice_index = 0 to 7
-# One can run the scripts in subsequence, or in parallel in different screens
+# One can run the scripts sequentially, or in parallel in different screens
 CUDA_VISIBLE_DEVICES=*** python create_phrase_vocab_from_s2orc.py \
 --num_slices 8 \
 --current_slice_index 0 \
