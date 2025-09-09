@@ -78,6 +78,50 @@ class SiamesePairsDataLoader(DataLoaderWrapper):
                                return_attention_mask=True)
         sample = {**rename_keys(q, "q"), **rename_keys(d_pos, "pos"), **rename_keys(d_neg, "neg")}
         return {k: torch.tensor(v) for k, v in sample.items()}
+    
+
+class CASPERv2SiamesePairsDataLoader(SiamesePairsDataLoader):
+    def collate_fn(self, batch):
+        """
+        batch is a list of tuples, each tuple has 3 (text) items (q, d_pos, d_neg)
+        """
+        q, d_pos, d_neglv1, d_neglv2, d_neglv3 = zip(*batch)
+        q = self.tokenizer(list(q),
+                           add_special_tokens=True,
+                           padding="longest",  # pad to max sequence length in batch
+                           truncation="longest_first",  # truncates to self.max_length
+                           max_length=self.max_length,
+                           return_attention_mask=True)
+        d_pos = self.tokenizer(list(d_pos),
+                               add_special_tokens=True,
+                               padding="longest",  # pad to max sequence length in batch
+                               truncation="longest_first",  # truncates to self.max_length
+                               max_length=self.max_length,
+                               return_attention_mask=True)
+        d_neglv1 = self.tokenizer(list(d_neglv1),
+                               add_special_tokens=True,
+                               padding="longest",  # pad to max sequence length in batch
+                               truncation="longest_first",  # truncates to self.max_length
+                               max_length=self.max_length,
+                               return_attention_mask=True)
+        d_neglv2 = self.tokenizer(list(d_neglv2),
+                               add_special_tokens=True,
+                               padding="longest",  # pad to max sequence length in batch
+                               truncation="longest_first",  # truncates to self.max_length
+                               max_length=self.max_length,
+                               return_attention_mask=True)
+        d_neglv3 = self.tokenizer(list(d_neglv3),
+                               add_special_tokens=True,
+                               padding="longest",  # pad to max sequence length in batch
+                               truncation="longest_first",  # truncates to self.max_length
+                               max_length=self.max_length,
+                               return_attention_mask=True)
+        sample = {**rename_keys(q, "q"), 
+                  **rename_keys(d_pos, "pos"), 
+                  **rename_keys(d_neglv1, "neglv1"),
+                  **rename_keys(d_neglv2, "neglv2"),
+                  **rename_keys(d_neglv3, "neglv3")}
+        return {k: torch.tensor(v) for k, v in sample.items()}
 
 
 class DistilSiamesePairsDataLoader(DataLoaderWrapper):
