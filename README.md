@@ -41,7 +41,7 @@ $\mathcal{D}$ contains concatenated titles and abstracts of scientific articles 
 
 ### Extracting Keyphrases
 
-We employ ERU-KG, an unsupervised keyphrase generation/extraction model for extraction of keyphrases for all documents in $\mathcal{D}$. To do so, use the file [`create_concept_splade/s2orc/create_phrase_vocab_from_s2orc.py`](./create_concept_splade/s2orc/create_phrase_vocab_from_s2orc.py) as follows
+We employ ERU-KG, an unsupervised keyphrase generation/extraction model for extraction of keyphrases for all documents in $\mathcal{D}$. To do so, use the file [`concept_vocab/keyphrase_extraction/create_phrase_vocab_from_s2orc.py`](./concept_vocab/keyphrase_extraction/create_phrase_vocab_from_s2orc.py) as follows
 
 
 ```bash
@@ -63,7 +63,7 @@ ls /keyphrase/extraction/output/folder
 ```
 ### Keyphrase Vocabulary
 
-To build the keyphrase vocabulary $V_k$, we run the script [`create_concept_splade/vocab_create/greedy_vocab_builder.py`](./create_concept_splade/vocab_create/greedy_vocab_builder.py) as follows
+To build the keyphrase vocabulary $V_k$, we run the script [`concept_vocab/greedy_vocab_builder.py`](./concept_vocab/greedy_vocab_builder.py) as follows
 
 ```bash
 python greedy_vocab_builder.py \
