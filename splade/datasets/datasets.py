@@ -42,6 +42,33 @@ class PairsDatasetPreLoad(Dataset):
 
     def __getitem__(self, idx):
         return self.data_dict[idx]
+    
+
+class CASPERv2PairsDatasetPreload(PairsDatasetPreLoad):
+    def __init__(self, data_dir):
+        self.data_dir = data_dir
+        self.id_style = "row_id"
+
+        self.data_dict = {}  # => dict that maps the id to the line offset (position of pointer in the file)
+        print("Preloading dataset")
+        self.data_dir = os.path.join(self.data_dir, "raw.tsv")
+        count_error_rows = 0
+        with open(self.data_dir) as reader:
+            index = 0
+            for line in tqdm(reader):
+                if len(line) > 1:
+                    splitted_line = line.split("\t")
+                    if len(splitted_line) != 3: 
+                        count_error_rows += 1
+                        continue
+                    query, pos, neg_all = splitted_line  # first column is id
+                    
+                    neglv1, neglv2, neglv3 = neg_all.split("--__--")
+                    self.data_dict[index] = (query.strip(), pos.strip(), neglv1.strip(), neglv2.strip(), neglv3.strip())
+                    index += 1
+
+            print(f"There are {count_error_rows} faulty rows!")
+        self.nb_ex = len(self.data_dict)
 
 
 class DistilPairsDatasetPreLoad(Dataset):
