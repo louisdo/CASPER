@@ -1,5 +1,5 @@
 # CASPER: Concept-integrated Sparse Representation for Scientific Retrieval
-**Short introduction** CASPER is a sparse model for scientific search that utilizes keyphrases, alongside tokens as representation units (i.e. a representation unit correspond to a dimension in the sparse embedding space). This enables CASPER to represent queries and texts with granular features AND research concepts, which is very important as scientific search is known to revolves around research concepts (we search for papers with specific research concepts we want to learn about). 
+**Short introduction** CASPER is a sparse model for scientific search that utilizes keyphrases, alongside tokens as representation units (i.e. a representation unit correspond to a dimension in the sparse embedding space). This enables CASPER to represent queries and texts with granular features AND research concepts, which is very important as scientific search is known to revolves around research concepts [1] (we search for papers with specific research concepts we want to learn about). 
 
 ![CASPER Overview](img/casper_overview.png "Overview of CASPER, our proposed method")
 
@@ -41,7 +41,7 @@ $\mathcal{D}$ contains concatenated titles and abstracts of scientific articles 
 
 ### Extracting Keyphrases
 
-We employ ERU-KG, an unsupervised keyphrase generation/extraction model for extraction of keyphrases for all documents in $\mathcal{D}$. To do so, use the file [`create_concept_splade/s2orc/create_phrase_vocab_from_s2orc.py`](./create_concept_splade/s2orc/create_phrase_vocab_from_s2orc.py) as follows
+We employ ERU-KG, an unsupervised keyphrase generation/extraction model for extraction of keyphrases for all documents in $\mathcal{D}$. To do so, use the file [`concept_vocab/keyphrase_extraction/create_phrase_vocab_from_s2orc.py`](./concept_vocab/keyphrase_extraction/create_phrase_vocab_from_s2orc.py) as follows
 
 
 ```bash
@@ -63,7 +63,7 @@ ls /keyphrase/extraction/output/folder
 ```
 ### Keyphrase Vocabulary
 
-To build the keyphrase vocabulary $V_k$, we run the script [`create_concept_splade/vocab_create/greedy_vocab_builder.py`](./create_concept_splade/vocab_create/greedy_vocab_builder.py) as follows
+To build the keyphrase vocabulary $V_k$, we run the script [`concept_vocab/greedy_vocab_builder.py`](./concept_vocab/greedy_vocab_builder.py) as follows
 
 ```bash
 python greedy_vocab_builder.py \
@@ -91,7 +91,133 @@ python -m splade.train
 Please make sure to adjust hyperparameters within the configuration file [`conf/config_phrase_splade.yaml`](./conf/config_phrase_splade.yaml)
 
 ## FRIEREN
-To be updated
+FRIEREN is a framework for generating training data for CASPER. The key idea behind FRIEREN, as mentioned above, is to leverage scholarly references as (pseudo) queries. We describe how to use it in this section.
+
+**Firstly**, download and preprocess S2ORC corpus as follows
+```bash
+# first go to frieren/casper/preprocessing
+cd frieren/casper/preprocessing
+
+python process_dataset.py \
+--api_key YOUR_SEMANTIC_SCHOLAR_API_KEY \
+--max_files 20 \
+--output_folder /your/preprocessed/s2orc/folder
+```
+This script will download, in this example, 20 shards (out of ~350 shards in total in the S2ORC corpus). In addition, it will also extract necessary information from each of the shards
+```bash
+# the downloaded shards
+ls /your/preprocessed/s2orc/folder/s2orc_temp
+>>> 0.gz  10.gz  11.gz  12.gz  13.gz  14.gz  15.gz  16.gz  17.gz  18.gz  19.gz  1.gz  2.gz  3.gz  4.gz  5.gz  6.gz  7.gz  8.gz  9.gz
+
+# the preprocessed data
+ls /your/preprocessed/s2orc/folder/extracted_metadata
+>>> 0.jsonl  10.jsonl  11.jsonl  12.jsonl  13.jsonl  14.jsonl  15.jsonl  16.jsonl  17.jsonl  18.jsonl  19.jsonl  1.jsonl  2.jsonl  3.jsonl  4.jsonl  5.jsonl  6.jsonl  7.jsonl  8.jsonl  9.jsonl
+```
+
+> TODO: Need to update instruction for getting paper metadata from Semantic Scholar API, i.e. `/your/preprocessed/s2orc/folder/metadata_from_api/metadata_from_api.jsonl`
+
+**Secondly**, process each data type
+
++ Citation contexts
+```bash
+cd frieren/casper/data_types/citation_contexts/s2orc
+
+
+python process_dataset.py \
+--input_folder /your/preprocessed/s2orc/folder/extracted_metadata \
+--output_file /your/preprocessed/s2orc/folder/citation_contexts_triplets/triplets_intermediate.tsv
+
+python prepare_training_dataset.py \
+--input_file /your/preprocessed/s2orc/folder/citation_contexts_triplets/triplets_intermediate.tsv \
+--metadata_file /your/preprocessed/s2orc/folder/metadata_from_api/metadata_from_api.jsonl \
+--output_file /your/preprocessed/s2orc/folder/citation_contexts_triplets/raw.tsv
+```
+
++ Co-citations
+
+```bash
+cd frieren/casper/data_types/cocit/s2orc
+
+python process_dataset.py \
+--input_folder /your/preprocessed/s2orc/folder/extracted_metadata \
+--output_file /your/preprocessed/s2orc/folder/cocit_triplets/triplets_intermediate.tsv
+
+python prepare_training_dataset.py \
+--input_file /your/preprocessed/s2orc/folder/cocit_triplets/triplets_intermediate.tsv \
+--metadata_file /your/preprocessed/s2orc/folder/metadata_from_api/metadata_from_api.jsonl \
+--output_file /your/preprocessed/s2orc/folder/cocit_triplets/raw.tsv
+```
++ Author-assigned keyphrases
+For author assigned keyphrases, we utilize two keyphrase generation dataset [KP20K](https://huggingface.co/datasets/memray/kp20k) and [KPBioMed](https://huggingface.co/datasets/taln-ls2n/kpbiomed)
+```bash
+cd frieren/casper/data_types/kp
+
+mkdir /your/preprocessed/s2orc/folder/kp_triplets
+python kp_datasets.py \
+--output_file /your/preprocessed/s2orc/folder/kp_triplets/raw.tsv \
+--max_collections 1000000
+```
++ Titles
+```bash
+cd frieren/casper/data_types/title/s2orc
+
+python process_dataset.py \
+--input_folder /your/preprocessed/s2orc/folder/extracted_metadata \
+--output_file /your/preprocessed/s2orc/folder/title_abstract_triplets/triplets_intermediate.tsv
+
+python prepare_training_dataset.py \
+--input_file /your/preprocessed/s2orc/folder/title_abstract_triplets/triplets_intermediate.tsv \
+--metadata_file /your/preprocessed/s2orc/folder/metadata_from_api/metadata_from_api.jsonl \
+--output_file /your/preprocessed/s2orc/folder/title_abstract_triplets/raw.tsv
+```
++ User interaction data
+We use [SciRepEval Search](https://huggingface.co/datasets/allenai/scirepeval/viewer/search)
+```bash
+cd frieren/casper/user_interaction/scirepeval_search
+
+python prepare_training_dataset.py \
+--output_file /your/preprocessed/s2orc/folder/query_triplets/raw.tsv
+```
+
+
+**Finally**, we combine the triplets from these sources to form the final training dataset
+
+```bash
+cd frieren/casper/combined_dataset
+```
+We need to first go to [`frieren/casper/combined_dataset/combine_dataset.py`](./frieren/casper/combined_dataset/combine_dataset.py), and set 
+```python
+...
+files = {
+        "kp": "/your/preprocessed/s2orc/folder/kp_triplets/raw.tsv",
+        "cocit": "/your/preprocessed/s2orc/folder/cocit_triplets/raw.tsv",
+        "title": "/your/preprocessed/s2orc/folder/title_abstract_triplets/raw.tsv", 
+        "user_interaction": "/your/preprocessed/s2orc/folder/query_triplets/raw.tsv",
+        "cc": "/your/preprocessed/s2orc/folder/citation_contexts_triplets/raw.tsv",
+}
+
+max_documents = {
+  # full set
+  "kp": 1500000,
+  "cocit": 1500000,
+  "title": 1500000,
+  "user_interaction": 1500000,
+  "cc": 1500000
+}
+
+...
+
+output_folder = f"/your/preprocessed/s2orc/folder/combined_training_data/combined_{data_types_to_include_str}"
+```
+> TODOs: Need to adjust [`frieren/casper/combined_dataset/combine_dataset.py`](./frieren/casper/combined_dataset/combine_dataset.py) to use configuration file instead of modifying the script directly.
+
+Run the script to combine the triplets
+```bash
+mkdir /your/preprocessed/s2orc/folder/combined_training_data
+python combine_dataset.py
+```
+
+The path of the training data should be `/your/preprocessed/s2orc/folder/combined_training_data/combined_cc+cocit+kp+title+user_interaction/raw.tsv`
 
 ## Evaluation
 ### Text Retrieval
@@ -99,7 +225,7 @@ To be updated
 ### Keyphrase generation
 To be updated
 
-## Reference
+## Cite our paper
 If you find our work useful, please consider to cite it as
 ```
 @article{do2025casper,
@@ -109,3 +235,6 @@ If you find our work useful, please consider to cite it as
   year={2025}
 }
 ```
+
+## References
+[1] Bramer, Wichor M., et al. "A systematic approach to searching: an efficient and complete method to develop literature searches." Journal of the Medical Library Association: JMLA 106.4 (2018): 531. 
