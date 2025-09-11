@@ -93,7 +93,7 @@ Please make sure to adjust hyperparameters within the configuration file [`conf/
 ## FRIEREN
 FRIEREN is a framework for generating training data for CASPER. The key idea behind FRIEREN, as mentioned above, is to leverage scholarly references as (pseudo) queries. We describe how to use it in this section.
 
-**Firstly**, download and preprocess S2ORC corpus as follows
+**[Download and preprocess S2ORC corpus]**
 ```bash
 # first go to frieren/casper/preprocessing
 cd frieren/casper/preprocessing
@@ -116,7 +116,23 @@ ls /your/preprocessed/s2orc/folder/extracted_metadata
 
 > TODO: Need to update instruction for getting paper metadata from Semantic Scholar API, i.e. `/your/preprocessed/s2orc/folder/metadata_from_api/metadata_from_api.jsonl`
 
-**Secondly**, process each data type
+
+Next, we need to obtain the metadata from Semantic Scholar paper API. More specifically, we obtain the following info for all paper ids
++ abstract
++ title
++ corpusId
++ fieldsOfStudy
+
+```bash
+
+python get_metadata.py --extracted_metadata_path /your/preprocessed/s2orc/folder/extracted_metadata \
+--semantic_scholar_api_key YOUR_SEMANTIC_SCHOLAR_API_KEY \
+--output_file /your/preprocessed/s2orc/folder/metadata_from_api/metadata_from_api.jsonl \
+--s2orc_raw_folder /your/preprocessed/s2orc/folder/s2orc_temp/
+```
+
+
+**[Process each data type]**
 
 + Citation contexts
 ```bash
@@ -221,7 +237,11 @@ The path of the training data should be `/your/preprocessed/s2orc/folder/combine
 
 ## Evaluation
 ### Text Retrieval
-To be updated
+
+
+
+
+
 ### Keyphrase generation
 To be updated
 
