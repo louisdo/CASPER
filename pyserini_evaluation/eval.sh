@@ -1,5 +1,5 @@
 NUM_CHUNKS=3
-INDEX_FOLDER=/scratch/lamdo/beir_splade/indexes/
+INDEX_FOLDER=$OUT_FOLDER/indexes/
 BM25_MODELS_FOLDER=/scratch/lamdo/beir_splade/bm25_models/
 ADD_BM25=0
 MASK_SPECIAL_TOKENS=0
@@ -7,7 +7,7 @@ MASK_SPECIAL_TOKENS=0
 CUDA_DEVICE=2
 
 datasets=(
-    # scifact  
+    scifact  
     # scidocs 
     # nfcorpus  
     # doris_mae 
@@ -20,9 +20,7 @@ datasets=(
     # trec_dl_2019
     # /# trec_dl_2020
     # litsearch
-    relish
-
-
+    # relish
     # doris_mae_taxoindex
     # cfscube_taxoindex
 )
@@ -43,19 +41,20 @@ models=(
     # "splade_maxsim_150k_lowregv6"
     # normal_splade_pretrains2orc
     # original_spladev2_max
-    original_spladev2
+    # original_spladev2
     # splade_max_1
+    lamdo_casper
 )
 weight_tokens=( 1 )
 weight_phrases=( 
     # 0
     # 0.1
     # 0.2
-    # 0.25  
+    0.25  
     # 0.3
     # 0.5 
     # 0.75
-    1
+    # 1
 )
 
 for wtoken in "${weight_tokens[@]}"; do 

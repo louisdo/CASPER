@@ -98,7 +98,8 @@ model_name_2_path = {
     "splade_addedword_2": "/scratch/lamdo/phrase_splade_checkpoints/phrase_addedword_2/debug/checkpoint/model",
     "eru_kg": "/scratch/lamdo/splade_checkpoints/experiments_combined_references_v8-1/debug/checkpoint/model",
     "normal_splade_pretrains2orc": "/scratch/lamdo/phrase_splade_checkpoints/normal_splade_pretrains2orc/debug/checkpoint/model",
-    "splade_max_1": "/scratch/lamdo/phrase_splade_checkpoints/splade_max_1/debug/checkpoint/model"
+    "splade_max_1": "/scratch/lamdo/phrase_splade_checkpoints/splade_max_1/debug/checkpoint/model",
+    "lamdo_casper": "lamdo/casper"
 }
 
 model_name_2_model_class = {
@@ -187,6 +188,7 @@ model_name_2_model_class = {
     "phrase_splade_91": PhraseSpladev3,
     "phrase_splade_92": PhraseSpladev3,
     "phrase_splade_93": PhraseSpladev3,
+    "lamdo_casper": PhraseSpladev3,
 
     "splade_addedword_1": Splade,
     "splade_addedword_2": PhraseSpladev3,
@@ -281,6 +283,7 @@ model_name_2_is_maxsim = {
     "phrase_splade_91": False,
     "phrase_splade_92": False,
     "phrase_splade_93": False,
+    "lamdo_casper": False,
 
 
     "phrase_splade_71_cfscube_taxoindex": False,

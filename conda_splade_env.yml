@@ -226,3 +226,20 @@ dependencies:
     - urllib3==1.25.11
     - warcio==1.7.4
     - wasabi==0.9.1
+    - torch==2.8.0
+    - numpy==2.2.6
+    - pytrec_eval==0.5
+    - transformers==4.56.1
+    - omegaconf==2.3.0
+    - pandas==2.3.2
+    - nltk===3.9.1
+    - memory_profiler==0.61.0
+    - pyserini==1.2.0
+    - datasets==4.0.0
+    - cleantext==1.1.4
+    - gin-config==0.5.0
+    - rouge==1.0.1
+    - evaluate==0.4.5
+    - sentence_transformers==5.1.0
+    - rank_bm25==0.2.2
+    - rapidfuzz==3.14.1

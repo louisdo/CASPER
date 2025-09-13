@@ -1,6 +1,4 @@
 NUM_CHUNKS=1
-OUT_FOLDER=/scratch/lamdo/beir_splade/
-
 STORE_DOCUMENTS_IN_RAW=0
 ADD_BM25=0
 MASK_SPECIAL_TOKENS=0
@@ -8,24 +6,25 @@ MASK_SPECIAL_TOKENS=0
 CUDA_DEVICE=2
 
 datasets=(
-    scifact 
-    scidocs 
-    nfcorpus 
-    litsearch
-    acm_cr
-    doris_mae
-    trec-covid
-    cfscube
-    relish
+    scifact  
+    # scidocs 
+    # nfcorpus  
+    # doris_mae 
+    # trec-covid 
+    # cfscube
+    # acm_cr  
     # arguana 
     # fiqa
     # msmarco
-
+    # trec_dl_2019
+    # /# trec_dl_2020
+    # litsearch
+    # relish
     # doris_mae_taxoindex
     # cfscube_taxoindex
 )
 models=(
-    original_spladev2
+    # original_spladev2
     # "phrase_splade_27"
     # "phrase_splade_33"
     # splade_addedword_1
@@ -39,6 +38,7 @@ models=(
     # normal_splade_pretrains2orc
     # original_spladev2_max
     # splade_max_1
+    lamdo_casper
 )
 
 for dataset in "${datasets[@]}"; do
@@ -59,7 +59,7 @@ for dataset in "${datasets[@]}"; do
             python index.py \
             --dataset $dataset \
             --model_name $model \
-            --outfolder /scratch/lamdo/beir_splade/ \
+            --outfolder $OUT_FOLDER \
             --num_chunks $NUM_CHUNKS \
             --chunk_idx $chunk_idx \
             --remove_collections_folder 1 \

@@ -1,5 +1,8 @@
 
 import nltk, string, re
+nltk.download('punkt')
+nltk.download('punkt_tab')
+nltk.download('averaged_perceptron_tagger_eng')
 from collections import Counter
 from functools import lru_cache
 

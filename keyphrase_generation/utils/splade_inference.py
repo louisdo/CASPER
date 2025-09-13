@@ -6,7 +6,14 @@ from splade.models.transformer_rep import PhraseSpladev3 as Splade
 from utils.model_name_2_model_info import MODEL_NAME_2_MODEL_INFO
 
 
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+if torch.cuda.is_available():
+    device_index = 2
+    if device_index >= torch.cuda.device_count():
+        print(f"GPU {device_index} not available, using cuda:0 instead")
+        device_index = 0
+    DEVICE = f"cuda:{device_index}"
+else:
+    DEVICE = "cpu"
 SPLADE_MODEL = {}
 
 def init_splade_model(model_name):

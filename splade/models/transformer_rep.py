@@ -630,86 +630,86 @@ class PhraseSpladev3(PhraseSpladev2):
             return values
             # 0 masking also works with max because all activations are positive
 
-# class PhraseSpladev3_2(PhraseSpladev2):
-#     def encode(self, tokens, is_q):
-#         out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
-#         if self.agg == "sum":
-#             return torch.sum(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
-#         else:
-#             out_tokens = out[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
-#             out_phrases = out[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+class PhraseSpladev3_2(PhraseSpladev2):
+    def encode(self, tokens, is_q):
+        out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+        if self.agg == "sum":
+            return torch.sum(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
+        else:
+            out_tokens = out[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
+            out_phrases = out[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
 
-#             attention_mask = tokens["attention_mask"].unsqueeze(-1)
-#             values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * attention_mask, dim=1) # shape (bs, original_bert_vocab_size)
-#             values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * attention_mask, dim=1) / (torch.sum(tokens["attention_mask"], dim = 1, keepdim=True) ** 0.5) # shape (bs, vocab_size - original_bert_vocab_size)
+            attention_mask = tokens["attention_mask"].unsqueeze(-1)
+            values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * attention_mask, dim=1) # shape (bs, original_bert_vocab_size)
+            values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * attention_mask, dim=1) / (torch.sum(tokens["attention_mask"], dim = 1, keepdim=True) ** 0.5) # shape (bs, vocab_size - original_bert_vocab_size)
 
-#             values = torch.cat([values_tokens, values_phrases], dim = -1)
-#             return values
-
-
-# class PhraseSpladev4(PhraseSpladev2):
-#     def __init__(self, model_type_or_dir, model_type_or_dir_q=None, freeze_d_model=False, agg="max", fp16=True):
-#         super().__init__(
-#             model_type_or_dir=model_type_or_dir,
-#             model_type_or_dir_q=model_type_or_dir_q,
-#             freeze_d_model=freeze_d_model,
-#             agg = agg,
-#             fp16 = fp16
-#         )
-
-#         self.mask_single_token = torch.ones([1, self.output_dim])
-#         self.mask_single_token[..., self.original_bert_vocab_size:] = 0
-
-#         self.mask_single_phrase = torch.ones([1, self.output_dim])
+            values = torch.cat([values_tokens, values_phrases], dim = -1)
+            return values
 
 
-#     def create_token_phrase_mask(self, tokens):
-#         input_ids = tokens["input_ids"] # (bs, pad_len)
-#         mask = torch.where((input_ids < self.original_bert_vocab_size).unsqueeze(-1), 
-#                            self.mask_single_token.to(input_ids.device), 
-#                            self.mask_single_phrase.to(input_ids.device)) # (bs, pad_len, output_dim)
+class PhraseSpladev4(PhraseSpladev2):
+    def __init__(self, model_type_or_dir, model_type_or_dir_q=None, freeze_d_model=False, agg="max", fp16=True):
+        super().__init__(
+            model_type_or_dir=model_type_or_dir,
+            model_type_or_dir_q=model_type_or_dir_q,
+            freeze_d_model=freeze_d_model,
+            agg = agg,
+            fp16 = fp16
+        )
+
+        self.mask_single_token = torch.ones([1, self.output_dim])
+        self.mask_single_token[..., self.original_bert_vocab_size:] = 0
+
+        self.mask_single_phrase = torch.ones([1, self.output_dim])
+
+
+    def create_token_phrase_mask(self, tokens):
+        input_ids = tokens["input_ids"] # (bs, pad_len)
+        mask = torch.where((input_ids < self.original_bert_vocab_size).unsqueeze(-1), 
+                           self.mask_single_token.to(input_ids.device), 
+                           self.mask_single_phrase.to(input_ids.device)) # (bs, pad_len, output_dim)
         
-#         return mask
+        return mask
 
 
 
-#     def encode(self, tokens, is_q):
-#         out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+    def encode(self, tokens, is_q):
+        out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
 
-#         token_phrase_mask = self.create_token_phrase_mask(tokens)
-#         out = out * token_phrase_mask
+        token_phrase_mask = self.create_token_phrase_mask(tokens)
+        out = out * token_phrase_mask
 
-#         if self.agg == "sum":
-#             return torch.sum(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
-#         else:
-#             out_tokens = out[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
-#             out_phrases = out[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
-#             values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
-#             values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
+        if self.agg == "sum":
+            return torch.sum(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
+        else:
+            out_tokens = out[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
+            out_phrases = out[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+            values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
+            values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
 
-#             values = torch.cat([values_tokens, values_phrases], dim = -1)
-#             return values
-#             # 0 masking also works with max because all activations are positive
+            values = torch.cat([values_tokens, values_phrases], dim = -1)
+            return values
+            # 0 masking also works with max because all activations are positive
 
 
-# class PhraseSpladev5(PhraseSpladev4):
-#     def encode(self, tokens, is_q):
-#         out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+class PhraseSpladev5(PhraseSpladev4):
+    def encode(self, tokens, is_q):
+        out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
 
-#         if not is_q:
-#             # prohibit the projection from token -> concept for documents only. For the v5 model, 
-#             # we allow this projection for queries
-#             token_phrase_mask = self.create_token_phrase_mask(tokens)
-#             out = out * token_phrase_mask
+        if not is_q:
+            # prohibit the projection from token -> concept for documents only. For the v5 model, 
+            # we allow this projection for queries
+            token_phrase_mask = self.create_token_phrase_mask(tokens)
+            out = out * token_phrase_mask
 
-#         if self.agg == "sum":
-#             return torch.sum(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
-#         else:
-#             out_tokens = out[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
-#             out_phrases = out[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
-#             values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
-#             values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
+        if self.agg == "sum":
+            return torch.sum(torch.log(1 + torch.relu(out)) * tokens["attention_mask"].unsqueeze(-1), dim=1)
+        else:
+            out_tokens = out[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
+            out_phrases = out[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+            values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
+            values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
 
-#             values = torch.cat([values_tokens, values_phrases], dim = -1)
-#             return values
-#             # 0 masking also works with max because all activations are positive
+            values = torch.cat([values_tokens, values_phrases], dim = -1)
+            return values
+            # 0 masking also works with max because all activations are positive
