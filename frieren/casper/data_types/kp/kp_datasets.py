@@ -102,9 +102,9 @@ def main():
     output_file = args.output_file
 
     triplets_kp20k = process_kp20k(max_documents=int(max_collections / 2))
-    # triplets_kpbiomed = process_kpbiomed(max_documents = int(max_collections / 2))
+    triplets_kpbiomed = process_kpbiomed(max_documents = int(max_collections / 2))
 
-    final_dataset = triplets_kp20k #+ triplets_kpbiomed
+    final_dataset = triplets_kp20k + triplets_kpbiomed
     random.shuffle(final_dataset)
 
     print("Number of datapoints", len(final_dataset))
