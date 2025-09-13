@@ -1,0 +1,5 @@
+mkdir _gitig_kp_output
+mkdir _gitig_kp_results
+
+bash bash_scripts/keyphrase_generation_batch.sh
+bash bash_scripts/kpeval_evaluation.sh

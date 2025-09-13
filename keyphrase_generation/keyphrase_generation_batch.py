@@ -7,10 +7,9 @@ from utils.keyphrase_generation_helper import keyphrase_generation_batch
 from tqdm import tqdm
 
 
-
 def main():
     parser = ArgumentParser()
-    parser.add_argument("--splade_model_name", type = str, default = "phrase_splade")
+    parser.add_argument("--splade_model_name", type = str, default = "lamdo_casper")
     parser.add_argument("--dataset_name", type = str, default = "semeval")
     parser.add_argument("--output_folder", type = str, default = "/scratch/lvnguyen/phrase_splade_keyphrase_generation_results")
 
@@ -22,7 +21,6 @@ def main():
 
     init_candext([1, 5])
     init_splade_model(splade_model_name)
-
 
     dataset = process_dataset(dataset_name)
 
@@ -65,7 +63,6 @@ def main():
 
         # if DATASET_TO_USE in RETRIEVAL_DATASETS:
         line.pop("document", None)
-
 
         res.append(line)
 

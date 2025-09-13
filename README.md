@@ -94,10 +94,28 @@ Please make sure to adjust hyperparameters within the configuration file [`conf/
 To be updated
 
 ## Evaluation
+
 ### Text Retrieval
-To be updated
-### Keyphrase generation
-To be updated
+To run text retrieval evaluation:
+
+1. Download the required data from [[DATA_URL](https://drive.google.com/file/d/1FP3dcD8Awl2A7fjxnRGBNBNnZ8jZl5WR/view?usp=sharing)] and save it in the `data/` folder.  
+
+2. If you want to see our CASPER++ experiments, set this path accordingly [BM25_MODEL_URL](https://drive.google.com/drive/folders/1SCcrymTusrKPnWAvj9keaDIZ5oNpxbPF?usp=share_link) and update the path in `pyserini_evaluation/eval.sh`: BM25_MODELS_FOLDER=your_path
+
+Update the absolute path of OUTPUT_FOLDER in index_and_eval.sh: export OUT_FOLDER="your_full_path"
+
+```bash
+bash index_and_eval.sh
+```
+
+### Keyphrase Generation
+To run keyphrase generation:
+
+```bash 
+cd keyphrase_generation
+bash infer_and_eval.sh
+```
+
 
 ## Reference
 If you find our work useful, please consider to cite it as
