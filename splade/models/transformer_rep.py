@@ -2,6 +2,7 @@ from abc import ABC
 
 import torch
 from transformers import AutoTokenizer, AutoModelForMaskedLM, AutoModel
+from typing import List
 
 from ..tasks.amp import NullContextManager
 from ..utils.utils import generate_bow, clean_bow, normalize, pruning
@@ -713,3 +714,83 @@ class PhraseSpladev5(PhraseSpladev4):
             values = torch.cat([values_tokens, values_phrases], dim = -1)
             return values
             # 0 masking also works with max because all activations are positive
+
+
+
+class CASPERv2(PhraseSpladev2):
+    def __init__(self, model_type_or_dir, concept_level_indices_path: str, model_type_or_dir_q=None, freeze_d_model=False, agg="max", fp16=True, original_bert_vocab_size = 30522):
+        super().__init__(model_type_or_dir=model_type_or_dir,
+                         output="MLM",
+                         match="dot_product",
+                         model_type_or_dir_q=model_type_or_dir_q,
+                         freeze_d_model=freeze_d_model,
+                         fp16=fp16,
+                         original_bert_vocab_size=original_bert_vocab_size)
+        import os, json
+        assert os.path.exists(concept_level_indices_path) and concept_level_indices_path.endswith(".json")
+
+        with open(concept_level_indices_path) as f:
+            self.concept_level_indices = {int(k): v for k, v in json.load(f).items()}
+
+            # self.concept_level_indices = {
+            #     1: [...],
+            #     2: [...],
+            #     3: [...]
+            # }
+
+    def _split_rep_into_levels(self, rep: torch.Tensor) -> List[torch.Tensor]:
+        rep_lv_tokens = rep[..., self.concept_level_indices["tokens"]]
+        rep_lv_keyphrases = rep[..., self.concept_level_indices["keyphrases"]]
+        rep_lv_venue = rep[..., self.concept_level_indices["venue"]]
+        rep_lv_dep = rep[..., self.concept_level_indices["dep"]]
+
+        return rep_lv_tokens, rep_lv_keyphrases, rep_lv_venue, rep_lv_dep
+
+
+    def forward(self, **kwargs):
+        """forward takes as inputs 1 or 2 dict
+        "d_kwargs" => contains all inputs for document encoding
+        "q_kwargs" => contains all inputs for query encoding ([OPTIONAL], e.g. for indexing)
+        """
+
+        with torch.cuda.amp.autocast() if self.fp16 else NullContextManager():
+            out = {}
+            do_d, do_q = "d_kwargs" in kwargs, "q_kwargs" in kwargs
+            phrase_scale = None
+            if do_d:
+                d_rep = self.encode(kwargs["d_kwargs"], is_q=False)
+                if self.cosine:  # normalize embeddings
+                    d_rep = normalize(d_rep)
+
+                d_rep_lv_tokens, d_rep_lv_keyphrases, d_rep_lv_venue, d_rep_lv_dep = self._split_rep_into_levels(d_rep)
+
+                out.update({"d_rep": d_rep})
+            if do_q:
+                q_rep = self.encode(kwargs["q_kwargs"], is_q=True)
+                if self.cosine:  # normalize embeddings
+                    q_rep = normalize(q_rep)
+
+                q_rep_lv_tokens, q_rep_lv_keyphrases, q_rep_lv_venue, q_rep_lv_dep = self._split_rep_into_levels(q_rep)
+
+                out.update({"q_rep": q_rep})
+            if do_d and do_q:
+                if "nb_negatives" in kwargs:
+                    raise NotImplementedError
+                else:
+                    if "score_batch" in kwargs:
+                        score_tokens = torch.matmul(q_rep_lv_tokens, d_rep_lv_tokens.t())  # shape (bs_q, bs_d)
+                        score_keyphrases = torch.matmul(q_rep_lv_keyphrases, d_rep_lv_keyphrases.t())  # shape (bs_q, bs_d)
+                        score_venue = torch.matmul(q_rep_lv_venue, d_rep_lv_venue.t())  # shape (bs_q, bs_d)
+                        score_dep = torch.matmul(q_rep_lv_dep, d_rep_lv_dep.t())  # shape (bs_q, bs_d)
+                    else:
+                        score_tokens = torch.sum(q_rep_lv_tokens * d_rep_lv_tokens, dim=1, keepdim=True)  # shape (bs, )
+                        score_keyphrases = torch.sum(q_rep_lv_keyphrases * d_rep_lv_keyphrases, dim=1, keepdim=True)  # shape (bs, )
+                        score_venue = torch.sum(q_rep_lv_venue * d_rep_lv_venue, dim=1, keepdim=True)  # shape (bs, )
+                        score_dep = torch.sum(q_rep_lv_dep * d_rep_lv_dep, dim=1, keepdim=True)  # shape (bs, )
+                        
+                # out.update({"score": 0.8 * score + 0.2 * score_phrase})
+                out.update({"score_keyphrases": score_keyphrases, 
+                            "score_tokens": score_tokens,
+                            "scores_venue": score_venue,
+                            "scores_dep": score_dep})
+        return out

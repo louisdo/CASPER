@@ -286,3 +286,29 @@ class DistilKLLoss:
         teacher_scores = torch.cat([teacher_pos_scores.unsqueeze(-1), teacher_neg_scores.unsqueeze(-1)], dim=1)
         teacher_scores = torch.softmax(teacher_scores, dim=1)
         return self.loss(local_scores, teacher_scores).sum(dim=1).mean(dim=0)
+
+
+
+class InBatchPairwiseNLLCASPERv2(InBatchPairwiseNLLPhraseSplade):
+    def helper(self, out_d, field_name, neg_type):
+        assert neg_type in ["dep", "venue", "keyphrases", "tokens"]
+        in_batch_scores, neg_scores = out_d[f"pos_{field_name}"], out_d[f"neg_{neg_type}_{field_name}"]
+        # here in_batch_scores is a matrix of size bs * (bs / nb_gpus)
+        nb_columns = in_batch_scores.shape[1]
+        nb_gpus = int(in_batch_scores.shape[0] / nb_columns)
+
+
+        temp = torch.cat([in_batch_scores, neg_scores], dim=1)  # concat neg score
+
+        scores = self.logsoftmax(temp)
+        return torch.mean(-scores[torch.arange(in_batch_scores.shape[0]),
+                                  torch.arange(nb_columns).repeat(nb_gpus)])
+    
+    def __call__(self, out_d):
+        # for each training sample, there are 4 hard negatives, one for each level
+        loss_tokens = self.helper(out_d=out_d, field_name="score_tokens", neg_type = "tokens")
+        loss_keyphrases = self.helper(out_d=out_d, field_name="score_keyphrases", neg_type = "keyphrases")
+        loss_venue = self.helper(out_d=out_d, field_name="score_venue", neg_type = "venue")
+        loss_dep = self.helper(out_d=out_d, field_name="score_dep", neg_type = "dep")
+
+        return loss_tokens + loss_keyphrases + loss_venue + loss_dep

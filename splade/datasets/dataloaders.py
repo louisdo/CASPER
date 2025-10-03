@@ -85,7 +85,8 @@ class CASPERv2SiamesePairsDataLoader(SiamesePairsDataLoader):
         """
         batch is a list of tuples, each tuple has 3 (text) items (q, d_pos, d_neg)
         """
-        q, d_pos, d_neglv1, d_neglv2, d_neglv3 = zip(*batch)
+        q, d_pos, d_neg_dep, d_neg_venue, d_neg_keyphrases, d_neg_tokens = zip(*batch)
+        assert q and d_pos
         q = self.tokenizer(list(q),
                            add_special_tokens=True,
                            padding="longest",  # pad to max sequence length in batch
@@ -98,19 +99,25 @@ class CASPERv2SiamesePairsDataLoader(SiamesePairsDataLoader):
                                truncation="longest_first",  # truncates to self.max_length
                                max_length=self.max_length,
                                return_attention_mask=True)
-        d_neglv1 = self.tokenizer(list(d_neglv1),
+        d_neg_dep = self.tokenizer(list(d_neg_dep),
                                add_special_tokens=True,
                                padding="longest",  # pad to max sequence length in batch
                                truncation="longest_first",  # truncates to self.max_length
                                max_length=self.max_length,
                                return_attention_mask=True)
-        d_neglv2 = self.tokenizer(list(d_neglv2),
+        d_neg_venue = self.tokenizer(list(d_neg_venue),
                                add_special_tokens=True,
                                padding="longest",  # pad to max sequence length in batch
                                truncation="longest_first",  # truncates to self.max_length
                                max_length=self.max_length,
                                return_attention_mask=True)
-        d_neglv3 = self.tokenizer(list(d_neglv3),
+        d_neg_keyphrases = self.tokenizer(list(d_neg_keyphrases),
+                               add_special_tokens=True,
+                               padding="longest",  # pad to max sequence length in batch
+                               truncation="longest_first",  # truncates to self.max_length
+                               max_length=self.max_length,
+                               return_attention_mask=True)
+        d_neg_tokens = self.tokenizer(list(d_neg_tokens),
                                add_special_tokens=True,
                                padding="longest",  # pad to max sequence length in batch
                                truncation="longest_first",  # truncates to self.max_length
@@ -118,9 +125,10 @@ class CASPERv2SiamesePairsDataLoader(SiamesePairsDataLoader):
                                return_attention_mask=True)
         sample = {**rename_keys(q, "q"), 
                   **rename_keys(d_pos, "pos"), 
-                  **rename_keys(d_neglv1, "neglv1"),
-                  **rename_keys(d_neglv2, "neglv2"),
-                  **rename_keys(d_neglv3, "neglv3")}
+                  **rename_keys(d_neg_dep, "neg_dep"),
+                  **rename_keys(d_neg_venue, "neg_venue"),
+                  **rename_keys(d_neg_keyphrases, "neg_keyphrases"),
+                  **rename_keys(d_neg_tokens, "neg_tokens")}
         return {k: torch.tensor(v) for k, v in sample.items()}
 
 
