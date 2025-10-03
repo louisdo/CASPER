@@ -101,20 +101,20 @@ cd frieren/casper/preprocessing
 python process_dataset.py \
 --api_key YOUR_SEMANTIC_SCHOLAR_API_KEY \
 --max_files 20 \
---output_folder /your/preprocessed/s2orc/folder
+--output_folder /YOUR/PREPROCESSED/S2ORC/FOLDER
 ```
 This script will download, in this example, 20 shards (out of ~350 shards in total in the S2ORC corpus). In addition, it will also extract necessary information from each of the shards
 ```bash
 # the downloaded shards
-ls /your/preprocessed/s2orc/folder/s2orc_temp
+ls /YOUR/PREPROCESSED/S2ORC/FOLDER/s2orc_temp
 >>> 0.gz  10.gz  11.gz  12.gz  13.gz  14.gz  15.gz  16.gz  17.gz  18.gz  19.gz  1.gz  2.gz  3.gz  4.gz  5.gz  6.gz  7.gz  8.gz  9.gz
 
 # the preprocessed data
-ls /your/preprocessed/s2orc/folder/extracted_metadata
+ls /YOUR/PREPROCESSED/S2ORC/FOLDER/extracted_metadata
 >>> 0.jsonl  10.jsonl  11.jsonl  12.jsonl  13.jsonl  14.jsonl  15.jsonl  16.jsonl  17.jsonl  18.jsonl  19.jsonl  1.jsonl  2.jsonl  3.jsonl  4.jsonl  5.jsonl  6.jsonl  7.jsonl  8.jsonl  9.jsonl
 ```
 
-> TODO: Need to update instruction for getting paper metadata from Semantic Scholar API, i.e. `/your/preprocessed/s2orc/folder/metadata_from_api/metadata_from_api.jsonl`
+> TODO: Need to update instruction for getting paper metadata from Semantic Scholar API, i.e. `/YOUR/PREPROCESSED/S2ORC/FOLDER/metadata_from_api/metadata_from_api.jsonl`
 
 
 Next, we need to obtain the metadata from Semantic Scholar paper API. More specifically, we obtain the following info for all paper ids
@@ -125,10 +125,10 @@ Next, we need to obtain the metadata from Semantic Scholar paper API. More speci
 
 ```bash
 
-python get_metadata.py --extracted_metadata_path /your/preprocessed/s2orc/folder/extracted_metadata \
+python get_metadata.py --extracted_metadata_path /YOUR/PREPROCESSED/S2ORC/FOLDER/extracted_metadata \
 --semantic_scholar_api_key YOUR_SEMANTIC_SCHOLAR_API_KEY \
---output_file /your/preprocessed/s2orc/folder/metadata_from_api/metadata_from_api.jsonl \
---s2orc_raw_folder /your/preprocessed/s2orc/folder/s2orc_temp/
+--output_file /YOUR/PREPROCESSED/S2ORC/FOLDER/metadata_from_api/metadata_from_api.jsonl \
+--s2orc_raw_folder /YOUR/PREPROCESSED/S2ORC/FOLDER/s2orc_temp/
 ```
 
 
@@ -140,13 +140,13 @@ cd frieren/casper/data_types/citation_contexts/s2orc
 
 
 python process_dataset.py \
---input_folder /your/preprocessed/s2orc/folder/extracted_metadata \
---output_file /your/preprocessed/s2orc/folder/citation_contexts_triplets/triplets_intermediate.tsv
+--input_folder /YOUR/PREPROCESSED/S2ORC/FOLDER/extracted_metadata \
+--output_file /YOUR/PREPROCESSED/S2ORC/FOLDER/citation_contexts_triplets/triplets_intermediate.tsv
 
 python prepare_training_dataset.py \
---input_file /your/preprocessed/s2orc/folder/citation_contexts_triplets/triplets_intermediate.tsv \
---metadata_file /your/preprocessed/s2orc/folder/metadata_from_api/metadata_from_api.jsonl \
---output_file /your/preprocessed/s2orc/folder/citation_contexts_triplets/raw.tsv
+--input_file /YOUR/PREPROCESSED/S2ORC/FOLDER/citation_contexts_triplets/triplets_intermediate.tsv \
+--metadata_file /YOUR/PREPROCESSED/S2ORC/FOLDER/metadata_from_api/metadata_from_api.jsonl \
+--output_file /YOUR/PREPROCESSED/S2ORC/FOLDER/citation_contexts_triplets/raw.tsv
 ```
 
 + Co-citations
@@ -155,22 +155,22 @@ python prepare_training_dataset.py \
 cd frieren/casper/data_types/cocit/s2orc
 
 python process_dataset.py \
---input_folder /your/preprocessed/s2orc/folder/extracted_metadata \
---output_file /your/preprocessed/s2orc/folder/cocit_triplets/triplets_intermediate.tsv
+--input_folder /YOUR/PREPROCESSED/S2ORC/FOLDER/extracted_metadata \
+--output_file /YOUR/PREPROCESSED/S2ORC/FOLDER/cocit_triplets/triplets_intermediate.tsv
 
 python prepare_training_dataset.py \
---input_file /your/preprocessed/s2orc/folder/cocit_triplets/triplets_intermediate.tsv \
---metadata_file /your/preprocessed/s2orc/folder/metadata_from_api/metadata_from_api.jsonl \
---output_file /your/preprocessed/s2orc/folder/cocit_triplets/raw.tsv
+--input_file /YOUR/PREPROCESSED/S2ORC/FOLDER/cocit_triplets/triplets_intermediate.tsv \
+--metadata_file /YOUR/PREPROCESSED/S2ORC/FOLDER/metadata_from_api/metadata_from_api.jsonl \
+--output_file /YOUR/PREPROCESSED/S2ORC/FOLDER/cocit_triplets/raw.tsv
 ```
 + Author-assigned keyphrases
 For author assigned keyphrases, we utilize two keyphrase generation dataset [KP20K](https://huggingface.co/datasets/memray/kp20k) and [KPBioMed](https://huggingface.co/datasets/taln-ls2n/kpbiomed)
 ```bash
 cd frieren/casper/data_types/kp
 
-mkdir /your/preprocessed/s2orc/folder/kp_triplets
+mkdir /YOUR/PREPROCESSED/S2ORC/FOLDER/kp_triplets
 python kp_datasets.py \
---output_file /your/preprocessed/s2orc/folder/kp_triplets/raw.tsv \
+--output_file /YOUR/PREPROCESSED/S2ORC/FOLDER/kp_triplets/raw.tsv \
 --max_collections 1000000
 ```
 + Titles
@@ -178,13 +178,13 @@ python kp_datasets.py \
 cd frieren/casper/data_types/title/s2orc
 
 python process_dataset.py \
---input_folder /your/preprocessed/s2orc/folder/extracted_metadata \
---output_file /your/preprocessed/s2orc/folder/title_abstract_triplets/triplets_intermediate.tsv
+--input_folder /YOUR/PREPROCESSED/S2ORC/FOLDER/extracted_metadata \
+--output_file /YOUR/PREPROCESSED/S2ORC/FOLDER/title_abstract_triplets/triplets_intermediate.tsv
 
 python prepare_training_dataset.py \
---input_file /your/preprocessed/s2orc/folder/title_abstract_triplets/triplets_intermediate.tsv \
---metadata_file /your/preprocessed/s2orc/folder/metadata_from_api/metadata_from_api.jsonl \
---output_file /your/preprocessed/s2orc/folder/title_abstract_triplets/raw.tsv
+--input_file /YOUR/PREPROCESSED/S2ORC/FOLDER/title_abstract_triplets/triplets_intermediate.tsv \
+--metadata_file /YOUR/PREPROCESSED/S2ORC/FOLDER/metadata_from_api/metadata_from_api.jsonl \
+--output_file /YOUR/PREPROCESSED/S2ORC/FOLDER/title_abstract_triplets/raw.tsv
 ```
 + User interaction data
 We use [SciRepEval Search](https://huggingface.co/datasets/allenai/scirepeval/viewer/search)
@@ -192,7 +192,7 @@ We use [SciRepEval Search](https://huggingface.co/datasets/allenai/scirepeval/vi
 cd frieren/casper/user_interaction/scirepeval_search
 
 python prepare_training_dataset.py \
---output_file /your/preprocessed/s2orc/folder/query_triplets/raw.tsv
+--output_file /YOUR/PREPROCESSED/S2ORC/FOLDER/query_triplets/raw.tsv
 ```
 
 
@@ -205,11 +205,11 @@ We need to first go to [`frieren/casper/combined_dataset/combine_dataset.py`](./
 ```python
 ...
 files = {
-        "kp": "/your/preprocessed/s2orc/folder/kp_triplets/raw.tsv",
-        "cocit": "/your/preprocessed/s2orc/folder/cocit_triplets/raw.tsv",
-        "title": "/your/preprocessed/s2orc/folder/title_abstract_triplets/raw.tsv", 
-        "user_interaction": "/your/preprocessed/s2orc/folder/query_triplets/raw.tsv",
-        "cc": "/your/preprocessed/s2orc/folder/citation_contexts_triplets/raw.tsv",
+        "kp": "/YOUR/PREPROCESSED/S2ORC/FOLDER/kp_triplets/raw.tsv",
+        "cocit": "/YOUR/PREPROCESSED/S2ORC/FOLDER/cocit_triplets/raw.tsv",
+        "title": "/YOUR/PREPROCESSED/S2ORC/FOLDER/title_abstract_triplets/raw.tsv", 
+        "user_interaction": "/YOUR/PREPROCESSED/S2ORC/FOLDER/query_triplets/raw.tsv",
+        "cc": "/YOUR/PREPROCESSED/S2ORC/FOLDER/citation_contexts_triplets/raw.tsv",
 }
 
 max_documents = {
@@ -223,17 +223,17 @@ max_documents = {
 
 ...
 
-output_folder = f"/your/preprocessed/s2orc/folder/combined_training_data/combined_{data_types_to_include_str}"
+output_folder = f"/YOUR/PREPROCESSED/S2ORC/FOLDER/combined_training_data/combined_{data_types_to_include_str}"
 ```
 > TODOs: Need to adjust [`frieren/casper/combined_dataset/combine_dataset.py`](./frieren/casper/combined_dataset/combine_dataset.py) to use configuration file instead of modifying the script directly.
 
 Run the script to combine the triplets
 ```bash
-mkdir /your/preprocessed/s2orc/folder/combined_training_data
+mkdir /YOUR/PREPROCESSED/S2ORC/FOLDER/combined_training_data
 python combine_dataset.py
 ```
 
-The path of the training data should be `/your/preprocessed/s2orc/folder/combined_training_data/combined_cc+cocit+kp+title+user_interaction/raw.tsv`
+The path of the training data should be `/YOUR/PREPROCESSED/S2ORC/FOLDER/combined_training_data/combined_cc+cocit+kp+title+user_interaction/raw.tsv`
 
 ## Evaluation
 

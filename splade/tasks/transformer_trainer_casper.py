@@ -93,9 +93,10 @@ class CASPERv2Trainer(TrainerIter):
                                 regularization_losses[reg] += (training_reg_loss_func(out["pos_q_{}".format(targeted_rep)]) * lambda_q).mean()
                             if lambda_d:
                                 regularization_losses[reg] += ((training_reg_loss_func(out["pos_d_{}".format(targeted_rep)]) * lambda_d).mean() +
-                                                               (training_reg_loss_func(out["neglv1_d_{}".format(targeted_rep)]) * lambda_d).mean() +
-                                                               (training_reg_loss_func(out["neglv2_d_{}".format(targeted_rep)]) * lambda_d).mean() +
-                                                               (training_reg_loss_func(out["neglv3_d_{}".format(targeted_rep)]) * lambda_d).mean()) / 4
+                                                               (training_reg_loss_func(out["neg_dep_d_{}".format(targeted_rep)]) * lambda_d).mean() +
+                                                               (training_reg_loss_func(out["neg_venue_d_{}".format(targeted_rep)]) * lambda_d).mean() +
+                                                               (training_reg_loss_func(out["neg_keyphrases_d_{}".format(targeted_rep)]) * lambda_d).mean() +
+                                                               (training_reg_loss_func(out["neg_tokens_d_{}".format(targeted_rep)]) * lambda_d).mean()) / 4
                             # NOTE: we take the rep of pos q for queries, but it would be equivalent to take the neg
                             # (because we consider triplets, so the rep of pos and neg are the same)
                             loss += sum(regularization_losses.values())
@@ -154,14 +155,16 @@ class SiameseCASPERv2Trainer(CASPERv2Trainer):
         # for this trainer, the batch contains query, pos doc and neg doc HF formatted inputs
         q_kwargs = parse(batch, "q")
         d_pos_kwargs = parse(batch, "pos")
-        d_neglv1_kwargs = parse(batch, "neglv1")
-        d_neglv2_kwargs = parse(batch, "neglv2")
-        d_neglv3_kwargs = parse(batch, "neglv3")
+        d_neg_dep_kwargs = parse(batch, "neg_dep")
+        d_neg_venue_kwargs = parse(batch, "neg_venue")
+        d_neg_keyphrases_kwargs = parse(batch, "neg_keyphrases")
+        d_neg_tokens_kwargs = parse(batch, "neg_tokens")
 
         d_pos_args = {"q_kwargs": q_kwargs, "d_kwargs": d_pos_kwargs}
-        d_neglv1_args = {"q_kwargs": q_kwargs, "d_kwargs": d_neglv1_kwargs}
-        d_neglv2_args = {"q_kwargs": q_kwargs, "d_kwargs": d_neglv2_kwargs}
-        d_neglv3_args = {"q_kwargs": q_kwargs, "d_kwargs": d_neglv3_kwargs}
+        d_neg_dep_args = {"q_kwargs": q_kwargs, "d_kwargs": d_neg_dep_kwargs}
+        d_neg_venue_args = {"q_kwargs": q_kwargs, "d_kwargs": d_neg_venue_kwargs}
+        d_neg_keyphrases_args = {"q_kwargs": q_kwargs, "d_kwargs": d_neg_keyphrases_kwargs}
+        d_neg_tokens_args = {"q_kwargs": q_kwargs, "d_kwargs": d_neg_tokens_kwargs}
 
 
         if "augment_pairs" in self.config:
@@ -172,25 +175,25 @@ class SiameseCASPERv2Trainer(CASPERv2Trainer):
                 raise NotImplementedError
         with torch.cuda.amp.autocast() if self.fp16 else amp.NullContextManager():
             out_pos = self.model(**d_pos_args)
-            out_neglv1 = self.model(**d_neglv1_args)
-            out_neglv2 = self.model(**d_neglv2_args)
-            out_neglv3 = self.model(**d_neglv3_args)
+            out_neg_dep = self.model(**d_neg_dep_args)
+            out_neg_venue = self.model(**d_neg_venue_args)
+            out_neg_keyphrases = self.model(**d_neg_keyphrases_args)
+            out_neg_tokens = self.model(**d_neg_tokens_args)
             
         out = {}
         for k, v in out_pos.items():
             out["pos_{}".format(k)] = v
-        for k, v in out_neglv1.items():
-            out["neglv1_{}".format(k)] = v
-        for k, v in out_neglv2.items():
-            out["neglv2_{}".format(k)] = v
-        for k, v in out_neglv3.items():
-            out["neglv3_{}".format(k)] = v
+        for k, v in out_neg_dep.items():
+            out["neg_dep_{}".format(k)] = v
+        for k, v in out_neg_venue.items():
+            out["neg_venue_{}".format(k)] = v
+        for k, v in out_neg_keyphrases.items():
+            out["neg_keyphrases_{}".format(k)] = v
+        for k, v in out_neg_tokens.items():
+            out["neg_tokens_{}".format(k)] = v
 
         if "teacher_p_score" in batch:  # distillation pairs dataloader
-            out["teacher_pos_score"] = batch["teacher_p_score"]
-            out["teacher_neglv1_score"] = batch["teacher_nlv1_score"]
-            out["teacher_neglv2_score"] = batch["teacher_nlv2_score"]
-            out["teacher_neglv3_score"] = batch["teacher_nlv3_score"]
+            raise NotImplementedError
         
         return out
 

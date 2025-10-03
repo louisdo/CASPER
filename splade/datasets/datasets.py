@@ -45,7 +45,7 @@ class PairsDatasetPreLoad(Dataset):
     
 
 class CASPERv2PairsDatasetPreload(PairsDatasetPreLoad):
-    def __init__(self, data_dir):
+    def __init__(self, data_dir, neg_separator = "<hier-concept>"):
         self.data_dir = data_dir
         self.id_style = "row_id"
 
@@ -63,8 +63,8 @@ class CASPERv2PairsDatasetPreload(PairsDatasetPreLoad):
                         continue
                     query, pos, neg_all = splitted_line  # first column is id
                     
-                    neglv1, neglv2, neglv3 = neg_all.split("--__--")
-                    self.data_dict[index] = (query.strip(), pos.strip(), neglv1.strip(), neglv2.strip(), neglv3.strip())
+                    neg_dep, neg_venue, neg_keyphrases, neg_tokens = neg_all.split(neg_separator)
+                    self.data_dict[index] = (query.strip(), pos.strip(), neg_dep.strip(), neg_venue.strip(), neg_keyphrases.strip(), neg_tokens.strip())
                     index += 1
 
             print(f"There are {count_error_rows} faulty rows!")
