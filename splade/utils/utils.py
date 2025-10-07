@@ -8,7 +8,7 @@ from omegaconf import DictConfig, OmegaConf
 from ..losses.pairwise import DistilKLLoss, PairwiseNLL, DistilMarginMSE, DistilMarginMSEv2, \
     InBatchPairwiseNLL, InBatchPairwiseNLLv2, InBatchPairwiseNLLPhraseSplade, InBatchPairwiseNLLNoHardNeg, \
     InBatchPairwiseNLLPhraseSpladev2, InBatchPairwiseNLLPhraseSpladev3, InBatchPairwiseNLLPhraseSpladev4, InBatchPairwiseNLLPhraseSpladev1_1, \
-    InBatchPairwiseNLLPhraseSpladev2_1, InBatchPairwiseNLLPhraseSpladev2_2
+    InBatchPairwiseNLLPhraseSpladev2_1, InBatchPairwiseNLLPhraseSpladev2_2, InBatchPairwiseNLLCASPERv2
 from ..losses.pointwise import BCEWithLogitsLoss
 
 
@@ -157,6 +157,7 @@ def get_initialize_config(exp_dict: DictConfig, train=False):
     # delay import to reduce dependencies
     from ..utils.hydra import hydra_chdir
     hydra_chdir(exp_dict)
+    print(exp_dict)
     exp_dict["init_dict"]["fp16"] = exp_dict["config"].get("fp16", False)
     config = exp_dict["config"]
     init_dict = exp_dict["init_dict"]
@@ -208,6 +209,8 @@ def get_loss(config):
         loss = InBatchPairwiseNLLPhraseSpladev4()
     elif config["loss"] == "InBatchPairwiseNLLNoHardNeg":
         loss = InBatchPairwiseNLLNoHardNeg()
+    elif config["loss"] == "InBatchPairwiseNLLCASPERv2":
+        loss = InBatchPairwiseNLLCASPERv2()
     elif config["loss"] == "BCE":
         loss = BCEWithLogitsLoss()
     else:

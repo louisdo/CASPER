@@ -1,0 +1,20 @@
+# @package _global_
+# lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps: the pretrained model from which we got lamdo/casper
+
+init_dict:
+  model_type_or_dir: lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
+  model_type_or_dir_q: null
+  freeze_d_model: 0
+  agg: max
+  fp16: true
+  original_bert_vocab_size: 30522
+  concept_level_indices_path: /scratch/lamdo/casperv2/concept_level_indices/7Oct2025.json
+
+config:
+  tokenizer_type: lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
+  lora:
+    apply_lora: true
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules: ["q_lin","k_lin","v_lin", "out_lin", "lin1", "lin2", "vocab_transform","vocab_projector"]
