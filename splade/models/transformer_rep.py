@@ -746,6 +746,20 @@ class CASPERv2(PhraseSpladev2):
             #     tokens: [...]
             # }
 
+    def encode(self, tokens, is_q):
+        out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+        out_dep = out[:, 5, :] # (bs, voc_size)
+        out_regular = out[:,6:,:] # (bs, pad_len - len_prefix, voc_size)
+        if self.agg == "sum":
+            raise NotImplementedError
+        else:
+            values, _ = torch.max(torch.log(1 + torch.relu(out_regular)) * tokens["attention_mask"][:,6:].unsqueeze(-1), dim=1)
+            values_dep = torch.log(1 + torch.relu(out_dep))
+
+            values[..., self.concept_level_indices["dep"]] = values_dep[..., self.concept_level_indices["dep"]]
+            return values
+            # 0 masking also works with max because all activations are positive
+
     def _split_rep_into_levels(self, rep: torch.Tensor) -> List[torch.Tensor]:
         rep_lv_tokens = rep[..., :self.original_bert_vocab_size]
         rep_lv_keyphrases = rep[..., self.concept_level_indices["keyphrases"]]
@@ -768,7 +782,7 @@ class CASPERv2(PhraseSpladev2):
             if do_d:
                 d_rep = self.encode(kwargs["d_kwargs"], is_q=False)
                 if self.cosine:  # normalize embeddings
-                    d_rep = normalize(d_rep)
+                    raise NotImplementedError
 
                 d_rep_lv_tokens, d_rep_lv_keyphrases, d_rep_lv_venue, d_rep_lv_dep = self._split_rep_into_levels(d_rep)
 
@@ -776,7 +790,7 @@ class CASPERv2(PhraseSpladev2):
             if do_q:
                 q_rep = self.encode(kwargs["q_kwargs"], is_q=True)
                 if self.cosine:  # normalize embeddings
-                    q_rep = normalize(q_rep)
+                    raise NotImplementedError
 
                 q_rep_lv_tokens, q_rep_lv_keyphrases, q_rep_lv_venue, q_rep_lv_dep = self._split_rep_into_levels(q_rep)
 

@@ -14,7 +14,7 @@ record_frequency: 2000
 train_monitoring_freq: 100
 warmup_steps: 6000
 max_length: 256
-fp16: false
+fp16: true
 augment_pairs: in_batch_negatives
 matching_type: casperv2 # phrase_splade_v4 # phrase_splade_v3 #splade #phrase_splade_v2
 monitoring_ckpt: loss  # or e.g. MRR@10
