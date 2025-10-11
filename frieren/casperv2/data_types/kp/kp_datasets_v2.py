@@ -4,8 +4,7 @@
 # python kp_datasets.py --output_file /scratch/lamdo/phrase_splade_datasets/kp20k/raw.tsv --max_collections 2000000
 
 import json, os, random, sys
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 
 import pandas as pd
 from copy import deepcopy

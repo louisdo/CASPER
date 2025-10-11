@@ -60,4 +60,5 @@ def test_query():
         print(random_context)
         print("\n")
 
-test_query()
+if __name__ == "__main__":
+    test_query()

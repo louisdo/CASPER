@@ -87,7 +87,7 @@ def main():
     bm25_indexer.load()
 
     citation_context_triplets = []
-    for file in tqdm(files[:2], desc="Reading citation contexts from files"):
+    for file in tqdm(files, desc="Reading citation contexts from files"):
         with open(file) as f:
             for line in tqdm(f, desc=file):
                 jline = json.loads(line)

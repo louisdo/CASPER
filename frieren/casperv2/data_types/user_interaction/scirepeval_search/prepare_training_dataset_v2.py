@@ -88,7 +88,8 @@ def main():
                 ]
             ):
                 continue
-            similar_docs_with_query.append(doc)
+            similar_docs_with_query.append(doc["content"])
+            
         if not similar_docs_with_query:
             print("some problems when query hard neg candidates")
             continue
