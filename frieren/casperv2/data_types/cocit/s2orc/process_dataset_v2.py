@@ -13,12 +13,6 @@ from utils import get_context_from_metadata, load_metadata_from_api, write_tsv
 from pyserini_lucence_bm25.build_index import PyseriniLuceneBM25
 
 
-def get_context_from_metadata(metadata):
-
-    if metadata["abstract"]:
-        return " ".join([metadata["title"], metadata["abstract"]])
-    return metadata["title"]
-
 
 def get_negative_citation(
     group_citations, all_references, pos_venue, metadata_from_api_data, shared_venue
