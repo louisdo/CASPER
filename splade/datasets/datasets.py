@@ -3,6 +3,7 @@ import json
 import os
 import pickle
 import random
+import nltk
 
 from torch.utils.data import Dataset
 from tqdm.auto import tqdm
@@ -48,7 +49,7 @@ class CASPERv2PairsDatasetPreload(PairsDatasetPreLoad):
     def __init__(self, 
                  data_dir, 
                  neg_separator = "<hier-concept>",
-                 doc_prefix = "Published by department of [MASK]. "):
+                 doc_prefix = ""): #"Published by department of [MASK]. "
         self.data_dir = data_dir
         self.id_style = "row_id"
 
@@ -65,10 +66,12 @@ class CASPERv2PairsDatasetPreload(PairsDatasetPreLoad):
                         count_error_rows += 1
                         continue
                     query, pos, neg_all = splitted_line  # first column is id
+
+                    query = nltk.sent_tokenize(query)[0]
                     
                     neg_dep, neg_venue, neg_keyphrases, neg_tokens = neg_all.split(neg_separator)
                     self.data_dict[index] = (
-                        query.strip(), 
+                        doc_prefix + query.strip(), 
                         doc_prefix + pos.strip(), 
                         doc_prefix + neg_dep.strip(), 
                         doc_prefix + neg_venue.strip(), 

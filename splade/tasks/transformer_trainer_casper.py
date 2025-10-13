@@ -175,7 +175,7 @@ class SiameseCASPERv2Trainer(CASPERv2Trainer):
                 # actually compute all the scores w.r.t. the queries in the batch
             else:
                 raise NotImplementedError
-        with torch.cuda.amp.autocast() if self.fp16 else amp.NullContextManager():
+        with torch.amp.autocast("cuda", ) if self.fp16 else amp.NullContextManager():
             out_pos = self.model(**d_pos_args)
             out_neg_dep = self.model(**d_neg_dep_args)
             out_neg_venue = self.model(**d_neg_venue_args)

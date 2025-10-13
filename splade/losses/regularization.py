@@ -1,4 +1,5 @@
 import torch
+from typing import Dict, List
 
 ORIGINAL_BERT_VOCAB_SIZE = 30522
 
@@ -29,6 +30,25 @@ class FLOPS:
 
     def __call__(self, batch_rep):
         return torch.sum(torch.mean(torch.abs(batch_rep), dim=0) ** 2)
+    
+
+class FLOPSHier:
+    """constraint from Minimizing FLOPs to Learn Efficient Sparse Representations
+    https://arxiv.org/abs/2004.05665
+    """
+
+    def __init__(self, concept_level_indices: Dict[str, List[int]]):
+        self.concept_level_indices = concept_level_indices
+
+    def __call__(self, batch_rep):
+        batch_mean_l2 = torch.mean(torch.abs(batch_rep), dim=0) ** 2
+
+        dep_reg_loss = torch.mean(batch_mean_l2[self.concept_level_indices["dep"]])
+        venue_rep_loss = torch.mean(batch_mean_l2[self.concept_level_indices["venue"]])
+        keyphrases_rep_loss = torch.mean(batch_mean_l2[self.concept_level_indices["keyphrases"]])
+        tokens_rep_loss = torch.mean(batch_mean_l2[self.concept_level_indices["tokens"]])
+
+        return dep_reg_loss + venue_rep_loss + keyphrases_rep_loss + tokens_rep_loss
     
 class FLOPSPhrase:
     def __init__(self, phrase_reg_magnifier = 5):
@@ -100,6 +120,8 @@ def init_regularizer(reg, **kwargs):
         return L1()
     elif reg == "FLOPS":
         return FLOPS()
+    elif reg == "FLOPSHier":
+        return FLOPSHier(kwargs["concept_level_indices"])
     elif reg =="FLOPSPhrasev2":
         return FLOPSPhrasev2()
     elif reg.startswith("FLOPSPhrase--"):

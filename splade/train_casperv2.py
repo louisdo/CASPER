@@ -76,7 +76,8 @@ def train(exp_dict: DictConfig):
             pass
         else:
             for reg in config["regularizer"]:
-                temp = {"loss": init_regularizer(config["regularizer"][reg]["reg"]),
+                temp = {"loss": init_regularizer(config["regularizer"][reg]["reg"], 
+                                                 concept_level_indices = model.concept_level_indices),
                         "targeted_rep": config["regularizer"][reg]["targeted_rep"]}
                 d_ = {}
                 if "lambda_q" in config["regularizer"][reg]:

@@ -746,19 +746,41 @@ class CASPERv2(PhraseSpladev2):
             #     tokens: [...]
             # }
 
+    # def encode(self, tokens, is_q):
+    #     out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+    #     out_dep = out[:, 5, :] # (bs, voc_size)
+    #     out_regular = out[:,6:,:] # (bs, pad_len - len_prefix, voc_size)
+    #     if self.agg == "sum":
+    #         raise NotImplementedError
+    #     else:
+    #         out_tokens = out_regular[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
+    #         out_phrases = out_regular[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+    #         values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"][:,6:].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
+    #         values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"][:,6:].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
+
+    #         values = torch.cat([values_tokens, values_phrases], dim = -1)
+
+
+    #         values_dep = torch.log(1 + torch.relu(out_dep))
+
+    #         values[..., self.concept_level_indices["dep"]] += values_dep[..., self.concept_level_indices["dep"]]
+    #         return values
+    #         # 0 masking also works with max because all activations are positive
+
     def encode(self, tokens, is_q):
         out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
-        out_dep = out[:, 5, :] # (bs, voc_size)
-        out_regular = out[:,6:,:] # (bs, pad_len - len_prefix, voc_size)
         if self.agg == "sum":
             raise NotImplementedError
         else:
-            values, _ = torch.max(torch.log(1 + torch.relu(out_regular)) * tokens["attention_mask"][:,6:].unsqueeze(-1), dim=1)
-            values_dep = torch.log(1 + torch.relu(out_dep))
+            out_tokens = out[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
+            out_phrases = out[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+            values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
+            values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
 
-            values[..., self.concept_level_indices["dep"]] = values_dep[..., self.concept_level_indices["dep"]]
+            values = torch.cat([values_tokens, values_phrases], dim = -1)
             return values
             # 0 masking also works with max because all activations are positive
+
 
     def _split_rep_into_levels(self, rep: torch.Tensor) -> List[torch.Tensor]:
         rep_lv_tokens = rep[..., :self.original_bert_vocab_size]
@@ -775,7 +797,7 @@ class CASPERv2(PhraseSpladev2):
         "q_kwargs" => contains all inputs for query encoding ([OPTIONAL], e.g. for indexing)
         """
 
-        with torch.cuda.amp.autocast() if self.fp16 else NullContextManager():
+        with torch.amp.autocast("cuda", dtype = torch.bfloat16) if self.fp16 else NullContextManager():
             out = {}
             do_d, do_q = "d_kwargs" in kwargs, "q_kwargs" in kwargs
             phrase_scale = None

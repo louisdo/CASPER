@@ -14,7 +14,7 @@ config:
   tokenizer_type: lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
   lora:
     apply_lora: false
-    # r: 16
-    # alpha: 32
-    # dropout: 0.05
-    # target_modules: ["q_lin","k_lin","v_lin", "out_lin", "lin1", "lin2", "vocab_transform","vocab_projector"]
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules: ["q_lin","k_lin","v_lin", "out_lin", "lin1", "lin2", "vocab_transform"] #,"vocab_projector"]
