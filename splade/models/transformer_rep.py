@@ -718,28 +718,72 @@ class PhraseSpladev5(PhraseSpladev4):
 
 
 class CASPERv2(PhraseSpladev2):
-    def __init__(self, model_type_or_dir, concept_level_indices_path: str, model_type_or_dir_q=None, freeze_d_model=False, agg="max", fp16=True, original_bert_vocab_size = 30522):
-        super().__init__(model_type_or_dir=model_type_or_dir,
-                         output="MLM",
-                         match="dot_product",
-                         model_type_or_dir_q=model_type_or_dir_q,
-                         freeze_d_model=freeze_d_model,
-                         fp16=fp16,
-                         original_bert_vocab_size=original_bert_vocab_size)
+    def __init__(self, model_type_or_dir, 
+                 concept_level_indices_path: str, 
+                 model_type_or_dir_q=None, 
+                 freeze_d_model=False, 
+                 agg="max", 
+                 fp16=True, original_bert_vocab_size = 30522):
+        super().__init__(
+            model_type_or_dir=model_type_or_dir,
+            model_type_or_dir_q=model_type_or_dir_q,
+            freeze_d_model=freeze_d_model,
+            agg=agg,
+            fp16=fp16,
+            original_bert_vocab_size=original_bert_vocab_size
+        )
         import os, json
         assert os.path.exists(concept_level_indices_path) and concept_level_indices_path.endswith(".json")
 
         with open(concept_level_indices_path) as f:
-            self.concept_level_indices = {int(k): v for k, v in json.load(f).items()}
-
+            self.concept_level_indices = json.load(f)
+            
+            # concept_level_indices should look like:
             # self.concept_level_indices = {
-            #     1: [...],
-            #     2: [...],
-            #     3: [...]
+            #     dep: [...],
+            #     venue: [...],
+            #     keyphrases: [...],
+            #     tokens: [...]
             # }
 
+    # def encode(self, tokens, is_q):
+    #     out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+    #     out_dep = out[:, 5, :] # (bs, voc_size)
+    #     out_regular = out[:,6:,:] # (bs, pad_len - len_prefix, voc_size)
+    #     if self.agg == "sum":
+    #         raise NotImplementedError
+    #     else:
+    #         out_tokens = out_regular[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
+    #         out_phrases = out_regular[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+    #         values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"][:,6:].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
+    #         values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"][:,6:].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
+
+    #         values = torch.cat([values_tokens, values_phrases], dim = -1)
+
+
+    #         values_dep = torch.log(1 + torch.relu(out_dep))
+
+    #         values[..., self.concept_level_indices["dep"]] += values_dep[..., self.concept_level_indices["dep"]]
+    #         return values
+    #         # 0 masking also works with max because all activations are positive
+
+    def encode(self, tokens, is_q):
+        out = self.encode_(tokens, is_q)["logits"]  # shape (bs, pad_len, voc_size)
+        if self.agg == "sum":
+            raise NotImplementedError
+        else:
+            out_tokens = out[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
+            out_phrases = out[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+            values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
+            values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
+
+            values = torch.cat([values_tokens, values_phrases], dim = -1)
+            return values
+            # 0 masking also works with max because all activations are positive
+
+
     def _split_rep_into_levels(self, rep: torch.Tensor) -> List[torch.Tensor]:
-        rep_lv_tokens = rep[..., self.concept_level_indices["tokens"]]
+        rep_lv_tokens = rep[..., :self.original_bert_vocab_size]
         rep_lv_keyphrases = rep[..., self.concept_level_indices["keyphrases"]]
         rep_lv_venue = rep[..., self.concept_level_indices["venue"]]
         rep_lv_dep = rep[..., self.concept_level_indices["dep"]]
@@ -753,14 +797,14 @@ class CASPERv2(PhraseSpladev2):
         "q_kwargs" => contains all inputs for query encoding ([OPTIONAL], e.g. for indexing)
         """
 
-        with torch.cuda.amp.autocast() if self.fp16 else NullContextManager():
+        with torch.amp.autocast("cuda", dtype = torch.bfloat16) if self.fp16 else NullContextManager():
             out = {}
             do_d, do_q = "d_kwargs" in kwargs, "q_kwargs" in kwargs
             phrase_scale = None
             if do_d:
                 d_rep = self.encode(kwargs["d_kwargs"], is_q=False)
                 if self.cosine:  # normalize embeddings
-                    d_rep = normalize(d_rep)
+                    raise NotImplementedError
 
                 d_rep_lv_tokens, d_rep_lv_keyphrases, d_rep_lv_venue, d_rep_lv_dep = self._split_rep_into_levels(d_rep)
 
@@ -768,7 +812,7 @@ class CASPERv2(PhraseSpladev2):
             if do_q:
                 q_rep = self.encode(kwargs["q_kwargs"], is_q=True)
                 if self.cosine:  # normalize embeddings
-                    q_rep = normalize(q_rep)
+                    raise NotImplementedError
 
                 q_rep_lv_tokens, q_rep_lv_keyphrases, q_rep_lv_venue, q_rep_lv_dep = self._split_rep_into_levels(q_rep)
 
@@ -791,6 +835,6 @@ class CASPERv2(PhraseSpladev2):
                 # out.update({"score": 0.8 * score + 0.2 * score_phrase})
                 out.update({"score_keyphrases": score_keyphrases, 
                             "score_tokens": score_tokens,
-                            "scores_venue": score_venue,
-                            "scores_dep": score_dep})
+                            "score_venue": score_venue,
+                            "score_dep": score_dep})
         return out

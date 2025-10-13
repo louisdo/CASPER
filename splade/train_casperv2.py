@@ -76,7 +76,8 @@ def train(exp_dict: DictConfig):
             pass
         else:
             for reg in config["regularizer"]:
-                temp = {"loss": init_regularizer(config["regularizer"][reg]["reg"]),
+                temp = {"loss": init_regularizer(config["regularizer"][reg]["reg"], 
+                                                 concept_level_indices = model.concept_level_indices),
                         "targeted_rep": config["regularizer"][reg]["targeted_rep"]}
                 d_ = {}
                 if "lambda_q" in config["regularizer"][reg]:
@@ -135,7 +136,30 @@ def train(exp_dict: DictConfig):
 
     val_evaluator = None
     if "VALIDATION_FULL_RANKING" in exp_dict["data"]:
-        raise NotImplementedError
+        with open_dict(config):
+            config["val_full_rank_qrel_path"] = exp_dict["data"]["VALIDATION_FULL_RANKING"]["QREL_PATH"]
+        full_ranking_d_collection = CollectionDatasetPreLoad(
+            data_dir=exp_dict["data"]["VALIDATION_FULL_RANKING"]["D_COLLECTION_PATH"], id_style="row_id")
+        full_ranking_d_loader = CollectionDataLoader(dataset=full_ranking_d_collection,
+                                                     tokenizer_type=config["tokenizer_type"],
+                                                     max_length=config["max_length"],
+                                                     batch_size=config["eval_batch_size"],
+                                                     shuffle=False, num_workers=4)
+        full_ranking_q_collection = CollectionDatasetPreLoad(
+            data_dir=exp_dict["data"]["VALIDATION_FULL_RANKING"]["Q_COLLECTION_PATH"], id_style="row_id")
+        full_ranking_q_loader = CollectionDataLoader(dataset=full_ranking_q_collection,
+                                                     tokenizer_type=config["tokenizer_type"],
+                                                     max_length=config["max_length"], batch_size=1,
+                                                     # TODO fix: bs currently set to 1
+                                                     shuffle=False, num_workers=4)
+        val_evaluator = SparseApproxEvalWrapper(model,
+                                                config={"top_k": exp_dict["data"]["VALIDATION_FULL_RANKING"]["TOP_K"],
+                                                        "out_dir": os.path.join(config["checkpoint_dir"],
+                                                                                "val_full_ranking")
+                                                        },
+                                                collection_loader=full_ranking_d_loader,
+                                                q_loader=full_ranking_q_loader,
+                                                restore=False)
 
     # #################################################################
     # # TRAIN

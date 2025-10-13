@@ -1,0 +1,20 @@
+# FILES
+defaults:  # (these specify which config FILES to use)
+  ############## TRAIN ###################################
+  - train/config: casperv2
+  - train/data: casperv2
+  - train/model: casperv2 #splade_pretrain_from_distilbert
+  ############## INDEX ###################################
+  - index: toy
+  ############## RETRIEVE ################################
+  - retrieve_evaluate: toy
+  ############### FLOPS ##################################
+  - flops: toy
+
+# Direct PARAMETER setting
+config:  # to be provided for each run
+  checkpoint_dir: "/scratch/lamdo/casperv2/checkpoints/test5/debug/checkpoint" # phrase_splade_78
+  index_dir: "/scratch/lamdo/casperv2/checkpoints/test5/debug/index"
+  out_dir: "/scratch/lamdo/casperv2/checkpoints/test5/debug/out"
+  fp16: true
+  train_batch_size: 16

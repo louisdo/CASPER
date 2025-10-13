@@ -311,4 +311,6 @@ class InBatchPairwiseNLLCASPERv2(InBatchPairwiseNLLPhraseSplade):
         loss_venue = self.helper(out_d=out_d, field_name="score_venue", neg_type = "venue")
         loss_dep = self.helper(out_d=out_d, field_name="score_dep", neg_type = "dep")
 
+        # print("Losses:", loss_dep.item(), loss_venue.item(), loss_keyphrases.item(), loss_tokens.item())
+
         return loss_tokens + loss_keyphrases + loss_venue + loss_dep

@@ -1,3 +1,9 @@
+SPLADE_CONFIG_NAME="config_casperv2" \
+CUDA_VISIBLE_DEVICES=2 \
+python3 -m splade.train_casperv2
+
+
+
 SPLADE_CONFIG_NAME="config_phrase_splade" \
 CUDA_VISIBLE_DEVICES=1 \
 python3 -m splade.train
