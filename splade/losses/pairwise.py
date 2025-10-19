@@ -290,7 +290,15 @@ class DistilKLLoss:
 
 
 class InBatchPairwiseNLLCASPERv2(InBatchPairwiseNLLPhraseSplade):
-    def helper(self, out_d, field_name, neg_type):
+
+    @staticmethod
+    def log_normalize(positive_scores, dim=-1, epsilon=1e-9):
+        scores = positive_scores + epsilon
+        log_sum = torch.log(torch.sum(scores, dim=dim, keepdim=True))
+        
+        return torch.log(scores) - log_sum
+    
+    def helper(self, out_d, field_name, neg_type, temparature = 1.0):
         assert neg_type in ["dep", "venue", "keyphrases", "tokens"]
         in_batch_scores, neg_scores = out_d[f"pos_{field_name}"], out_d[f"neg_{neg_type}_{field_name}"]
         # here in_batch_scores is a matrix of size bs * (bs / nb_gpus)
@@ -299,8 +307,10 @@ class InBatchPairwiseNLLCASPERv2(InBatchPairwiseNLLPhraseSplade):
 
 
         temp = torch.cat([in_batch_scores, neg_scores], dim=1)  # concat neg score
+        # max_score_each_row, _ = torch.max(temp, dim = 1)
 
-        scores = self.logsoftmax(temp)
+        # scores = InBatchPairwiseNLLCASPERv2.log_normalize(positive_scores=temp, dim = 1)
+        scores = self.logsoftmax(temp / temparature)
         return torch.mean(-scores[torch.arange(in_batch_scores.shape[0]),
                                   torch.arange(nb_columns).repeat(nb_gpus)])
     
@@ -309,8 +319,8 @@ class InBatchPairwiseNLLCASPERv2(InBatchPairwiseNLLPhraseSplade):
         loss_tokens = self.helper(out_d=out_d, field_name="score_tokens", neg_type = "tokens")
         loss_keyphrases = self.helper(out_d=out_d, field_name="score_keyphrases", neg_type = "keyphrases")
         loss_venue = self.helper(out_d=out_d, field_name="score_venue", neg_type = "venue")
-        loss_dep = self.helper(out_d=out_d, field_name="score_dep", neg_type = "dep")
+        # loss_dep = self.helper(out_d=out_d, field_name="score_dep", neg_type = "dep", temparature=3.0)
 
         # print("Losses:", loss_dep.item(), loss_venue.item(), loss_keyphrases.item(), loss_tokens.item())
 
-        return loss_tokens + loss_keyphrases + loss_venue + loss_dep
+        return loss_tokens + loss_keyphrases + loss_venue #+ loss_dep
