@@ -93,10 +93,10 @@ class CASPERv2Trainer(TrainerIter):
                                 regularization_losses[reg] += (training_reg_loss_func(out["pos_q_{}".format(targeted_rep)]) * lambda_q).mean()
                             if lambda_d:
                                 regularization_losses[reg] += ((training_reg_loss_func(out["pos_d_{}".format(targeted_rep)]) * lambda_d).mean() +
-                                                               (training_reg_loss_func(out["neg_dep_d_{}".format(targeted_rep)]) * lambda_d).mean() +
+                                                            #    (training_reg_loss_func(out["neg_dep_d_{}".format(targeted_rep)]) * lambda_d).mean() +
                                                                (training_reg_loss_func(out["neg_venue_d_{}".format(targeted_rep)]) * lambda_d).mean() +
                                                                (training_reg_loss_func(out["neg_keyphrases_d_{}".format(targeted_rep)]) * lambda_d).mean() +
-                                                               (training_reg_loss_func(out["neg_tokens_d_{}".format(targeted_rep)]) * lambda_d).mean()) / 5
+                                                               (training_reg_loss_func(out["neg_tokens_d_{}".format(targeted_rep)]) * lambda_d).mean()) / 4
                             # NOTE: we take the rep of pos q for queries, but it would be equivalent to take the neg
                             # (because we consider triplets, so the rep of pos and neg are the same)
                             loss += sum(regularization_losses.values())
@@ -107,10 +107,10 @@ class CASPERv2Trainer(TrainerIter):
                                 out["pos_q_rep"]).mean()
                             # again, we can choose pos_q_rep or neg_q_rep indifferently
                             monitor_losses["{}_d".format(reg)] = (self.regularizer["eval"][reg]["loss"](out["pos_d_rep"]).mean() + 
-                                                                  self.regularizer["eval"][reg]["loss"](out["neg_dep_d_rep"]).mean() +
+                                                                #   self.regularizer["eval"][reg]["loss"](out["neg_dep_d_rep"]).mean() +
                                                                   self.regularizer["eval"][reg]["loss"](out["neg_venue_d_rep"]).mean() +
                                                                   self.regularizer["eval"][reg]["loss"](out["neg_keyphrases_d_rep"]).mean() +
-                                                                  self.regularizer["eval"][reg]["loss"](out["neg_tokens_d_rep"]).mean()) / 5
+                                                                  self.regularizer["eval"][reg]["loss"](out["neg_tokens_d_rep"]).mean()) / 4
             # when multiple GPUs, we need to aggregate the loss from the different GPUs (that's why the .mean())
             # see https://medium.com/huggingface/training-larger-batches-practical-tips-on-1-gpu-multi-gpu-distributed-setups-ec88c3e51255
             # for gradient accumulation  # TODO: check if everything works with gradient accumulation
@@ -177,7 +177,7 @@ class SiameseCASPERv2Trainer(CASPERv2Trainer):
                 raise NotImplementedError
         with torch.amp.autocast("cuda", ) if self.fp16 else amp.NullContextManager():
             out_pos = self.model(**d_pos_args)
-            out_neg_dep = self.model(**d_neg_dep_args)
+            # out_neg_dep = self.model(**d_neg_dep_args)
             out_neg_venue = self.model(**d_neg_venue_args)
             out_neg_keyphrases = self.model(**d_neg_keyphrases_args)
             out_neg_tokens = self.model(**d_neg_tokens_args)
@@ -185,8 +185,8 @@ class SiameseCASPERv2Trainer(CASPERv2Trainer):
         out = {}
         for k, v in out_pos.items():
             out["pos_{}".format(k)] = v
-        for k, v in out_neg_dep.items():
-            out["neg_dep_{}".format(k)] = v
+        # for k, v in out_neg_dep.items():
+        #     out["neg_dep_{}".format(k)] = v
         for k, v in out_neg_venue.items():
             out["neg_venue_{}".format(k)] = v
         for k, v in out_neg_keyphrases.items():

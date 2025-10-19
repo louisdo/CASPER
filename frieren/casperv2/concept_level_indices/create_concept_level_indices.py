@@ -1,4 +1,5 @@
-# python create_concept_level_indices.py --output_file /scratch/lamdo/casperv2/concept_level_indices/7Oct2025.json
+# python create_concept_level_indices.py --output_file /scratch/lamdo/casperv2/concept_level_indices/7Oct2025.json # with dep
+# python create_concept_level_indices.py --output_file /scratch/lamdo/casperv2/concept_level_indices/17Oct2025.json # no dep
 
 import json, os
 import pandas as pd
@@ -20,10 +21,10 @@ def main():
 
     args = parser.parse_args()
 
-    df_dep = pd.read_csv(args.dep_names_data_path)
+    # df_dep = pd.read_csv(args.dep_names_data_path)
     df_venue = pd.read_csv(args.venue_names_data_path)
 
-    all_dep_names = list(df_dep["department"])
+    # all_dep_names = list(df_dep["department"])
     all_venue_names = set(df_venue[df_venue['h_index'] > args.venue_min_hindex]['full_name'])
 
 
@@ -31,11 +32,11 @@ def main():
     reverse_voc = {v:k for k,v in tokenizer.vocab.items()}
 
     dep_phrase_counter = Counter()
-    for dep_name in all_dep_names:
-        tokens = tokenizer(dep_name)["input_ids"]
-        phrases = [tok for tok in tokens if tok >= 30522]
+    # for dep_name in all_dep_names:
+    #     tokens = tokenizer(dep_name)["input_ids"]
+    #     phrases = [tok for tok in tokens if tok >= 30522]
 
-        dep_phrase_counter.update(phrases)
+    #     dep_phrase_counter.update(phrases)
     
     dep_phrase_counter = {k:v for k,v in dep_phrase_counter.items() if v >= args.dep_level_min_frequency}
     

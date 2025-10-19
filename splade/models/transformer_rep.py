@@ -763,7 +763,7 @@ class CASPERv2(PhraseSpladev2):
 
     #         values_dep = torch.log(1 + torch.relu(out_dep))
 
-    #         values[..., self.concept_level_indices["dep"]] += values_dep[..., self.concept_level_indices["dep"]]
+    #         values[..., self.concept_level_indices["dep"]] = values_dep[..., self.concept_level_indices["dep"]]
     #         return values
     #         # 0 masking also works with max because all activations are positive
 
@@ -778,6 +778,144 @@ class CASPERv2(PhraseSpladev2):
             values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
 
             values = torch.cat([values_tokens, values_phrases], dim = -1)
+            return values
+            # 0 masking also works with max because all activations are positive
+
+
+    def _split_rep_into_levels(self, rep: torch.Tensor) -> List[torch.Tensor]:
+        rep_lv_tokens = rep[..., :self.original_bert_vocab_size]
+        rep_lv_keyphrases = rep[..., self.concept_level_indices["keyphrases"]]
+        rep_lv_venue = rep[..., self.concept_level_indices["venue"]]
+        rep_lv_dep = None #rep[..., self.concept_level_indices["dep"]]
+
+        return rep_lv_tokens, rep_lv_keyphrases, rep_lv_venue, rep_lv_dep
+
+
+    def forward(self, **kwargs):
+        """forward takes as inputs 1 or 2 dict
+        "d_kwargs" => contains all inputs for document encoding
+        "q_kwargs" => contains all inputs for query encoding ([OPTIONAL], e.g. for indexing)
+        """
+
+        with torch.amp.autocast("cuda", dtype = torch.bfloat16) if self.fp16 else NullContextManager():
+            out = {}
+            do_d, do_q = "d_kwargs" in kwargs, "q_kwargs" in kwargs
+            phrase_scale = None
+            if do_d:
+                d_rep = self.encode(kwargs["d_kwargs"], is_q=False)
+                if self.cosine:  # normalize embeddings
+                    raise NotImplementedError
+
+                d_rep_lv_tokens, d_rep_lv_keyphrases, d_rep_lv_venue, d_rep_lv_dep = self._split_rep_into_levels(d_rep)
+
+                out.update({"d_rep": d_rep})
+            if do_q:
+                q_rep = self.encode(kwargs["q_kwargs"], is_q=True)
+                if self.cosine:  # normalize embeddings
+                    raise NotImplementedError
+
+                q_rep_lv_tokens, q_rep_lv_keyphrases, q_rep_lv_venue, q_rep_lv_dep = self._split_rep_into_levels(q_rep)
+
+                out.update({"q_rep": q_rep})
+            if do_d and do_q:
+                if "nb_negatives" in kwargs:
+                    raise NotImplementedError
+                else:
+                    if "score_batch" in kwargs:
+                        score_tokens = torch.matmul(q_rep_lv_tokens, d_rep_lv_tokens.t())  # shape (bs_q, bs_d)
+                        score_keyphrases = torch.matmul(q_rep_lv_keyphrases, d_rep_lv_keyphrases.t())  # shape (bs_q, bs_d)
+                        score_venue = torch.matmul(q_rep_lv_venue, d_rep_lv_venue.t())  # shape (bs_q, bs_d)
+                        # score_dep = torch.matmul(q_rep_lv_dep, d_rep_lv_dep.t())  # shape (bs_q, bs_d)
+                    else:
+                        score_tokens = torch.sum(q_rep_lv_tokens * d_rep_lv_tokens, dim=1, keepdim=True)  # shape (bs, )
+                        score_keyphrases = torch.sum(q_rep_lv_keyphrases * d_rep_lv_keyphrases, dim=1, keepdim=True)  # shape (bs, )
+                        score_venue = torch.sum(q_rep_lv_venue * d_rep_lv_venue, dim=1, keepdim=True)  # shape (bs, )
+                        # score_dep = torch.sum(q_rep_lv_dep * d_rep_lv_dep, dim=1, keepdim=True)  # shape (bs, )
+                        
+                # out.update({"score": 0.8 * score + 0.2 * score_phrase})
+                out.update({
+                    "score_keyphrases": score_keyphrases, 
+                    "score_tokens": score_tokens,
+                    "score_venue": score_venue,
+                    # "score_dep": score_dep
+                            })
+        return out
+    
+
+class CASPERv2_2(PhraseSpladev2):
+    def __init__(self, model_type_or_dir, 
+                 concept_level_indices_path: str, 
+                 model_type_or_dir_q=None, 
+                 freeze_d_model=False, 
+                 agg="max", 
+                 fp16=True, original_bert_vocab_size = 30522):
+        super().__init__(
+            model_type_or_dir=model_type_or_dir,
+            model_type_or_dir_q=model_type_or_dir_q,
+            freeze_d_model=freeze_d_model,
+            agg=agg,
+            fp16=fp16,
+            original_bert_vocab_size=original_bert_vocab_size
+        )
+        import os, json
+        assert os.path.exists(concept_level_indices_path) and concept_level_indices_path.endswith(".json")
+
+        with open(concept_level_indices_path) as f:
+            self.concept_level_indices = json.load(f)
+            
+            # concept_level_indices should look like:
+            # self.concept_level_indices = {
+            #     dep: [...],
+            #     venue: [...],
+            #     keyphrases: [...],
+            #     tokens: [...]
+            # }
+
+
+    def encode_(self, tokens, is_q=False):
+        transformer = self.transformer_rep
+        if is_q and self.transformer_rep_q is not None:
+            transformer = self.transformer_rep_q
+
+
+        
+        lhs = transformer.transformer.distilbert(**tokens)[0] # shape (bs, pad_len, hidden_dim)
+        # mean_pooled_lhs = torch.sum(lhs[:,:8] * tokens["attention_mask"][:,:8].unsqueeze(-1), dim = 1, keepdim=True) # shape (bs, 1, hidden_dim)
+
+        # hidden_states = torch.cat((mean_pooled_lhs, lhs), dim = 1)
+
+        # prediction_logits = transformer.transformer.vocab_transform(hidden_states)  # (bs, seq_length, dim)
+        prediction_logits = transformer.transformer.vocab_transform(lhs)  # (bs, seq_length, dim)
+        prediction_logits = transformer.transformer.activation(prediction_logits)  # (bs, seq_length, dim)
+        prediction_logits = transformer.transformer.vocab_layer_norm(prediction_logits)  # (bs, seq_length, dim)
+
+        mean_pooled_ = torch.sum(prediction_logits, dim = 1, keepdim = True)# (bs, 1, dim)
+        prediction_logits = transformer.transformer.vocab_projector(torch.cat((mean_pooled_, prediction_logits), dim = 1))  # (bs, seq_length, vocab_size)
+
+
+
+        return prediction_logits[:,1:,:], prediction_logits[:,0:1,:]
+
+
+    def encode(self, tokens, is_q):
+        out, mean_pooled_out = self.encode_(tokens, is_q)#["logits"]  # shape (bs, pad_len, voc_size)
+        
+
+        if self.agg == "sum":
+            raise NotImplementedError
+        else:
+            out_tokens = out[..., :self.original_bert_vocab_size] # shape (bs, pad_len, original_bert_vocab_size)
+            out_phrases = out[..., self.original_bert_vocab_size:] # shape (bs, pad_len, vocab_size - original_bert_vocab_size)
+            values_tokens, _ = torch.max(torch.log(1 + torch.relu(out_tokens)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, original_bert_vocab_size)
+            values_phrases = torch.sum(torch.log(1 + torch.relu(out_phrases)) * tokens["attention_mask"].unsqueeze(-1), dim=1) # shape (bs, vocab_size - original_bert_vocab_size)
+
+            values = torch.cat([values_tokens, values_phrases], dim = -1) # shape (bs, voc_size)
+
+            values_dep_venue = torch.log(1 + torch.relu(mean_pooled_out))[:, 0, :] # shape (bs, voc_size)
+
+            values[:, self.concept_level_indices["dep"]] = values_dep_venue[:, self.concept_level_indices["dep"]]
+            values[:, self.concept_level_indices["venue"]] = values_dep_venue[:, self.concept_level_indices["venue"]]
+
             return values
             # 0 masking also works with max because all activations are positive
 
