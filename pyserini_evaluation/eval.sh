@@ -1,14 +1,14 @@
-NUM_CHUNKS=3
+NUM_CHUNKS=1
 INDEX_FOLDER=$OUT_FOLDER/indexes/
 BM25_MODELS_FOLDER=/scratch/lamdo/beir_splade/bm25_models/
 ADD_BM25=0
 MASK_SPECIAL_TOKENS=0
 
-CUDA_DEVICE=2
+CUDA_DEVICE=1
 
 datasets=(
-    scifact  
-    # scidocs 
+    # scifact  
+    scidocs 
     # nfcorpus  
     # doris_mae 
     # trec-covid 
@@ -43,7 +43,8 @@ models=(
     # original_spladev2_max
     # original_spladev2
     # splade_max_1
-    lamdo_casper
+    # lamdo_casper
+    casper_revise_1
 )
 weight_tokens=( 1 )
 weight_phrases=( 

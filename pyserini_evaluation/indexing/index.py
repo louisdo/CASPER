@@ -5,7 +5,7 @@ from transformers import AutoModelForMaskedLM, AutoTokenizer
 from pyserini_evaluation.indexing.model_name_2_info import model_name_2_path, model_name_2_model_class, model_name_2_is_maxsim, model_name_2_original_bert_vocab_size
 from pyserini_evaluation.indexing.bm25_model import BM25
 from tqdm import tqdm
-from memory_profiler import profile 
+# from memory_profiler import profile 
 from copy import deepcopy
 
 SPLADE = {

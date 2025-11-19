@@ -43,12 +43,12 @@ class FLOPSHier:
     def __call__(self, batch_rep):
         batch_mean_l2 = torch.mean(torch.abs(batch_rep), dim=0) ** 2
 
-        dep_reg_loss = torch.mean(batch_mean_l2[self.concept_level_indices["dep"]])
+        # dep_reg_loss = torch.mean(batch_mean_l2[self.concept_level_indices["dep"]])
         venue_rep_loss = torch.mean(batch_mean_l2[self.concept_level_indices["venue"]])
         keyphrases_rep_loss = torch.mean(batch_mean_l2[self.concept_level_indices["keyphrases"]])
         tokens_rep_loss = torch.mean(batch_mean_l2[self.concept_level_indices["tokens"]])
 
-        return dep_reg_loss + venue_rep_loss + keyphrases_rep_loss + tokens_rep_loss
+        return venue_rep_loss + keyphrases_rep_loss + tokens_rep_loss #+ dep_reg_loss 
     
 class FLOPSPhrase:
     def __init__(self, phrase_reg_magnifier = 5):
