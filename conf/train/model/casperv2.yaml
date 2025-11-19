@@ -8,7 +8,7 @@ init_dict:
   agg: max
   fp16: true
   original_bert_vocab_size: 30522
-  concept_level_indices_path: /scratch/lamdo/casperv2/concept_level_indices/7Oct2025.json
+  concept_level_indices_path: /scratch/lamdo/casperv2/concept_level_indices/17Oct2025.json
 
 config:
   tokenizer_type: lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps

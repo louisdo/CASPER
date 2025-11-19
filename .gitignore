@@ -9,6 +9,6 @@ data/
 *_gitig_*
 *.json
 pyserini_evaluation/metadata/
-*.txt
 keyphrase_generation/splade
 outputs/
+results*/

@@ -67,7 +67,7 @@ class CASPERv2PairsDatasetPreload(PairsDatasetPreLoad):
                         continue
                     query, pos, neg_all = splitted_line  # first column is id
 
-                    query = nltk.sent_tokenize(query)[0]
+                    # query = nltk.sent_tokenize(query)[0]
                     
                     neg_dep, neg_venue, neg_keyphrases, neg_tokens = neg_all.split(neg_separator)
                     self.data_dict[index] = (

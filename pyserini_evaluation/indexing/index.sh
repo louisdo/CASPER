@@ -3,11 +3,11 @@ STORE_DOCUMENTS_IN_RAW=0
 ADD_BM25=0
 MASK_SPECIAL_TOKENS=0
 
-CUDA_DEVICE=2
+CUDA_DEVICE=1
 
 datasets=(
-    scifact  
-    # scidocs 
+    # scifact  
+    scidocs 
     # nfcorpus  
     # doris_mae 
     # trec-covid 
@@ -38,7 +38,8 @@ models=(
     # normal_splade_pretrains2orc
     # original_spladev2_max
     # splade_max_1
-    lamdo_casper
+    # lamdo_casper
+    casper_revise_1
 )
 
 for dataset in "${datasets[@]}"; do

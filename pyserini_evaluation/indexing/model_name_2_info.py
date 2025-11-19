@@ -90,6 +90,9 @@ model_name_2_path = {
     "phrase_splade_91": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_91/debug/checkpoint/model",
     "phrase_splade_92": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_92/debug/checkpoint/model",
     "phrase_splade_93": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_93/debug/checkpoint/model",
+    
+    "test_linh": "linh101201/casper",
+    "casper_revise_1": "/scratch/lamdo/phrase_splade_checkpoints/casper_revision_1/debug/checkpoint/model",
 
 
     "phrase_splade_71_cfscube_taxoindex": "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_71_cfscube_taxoindex/debug/checkpoint/model",
@@ -190,6 +193,9 @@ model_name_2_model_class = {
     "phrase_splade_93": PhraseSpladev3,
     "lamdo_casper": PhraseSpladev3,
 
+    "test_linh": PhraseSpladev3,
+    "casper_revise_1": PhraseSpladev3,
+
     "splade_addedword_1": Splade,
     "splade_addedword_2": PhraseSpladev3,
     "eru_kg": Splade,
@@ -284,6 +290,9 @@ model_name_2_is_maxsim = {
     "phrase_splade_92": False,
     "phrase_splade_93": False,
     "lamdo_casper": False,
+
+    "test_linh": False,
+    "casper_revise_1": False,
 
 
     "phrase_splade_71_cfscube_taxoindex": False,

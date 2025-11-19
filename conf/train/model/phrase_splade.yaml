@@ -25,7 +25,7 @@
 # "/scratch/lamdo/phrase_splade_checkpoints/phrase_splade_71/debug/checkpoint/model" # CASPER, after training with FRIEREN
 
 init_dict:
-  model_type_or_dir: lamdo/cocondenser-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
+  model_type_or_dir: lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
   model_type_or_dir_q: null
   freeze_d_model: 0
   agg: max
@@ -33,5 +33,5 @@ init_dict:
   original_bert_vocab_size: 30522
 
 config:
-  tokenizer_type: lamdo/cocondenser-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
+  tokenizer_type: lamdo/distilbert-base-uncased-phrase-30kaddedphrasesfroms2orc-mlm-70000steps
 

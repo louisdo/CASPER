@@ -37,12 +37,12 @@ def get_model(config: DictConfig, init_dict: DictConfig):
         init_dict["non_phrase_indices"] = non_phrase_indices
 
     model = model_class(**init_dict)
-    if config["lora"]["apply_lora"]:
-        attach_lora_to_casper(model,
-                              r = config["lora"]["r"],
-                              alpha = config["lora"]["alpha"],
-                              dropout=config["lora"]["dropout"],
-                              target_modules=config["lora"]["target_modules"])
+    # if config["lora"]["apply_lora"]:
+    #     attach_lora_to_casper(model,
+    #                           r = config["lora"]["r"],
+    #                           alpha = config["lora"]["alpha"],
+    #                           dropout=config["lora"]["dropout"],
+    #                           target_modules=config["lora"]["target_modules"])
         
 
     return model
