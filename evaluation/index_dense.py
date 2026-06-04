@@ -59,8 +59,6 @@ def main():
     parser.add_argument("--dataset_name", type = str, required = True)
     parser.add_argument("--work_dir", type = str, default="../../")
     parser.add_argument("--index_path", type = str, required=True)
-    parser.add_argument("--num_chunks", type = int, default = 4)
-    parser.add_argument("--chunk_idx", type = int, required = True)
     parser.add_argument("--batch_size", type = int, default = 32)
 
     args = parser.parse_args()
@@ -70,8 +68,6 @@ def main():
     dataset_name = args.dataset_name
     work_dir = args.work_dir
     index_path = args.index_path
-    num_chunks = args.num_chunks
-    chunk_idx = args.chunk_idx
     batch_size = args.batch_size
 
 
@@ -85,9 +81,10 @@ def main():
     # load corpus
     corpus_path = os.path.join(
         work_dir, 
+        "benchmarks",
         DATASET2RELPATH[dataset_name],
         "corpus.jsonl")
-    assert os.path.exists(corpus_path)
+    assert os.path.exists(corpus_path), corpus_path
 
     corpus = []
     with open(corpus_path) as f:
@@ -97,13 +94,10 @@ def main():
     
     print("Corpus length", len(corpus))
 
-    chunk_indices = np.array_split(np.arange(len(corpus)), num_chunks)[chunk_idx]
-    chunk = [corpus[index] for index in chunk_indices]
-
     ids = []
     embeddings = []
-    for i in tqdm(range(0, len(chunk), batch_size), desc = "Generating embeddings"):
-        batch = chunk[i:i+batch_size]
+    for i in tqdm(range(0, len(corpus), batch_size), desc = "Generating embeddings"):
+        batch = corpus[i:i+batch_size]
         text_batch = [f"{line['title']} | {line['text']}" for line in batch]
 
         batch_embeddings = text_embedding_batch(batch = text_batch, model = model, 

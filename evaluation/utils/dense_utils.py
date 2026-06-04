@@ -7,8 +7,8 @@ DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 MODEL_HF_IDS = {
     "specter2": "allenai/specter2_base",
     "bge_m3": "BAAI/bge-m3",
-    "qwen3_embedding": "Qwen/Qwen3-Embedding",
-    "e5_base": "intfloat/e5-base",
+    "qwen3_embedding": "Qwen/Qwen3-Embedding-0.6B",
+    "e5_base": "intfloat/e5-base-v2",
 }
 
 # prefix_["query"] prepended during retrieval, prefix_["doc"] during indexing.

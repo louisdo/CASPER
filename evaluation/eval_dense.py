@@ -93,11 +93,13 @@ def main():
 
     queries_path = os.path.join(
         work_dir, 
+        "benchmarks",
         DATASET2RELPATH[dataset_name],
         "queries.jsonl")
     
     qrel_path = os.path.join(
         work_dir,
+        "benchmarks",
         DATASET2RELPATH[dataset_name],
         "qrels/test.tsv" if dataset_name != "msmarco" else "qrels/dev.tsv"
     )
