@@ -15,7 +15,11 @@ dense = [
     "torch==2.5.1",
     "numpy<2",
     "faiss-gpu",
-    "transformers==4.46.3",
+    "transformers==4.51.3",
+    "sentence-transformers",
+]
+cspr = [
+    { include-group = "dense" },
 ]
 colbert = [
     "colbert-ai>=0.2.0",

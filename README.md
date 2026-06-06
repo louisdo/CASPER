@@ -1,7 +1,5 @@
 # CSpR
 
-Retrieval evaluation framework for scientific literature benchmarks.
-
 ## Quick Start
 
 ```python
@@ -40,11 +38,11 @@ cd CSpR
 make venv-dense
 ```
 
-This creates `.venv-dense` with all dense retrieval dependencies.
-
-
 ### Setup environment for CSpR
-TODO
+
+```bash
+make venv-cspr
+```
 
 ### Setup environment for multi-vector retrieval
 TODO
