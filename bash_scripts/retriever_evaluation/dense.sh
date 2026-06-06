@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Activate the dense virtual environment (created with: make venv-dense)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-source "$PROJECT_ROOT/.venv-dense/bin/activate"
 
 OUT_FOLDER="/scratch/lamdo/CSpR/retrieval"
 WORK_DIR="/scratch/lamdo/CSpR"
