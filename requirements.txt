@@ -1,7 +1,0 @@
-torch==2.5.1
-"numpy<2"
-faiss-gpu
-pandas==2.2.3
-tqdm
-transformers==4.46.3
-pytrec-eval

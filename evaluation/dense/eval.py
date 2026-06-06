@@ -3,9 +3,9 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from dataclasses import dataclass
-from evaluation.utils.dense_utils import init_model, text_embedding_batch, DenseSearchResult
-from evaluation.utils.datasets_utils import DATASET2RELPATH
-from evaluation.utils.eval_utils import convert_to_pytrec_eval_format, evaluate, mrr
+from evaluation.dense.dense_utils import init_model, text_embedding_batch, DenseSearchResult
+from evaluation.shared.datasets_utils import DATASET2RELPATH
+from evaluation.shared.eval_utils import convert_to_pytrec_eval_format, evaluate, mrr
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 

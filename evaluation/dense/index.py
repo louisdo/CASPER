@@ -2,8 +2,8 @@ import os, json, torch, faiss
 import numpy as np
 from argparse import ArgumentParser
 from tqdm import tqdm
-from evaluation.utils.dense_utils import init_model, text_embedding_batch
-from evaluation.utils.datasets_utils import DATASET2RELPATH
+from evaluation.dense.dense_utils import init_model, text_embedding_batch
+from evaluation.shared.datasets_utils import DATASET2RELPATH
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     
@@ -56,7 +56,7 @@ def do_indexing(embeddings, string_ids=None, index_folder=None):
 def main():
     parser = ArgumentParser()
     parser.add_argument("--model_name", type = str, required = True)
-    parser.add_argument("--dataset_name", type = str, required = True)
+    parser.add_argument("--dataset", type = str, required = True)
     parser.add_argument("--work_dir", type = str, default="../../")
     parser.add_argument("--index_path", type = str, required=True)
     parser.add_argument("--batch_size", type = int, default = 32)
@@ -65,7 +65,7 @@ def main():
 
 
     model_name = args.model_name
-    dataset_name = args.dataset_name
+    dataset_name = args.dataset
     work_dir = args.work_dir
     index_path = args.index_path
     batch_size = args.batch_size

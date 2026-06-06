@@ -1,3 +1,5 @@
-.venv
+.venv*/
 *_gitig_*
 *__pycache__*
+*.pyc
+*.pyo
