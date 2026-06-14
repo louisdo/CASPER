@@ -1,11 +1,12 @@
-import json
+import json, os
 from argparse import ArgumentParser
 from collections import defaultdict
 
 import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
-
+from tqdm import tqdm
+from train.cspr.keyphrase_vocab.utils import _load_keyphrase_index
 
 def _find(parent, x):
     while parent[x] != x:
@@ -46,14 +47,24 @@ def group_keyphrases(
     dim = embeddings.shape[1]
     index = faiss.IndexFlatIP(dim)
     index.add(embeddings)
+    if device.startswith("cuda"):
+        res = faiss.StandardGpuResources()
+        device_id = int(device.split(":")[-1]) if ":" in device else 0
+        index = faiss.index_cpu_to_gpu(res, device_id, index)
 
     print(f"Searching top-{top_k} neighbors per keyphrase...")
-    similarities, indices = index.search(embeddings, top_k)
+    all_sims, all_inds = [], []
+    for start in tqdm(range(0, n, batch_size), desc="FAISS search"):
+        sims, inds = index.search(embeddings[start:start + batch_size], top_k)
+        all_sims.append(sims)
+        all_inds.append(inds)
+    similarities = np.concatenate(all_sims, axis=0)
+    indices = np.concatenate(all_inds, axis=0)
 
     print("Clustering...")
     parent = list(range(n))
 
-    for i in range(n):
+    for i in tqdm(range(n), desc = "searching for similar keyphrases"):
         for j, sim in zip(indices[i], similarities[i]):
             if j != i and sim >= threshold:
                 _union(parent, i, int(j))
@@ -62,7 +73,10 @@ def group_keyphrases(
     for i, kp in enumerate(keyphrases):
         groups[_find(parent, i)].append(kp)
 
-    return {keyphrases[root]: members for root, members in groups.items()}
+    return {
+        max(members, key=lambda kp: len(keyphrase_index[kp])): members
+        for members in groups.values()
+    }
 
 
 def main():
@@ -73,12 +87,13 @@ def main():
     parser.add_argument("--threshold", type=float, default=0.92, help="Cosine similarity threshold (0-1)")
     parser.add_argument("--batch-size", type=int, default=512)
     parser.add_argument("--device", default="cuda")
-    parser.add_argument("--top-k", type=int, default=32, help="Neighbors to check per keyphrase in FAISS")
-    parser.add_argument("--frequency-filter", type = int, default = 10, help = "Frequency filter, remove all keyphrases with lower frequency")
+    parser.add_argument("--top-k", type=int, default=50, help="Neighbors to check per keyphrase in FAISS")
+    parser.add_argument("--frequency-filter", type = int, default = 5, help = "Frequency filter, remove all keyphrases with lower frequency")
     args = parser.parse_args()
 
-    with open(args.input) as f:
-        keyphrase_index = json.load(f)
+    assert os.path.exists(args.input)
+
+    keyphrase_index = _load_keyphrase_index(args.input)
 
     groups = group_keyphrases(
         keyphrase_index,
