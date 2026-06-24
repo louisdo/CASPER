@@ -4,3 +4,6 @@
 *.pyc
 *.pyo
 .env
+view.txt
+*.log
+.vscode/

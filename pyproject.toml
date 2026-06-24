@@ -10,7 +10,11 @@ dependencies = [
     "pytrec-eval",
     "openai",
     "python-dotenv",
-    "rapidfuzz"
+    "rapidfuzz",
+    "pyserini",
+    # onnxruntime (pulled in by pyserini) dropped cp310 wheels at 1.20; the venv is
+    # Python 3.10, so cap it to a version that still has 3.10 wheels.
+    "onnxruntime<1.20",
 ]
 
 [dependency-groups]
@@ -20,6 +24,9 @@ dense = [
     "faiss-gpu",
     "transformers==4.51.3",
     "sentence-transformers",
+    "datasets",
+    "accelerate",
+    "flashtext",
 ]
 cspr = [
     { include-group = "dense" },

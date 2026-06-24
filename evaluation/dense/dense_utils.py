@@ -24,10 +24,6 @@ MODEL_PREFIXES = {
 }
 
 
-@dataclass
-class DenseSearchResult:
-    docid: str
-    score: float
 
 
 def init_model(model_name):

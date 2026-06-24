@@ -1,39 +1,13 @@
 import json, sys, torch, argparse, os, faiss, time
-import pandas as pd
-import numpy as np
 from tqdm import tqdm
 from dataclasses import dataclass
 from evaluation.dense.dense_utils import init_model, text_embedding_batch, DenseSearchResult
 from evaluation.shared.datasets_utils import DATASET2RELPATH
-from evaluation.shared.eval_utils import convert_to_pytrec_eval_format, evaluate, mrr
+from evaluation.shared.eval_utils import convert_to_pytrec_eval_format, evaluate, mrr, read_qrels
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 
-
-def read_qrels(qrel_path):
-    _qrels = pd.read_csv(qrel_path, sep='\t').to_dict("records")
-    
-    metadata = {}
-    for line in _qrels:
-        query_id = str(line["query-id"])
-        doc_id = str(line["corpus-id"])
-        score = line["score"]
-
-        if query_id not in metadata:
-            metadata[query_id] = []
-
-        metadata[query_id].append({
-            "docid": doc_id,
-            "score": score
-        })
-
-    queries_ids = list(metadata.keys())
-    queries_all_labels = [metadata[k] for k in queries_ids]
-
-    qrels = convert_to_pytrec_eval_format(queries = queries_ids, all_search_results=queries_all_labels)
-
-    return qrels
 
 
 def batch_search(embeddings, q_ids, index, k, id_map=None):

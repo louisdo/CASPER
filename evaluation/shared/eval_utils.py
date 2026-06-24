@@ -1,7 +1,32 @@
 import pytrec_eval, logging
+import pandas as pd
 from typing import List, Dict, Tuple
 
 logger = logging.getLogger(__name__)
+
+def read_qrels(qrel_path):
+    _qrels = pd.read_csv(qrel_path, sep='\t').to_dict("records")
+    
+    metadata = {}
+    for line in _qrels:
+        query_id = str(line["query-id"])
+        doc_id = str(line["corpus-id"])
+        score = line["score"]
+
+        if query_id not in metadata:
+            metadata[query_id] = []
+
+        metadata[query_id].append({
+            "docid": doc_id,
+            "score": score
+        })
+
+    queries_ids = list(metadata.keys())
+    queries_all_labels = [metadata[k] for k in queries_ids]
+
+    qrels = convert_to_pytrec_eval_format(queries = queries_ids, all_search_results=queries_all_labels)
+
+    return qrels
 
 
 def convert_to_pytrec_eval_format(queries, all_search_results, type = "relevance"):

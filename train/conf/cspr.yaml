@@ -1,0 +1,73 @@
+# pretrained checkpoint to use
+model_dir: /scratch/lamdo/CSpR/continuous_pretraining/distilbert+15k+inplace/
+# vocab size before keyphrase tokens were added 
+original_vocab_size: 30522
+
+# config for tokenizer
+tokenizer:
+  use_default: false
+  keyphrase_vocab_path: /scratch/lamdo/CSpR/keyphrase_vocab/keyphrase_grouping/keyphrase_vocab.json
+  # append: keyphrases/[MASK] after [SEP] (text_pair). inplace: keyphrase tokens
+  # rewritten where they occur in the text. Must match how the model was pretrained.
+  mode: inplace # append
+  num_keyphrase_slots: 5   # append mode only
+  mask_only: false         # append mode only
+  keep_surface: false      # inplace mode only: keep surface words alongside the token
+
+# pooling per vocab partition; keys must match the partition names
+pooling_method:
+  token: max
+  phrase: sum #max
+
+# which part of the sequence each partition pools over, split at the first [SEP]:
+#   before -> text side, after -> keyphrase/[MASK] segment, full -> whole sequence.
+# Comment out (or remove) to pool every partition over the full sequence (original behaviour).
+pooling_segments:
+  token: full # before
+  phrase: full # after
+
+# train file is a tsv file (query\tpos\tneg)
+train_file: /scratch/lamdo/CSpR/finetuning/combined_cc+cocit+kp1m+query+title/raw.tsv
+
+output_dir: /scratch/lamdo/CSpR/finetuning/distilbert+15k+inplace+cspr
+q_max_length: 64
+d_max_length: 256
+
+# if max_samples>0 -> trains on only the first N triples (smoke test); 0 = train all
+max_samples: 750000
+
+# --- loss ---
+# granularities supervised by the Matryoshka contrastive loss; each F reads
+# pos_{F}/neg_{F}, e.g. "score" (token+phrase total) and "score_phrase"
+loss_field_names: [score_token, score_phrase]
+
+# per-field flag (positionally matched to loss_field_names): whether that field's
+# loss includes the hard negative. Omit to use hard negatives for every field.
+loss_neg_usage: [true, false]
+
+
+temperature: 1.0
+learnable_temperature: false
+
+# FLOPS regularization weights
+lambda_q: 0.0003
+lambda_d: 0.0001
+
+flops_warmup_steps: 6000
+
+
+max_grad_norm: 10.0
+
+
+per_device_train_batch_size: 32
+gradient_accumulation_steps: 1
+learning_rate: 0.00002
+num_train_epochs: 1
+max_steps: -1 #150000
+warmup_ratio: 0.05
+weight_decay: 0.01
+logging_steps: 50
+save_steps: 1000
+bf16: true
+seed: 42
+dataloader_num_workers: 2
