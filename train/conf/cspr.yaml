@@ -1,5 +1,5 @@
 # pretrained checkpoint to use
-model_dir: /scratch/lamdo/CSpR/continuous_pretraining/distilbert+15k+inplace/
+model_dir: /scratch/lamdo/CSpR/continuous_pretraining/distilbert+15k+inplace+s2orc/
 # vocab size before keyphrase tokens were added 
 original_vocab_size: 30522
 
@@ -29,12 +29,12 @@ pooling_segments:
 # train file is a tsv file (query\tpos\tneg)
 train_file: /scratch/lamdo/CSpR/finetuning/combined_cc+cocit+kp1m+query+title/raw.tsv
 
-output_dir: /scratch/lamdo/CSpR/finetuning/distilbert+15k+inplace+cspr
+output_dir: /scratch/lamdo/CSpR/finetuning/distilbert+15k+inplace+s2orc+cspr
 q_max_length: 64
 d_max_length: 256
 
 # if max_samples>0 -> trains on only the first N triples (smoke test); 0 = train all
-max_samples: 750000
+max_samples: 0
 
 # --- loss ---
 # granularities supervised by the Matryoshka contrastive loss; each F reads
@@ -53,21 +53,22 @@ learnable_temperature: false
 lambda_q: 0.0003
 lambda_d: 0.0001
 
-flops_warmup_steps: 6000
+flops_warmup_steps: 50000
 
 
-max_grad_norm: 10.0
+max_grad_norm: 1.0 #10.0
 
 
 per_device_train_batch_size: 32
 gradient_accumulation_steps: 1
 learning_rate: 0.00002
 num_train_epochs: 1
-max_steps: -1 #150000
+max_steps: 150000
 warmup_ratio: 0.05
 weight_decay: 0.01
 logging_steps: 50
 save_steps: 1000
+save_total_limit: 5
 bf16: true
 seed: 42
-dataloader_num_workers: 2
+dataloader_num_workers: 4

@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from transformers import AutoTokenizer, Trainer, TrainingArguments
 from datasets import Dataset
 
-from train.cspr.model import CSpRTrain
+from train.cspr.model import CSpRTrain, CSpRCombinedTrain
 from train.cspr.tokenizer import CSpRTokenizer
 from train.cspr.losses import MatryoshkaContrastiveLoss, FLOPS, FLOPS
 
@@ -119,6 +119,9 @@ class CSpRTrainer(Trainer):
             logs["temperature"] = round(self.loss_fn.current_temperature(), 4)
         if self.flops_warmup_steps > 0:
             logs["flops_warmup"] = round(self._flops_warmup_factor(), 4)
+        if hasattr(self.model, "current_lambdas"):
+            for name, value in self.model.current_lambdas().items():
+                logs[f"lambda_{name}"] = round(value, 4)
         return super().log(logs, *args, **kwargs)
 
     def _flops_warmup_factor(self) -> float:
@@ -131,7 +134,8 @@ class CSpRTrainer(Trainer):
 
     def get_decay_parameter_names(self, model):
         decay = super().get_decay_parameter_names(model)
-        return [name for name in decay if "logit_scale" not in name]
+        return [name for name in decay
+                if "logit_scale" not in name and "lambda_raw" not in name]
 
     def _save(self, output_dir=None, state_dict=None):
         output_dir = output_dir if output_dir is not None else self.args.output_dir
@@ -141,6 +145,9 @@ class CSpRTrainer(Trainer):
         )
         if getattr(self, "processing_class", None) is not None:
             self.processing_class.save_pretrained(output_dir)
+        if hasattr(self.model, "current_lambdas"):
+            with open(os.path.join(output_dir, "combiner_lambdas.json"), "w") as f:
+                json.dump(self.model.current_lambdas(), f, indent=2)
         torch.save(self.args, os.path.join(output_dir, "training_args.bin"))
 
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
@@ -195,6 +202,13 @@ class CSpRTrainer(Trainer):
 
 
 
+# training classes selectable from config via `train_class`
+TRAIN_CLASSES = {
+    "CSpRTrain": CSpRTrain,
+    "CSpRCombinedTrain": CSpRCombinedTrain,
+}
+
+
 def build_vocab_partitions(tokenizer, original_vocab_size: int) -> Dict[str, List[int]]:
     return {
         "token": list(range(original_vocab_size)),
@@ -223,14 +237,26 @@ def main():
 
     vocab_partitions = build_vocab_partitions(tokenizer, cfg["original_vocab_size"])
 
-    model = CSpRTrain(
+    train_class_name = cfg.get("train_class", "CSpRTrain")
+    if train_class_name not in TRAIN_CLASSES:
+        raise ValueError(
+            f"Unknown train_class '{train_class_name}'. Available: {list(TRAIN_CLASSES)}"
+        )
+    train_class = TRAIN_CLASSES[train_class_name]
+
+    model_kwargs = dict(
         model_type_or_dir=cfg["model_dir"],
         vocab_partitions=vocab_partitions,
         bf16=cfg["bf16"],
         pooling_method=cfg["pooling_method"],
         pooling_segments=cfg.get("pooling_segments"),
         sep_token_id=_tokenizer.sep_token_id,
+        trust_remote_code=cfg.get("trust_remote_code", False),
     )
+    if train_class is CSpRCombinedTrain:
+        model_kwargs["init_lambda"] = cfg.get("init_lambda", 0.25)
+
+    model = train_class(**model_kwargs)
 
     train_dataset = build_dataset(cfg["train_file"], cfg.get("max_samples", 0))
     data_collator = TripletCollator(tokenizer, cfg["q_max_length"], cfg["d_max_length"])
@@ -254,7 +280,7 @@ def main():
         dataloader_num_workers=cfg["dataloader_num_workers"],
         report_to="none",
         max_steps=cfg.get("max_steps", -1),
-        save_total_limit=3,
+        save_total_limit=cfg.get("save_total_limit", 3),
         # forward() takes **kwargs, so HF can't infer columns to keep -- keep them
         # all and let the collator consume query/pos/neg.
         remove_unused_columns=False,
@@ -290,6 +316,11 @@ def main():
     hf_model = model.sparse_model.transformer.model
     hf_model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
+
+    # save learned combiner lambdas (combined-score training only)
+    if hasattr(model, "current_lambdas"):
+        with open(os.path.join(output_dir, "combiner_lambdas.json"), "w") as f:
+            json.dump(model.current_lambdas(), f, indent=2)
 
     # save vocab partition
     with open(os.path.join(output_dir, "vocab_partitions.json"), "w") as f:

@@ -1,0 +1,24 @@
+# Multi-SLERP merge of a GTE-MLM CSpR run: a single weighted spherical average
+# (Riemannian barycenter) of all checkpoints at once. Unlike chained SLERP this
+# is symmetric / order-independent and honors each checkpoint's weight directly
+# (no exponential discounting). Reduces to ordinary SLERP for 2 checkpoints.
+#
+# weight defaults to 1 (equal spherical mean). Weights are normalized -> only
+# their ratios matter. Tilt toward later checkpoints by raising their weight.
+
+parent_run_dir: /scratch/lamdo/CSpR/finetuning/gte-en-mlm-base+15k+inplace+keepsurface+cspr/2026-06-30_07AM
+output_dir: /scratch/lamdo/CSpR/finetuning/gte-en-mlm-base+15k+inplace+keepsurface+cspr/2026-06-30_07AM/multislerp_16-20k
+
+mode: multislerp
+
+checkpoints:
+  - path: checkpoint-16000
+    weight: 1
+  - path: checkpoint-17000
+    weight: 1
+  - path: checkpoint-18000
+    weight: 1
+  - path: checkpoint-19000
+    weight: 1
+  - path: checkpoint-20000
+    weight: 1

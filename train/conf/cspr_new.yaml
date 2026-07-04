@@ -1,15 +1,15 @@
 # pretrained checkpoint to use
-model_dir: /scratch/lamdo/CSpR/continuous_pretraining/distilbert+15k+inplace/
+model_dir: /scratch/lamdo/CSpR/continuous_pretraining/distilbert+15k/
 # vocab size before keyphrase tokens were added 
 original_vocab_size: 30522
 
 # config for tokenizer
 tokenizer:
-  use_default: true
+  use_default: false
   keyphrase_vocab_path: /scratch/lamdo/CSpR/keyphrase_vocab/keyphrase_grouping/keyphrase_vocab.json
   # append: keyphrases/[MASK] after [SEP] (text_pair). inplace: keyphrase tokens
   # rewritten where they occur in the text. Must match how the model was pretrained.
-  mode: inplace # append
+  mode: append
   num_keyphrase_slots: 5   # append mode only
   mask_only: false         # append mode only
   keep_surface: false      # inplace mode only: keep surface words alongside the token
@@ -17,19 +17,19 @@ tokenizer:
 # pooling per vocab partition; keys must match the partition names
 pooling_method:
   token: max
-  phrase: sum #max
+  phrase: mean #max
 
 # which part of the sequence each partition pools over, split at the first [SEP]:
 #   before -> text side, after -> keyphrase/[MASK] segment, full -> whole sequence.
 # Comment out (or remove) to pool every partition over the full sequence (original behaviour).
 pooling_segments:
-  token: full # before
-  phrase: full # after
+  token: before # before
+  phrase: after # after
 
 # train file is a tsv file (query\tpos\tneg)
 train_file: /scratch/lamdo/CSpR/finetuning/combined_cc+cocit+kp1m+query+title/raw.tsv
 
-output_dir: /scratch/lamdo/CSpR/finetuning/distilbert+15k+inplace+cspr
+output_dir: /scratch/lamdo/CSpR/finetuning/distilbert+15k+cspr
 q_max_length: 64
 d_max_length: 256
 
@@ -72,6 +72,3 @@ save_total_limit: 5
 bf16: true
 seed: 42
 dataloader_num_workers: 4
-
-
-trust_remote_code: True

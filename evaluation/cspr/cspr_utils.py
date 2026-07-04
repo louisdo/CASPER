@@ -6,7 +6,7 @@ import yaml
 from transformers import AutoTokenizer
 from collections import Counter
 
-from train.cspr.model import CSpR
+from train.cspr.model import CSpR, CSpRCombined
 from train.cspr.tokenizer import CSpRTokenizer
 from train.train import build_vocab_partitions
 
@@ -35,9 +35,9 @@ def init_model(model_name: str, config_path: str | None):
         )
 
     try:
-        base_tokenizer = AutoTokenizer.from_pretrained(model_dir)
+        base_tokenizer = AutoTokenizer.from_pretrained(model_dir, trust_remote_code = cfg.get("trust_remote_code", False))
     except Exception as e:
-        base_tokenizer = AutoTokenizer.from_pretrained(cfg["model_dir"])
+        base_tokenizer = AutoTokenizer.from_pretrained(cfg["model_dir"], trust_remote_code = cfg.get("trust_remote_code", False))
 
     tok_cfg = cfg["tokenizer"]
     tokenizer = CSpRTokenizer(
@@ -55,14 +55,32 @@ def init_model(model_name: str, config_path: str | None):
     if vocab_partitions is None:
         vocab_partitions = build_vocab_partitions(tokenizer, cfg["original_vocab_size"])
 
-    model = CSpR(
+    # combined-score models fold lambda into the phrase rep at encode time, so the
+    # downstream partition sum already reproduces score_token + lambda * score_phrase.
+    combined = cfg.get("train_class") == "CSpRCombinedTrain"
+    model_class = CSpRCombined if combined else CSpR
+
+    model_kwargs = dict(
         model_type_or_dir=model_dir,
         vocab_partitions=vocab_partitions,
         bf16=cfg.get("bf16", False),
         pooling_method=cfg["pooling_method"],
         pooling_segments=cfg.get("pooling_segments"),
         sep_token_id=base_tokenizer.sep_token_id,
+        trust_remote_code=cfg.get("trust_remote_code", False),
     )
+    if combined:
+        model_kwargs["init_lambda"] = cfg.get("init_lambda", 0.25)
+
+    model = model_class(**model_kwargs)
+
+    # load the lambda learned during training, if saved alongside the checkpoint
+    if combined:
+        lambdas_path = os.path.join(model_dir, "combiner_lambdas.json")
+        if os.path.exists(lambdas_path):
+            with open(lambdas_path) as f:
+                model.set_lambdas(json.load(f))
+
     model.to(DEVICE)
     model.eval()
 
@@ -90,12 +108,19 @@ def encode_sparse_batch(texts, model, tokenizer, vocab_partitions,
 
     out = model.encode(enc)  # {partition: (bs, partition_size)}
 
+    # combined-score models already fold lambda into the (non-token) reps at encode
+    # time, so the manual phrase down-weight below would double-count -- skip it.
+    lambda_in_rep = getattr(model, "lambda_in_rep", False)
+
     batch_size = next(iter(out.values())).shape[0]
     vectors = []
     for row in range(batch_size):
         vector = Counter()
         for partition_name, scores in out.items():
-            row_scores = scores[row] * 0.25 if partition_name != "token" else scores[row]
+            if partition_name != "token" and not lambda_in_rep:
+                row_scores = scores[row] * 0.5
+            else:
+                row_scores = scores[row]
             indices = vocab_partitions[partition_name]
             nonzero = (row_scores > 0).nonzero(as_tuple=True)[0]
 
@@ -137,7 +162,5 @@ class CSpRQueryEncoder:
             top_k=self.top_k,
         )
         res = vectors[0]
-        res = {k:v * 0.25 if "<<" in k and ">>" in k else v \
-              for k,v in res.items()}
 
         return res

@@ -11,7 +11,7 @@ from transformers import (
     TrainingArguments,
 )
 from datasets import load_dataset
-from train.cspr.tokenizer import format_keyphrase
+from train.cspr.tokenizer import format_keyphrase, TextProcessor
 
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
@@ -22,26 +22,6 @@ class KeyphraseWeightedDataCollator(DataCollatorForLanguageModeling):
         super().__init__(*args, **kwargs)
         self.num_original_tokens = num_original_tokens
         self.keyphrase_mlm_probability = keyphrase_mlm_probability
-
-    def __call__(self, examples):
-        has_negatives = len(examples) > 0 and "negative_keyphrase_ids" in examples[0]
-        if has_negatives:
-            negative_ids = [example.pop("negative_keyphrase_ids") for example in examples]
-
-        batch = super().__call__(examples)
-
-        if has_negatives:
-            max_neg = max((len(negs) for negs in negative_ids), default=0)
-            neg_tensor = torch.zeros((len(examples), max_neg), dtype=torch.long)
-            neg_mask = torch.zeros((len(examples), max_neg), dtype=torch.bool)
-            for i, negs in enumerate(negative_ids):
-                if negs:
-                    neg_tensor[i, : len(negs)] = torch.tensor(negs, dtype=torch.long)
-                    neg_mask[i, : len(negs)] = True
-            batch["negative_keyphrase_ids"] = neg_tensor
-            batch["negative_keyphrase_mask"] = neg_mask
-
-        return batch
 
     def torch_mask_tokens(self, inputs, special_tokens_mask=None):
         labels = inputs.clone()
@@ -81,48 +61,6 @@ class KeyphraseWeightedDataCollator(DataCollatorForLanguageModeling):
 
         # the remaining 10% keep the original token
         return inputs, labels
-
-
-class UnlikelihoodTrainer(Trainer):
-    def __init__(self, *args, num_original_tokens: int, ul_alpha: float = 1.0, ul_eps: float = 1e-6, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.num_original_tokens = num_original_tokens
-        self.ul_alpha = ul_alpha
-        self.ul_eps = ul_eps
-
-    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
-        negative_ids = inputs.pop("negative_keyphrase_ids", None)
-        negative_mask = inputs.pop("negative_keyphrase_mask", None)
-        labels = inputs["labels"]
-
-        outputs = model(**inputs)  # labels present -> outputs.loss is the MLM cross-entropy
-        loss = outputs.loss
-
-        # masked keyphrase slots: a loss is computed there (label != -100) and the
-        # gold token is a keyphrase (id >= num_original_tokens).
-        kp_pos = (labels != -100) & (labels >= self.num_original_tokens)
-        if (
-            negative_ids is not None
-            and negative_ids.numel() > 0
-            and kp_pos.any()
-        ):
-            B, T = labels.shape
-            # gather only the masked-keyphrase rows -> (M, V) instead of (B, T, V)
-            sel_logits = outputs.logits[kp_pos]  # (M, V)
-            batch_idx = torch.arange(B, device=labels.device)[:, None].expand(B, T)[kp_pos]  # (M,)
-            neg_for_pos = negative_ids[batch_idx]  # (M, N)
-            mask_for_pos = negative_mask[batch_idx]  # (M, N)
-
-            probs = sel_logits.float().softmax(dim=-1)  # upcast for stable log(1 - p)
-            neg_probs = probs.gather(1, neg_for_pos)  # (M, N); padded ids gather id 0, masked out below
-            ul = -torch.log((1.0 - neg_probs).clamp(min=self.ul_eps))  # (M, N)
-
-            denom = mask_for_pos.sum().clamp(min=1)
-            ul_loss = (ul * mask_for_pos).sum() / denom
-            loss = loss + self.ul_alpha * ul_loss
-
-        return (loss, outputs) if return_outputs else loss
-
 
 
 def init_model_for_continuous_pretraining(
@@ -189,64 +127,80 @@ def load_keyphrase_vocab(path: str) -> List[Tuple[str, List[str]]]:
         return json.load(f)
 
 
-NEG_SEP = "||NEG||"
+class S2ORCDataset(torch.utils.data.Dataset):
 
+    def __init__(self, tokenizer, max_seq_length: int, keyphrase_vocab_path: str,
+                 max_keyphrase: int, mode: str = "append",
+                 keep_surface: bool = False, num_original_tokens: int = 0,
+                 sep_token: str = "[SEP]", sample_size: int = 0, sampling_seed: int = 0,
+                 cache_dir: str = None):
+        if mode not in ("append", "inplace"):
+            raise ValueError(f"Unknown mode '{mode}'. Expected 'append' or 'inplace'.")
+        self.tokenizer = tokenizer
+        self.max_seq_length = max_seq_length
+        self.mode = mode
+        self.keep_surface = keep_surface
+        self.num_original_tokens = num_original_tokens
 
-def build_dataset(
-    train_file: str,
-    tokenizer,
-    text_column: str,
-    max_seq_length: int,
-    num_original_tokens: int,
-    parse_negatives: bool = False,
-    max_samples: int = 0,
-):
-    split = f"train[:{max_samples}]" if max_samples > 0 else "train"
-    if train_file.endswith(".txt"):
-        dataset = load_dataset("text", data_files=train_file, split=split)
-        text_column = "text"
-    else:
-        dataset = load_dataset("json", data_files=train_file, split=split)
+        self.processor = TextProcessor(
+            keyphrase_vocab_path=keyphrase_vocab_path,
+            sep_token=sep_token,
+            max_keyphrase=max_keyphrase,
+        )
 
-    def tokenize(batch):
-        bodies, neg_strings = [], []
-        for line in batch[text_column]:
-            body, _, negs = line.partition(NEG_SEP)
-            bodies.append(body)
-            neg_strings.append(negs)
+        # memory-mapped; rows are not loaded until accessed
+        ds = load_dataset(
+            "sentence-transformers/s2orc", "title-abstract-pair",
+            split="train", cache_dir=cache_dir,
+        )
+        if sample_size > 0 and sample_size < len(ds):
+            ds = ds.shuffle(seed=sampling_seed).select(range(sample_size))
+        self.dataset = ds
 
-        enc = tokenizer(
-            bodies,
+    def __getitem__(self, idx):
+        line = self.dataset[idx]
+        text = f"{line.get('title', '')}. {line.get('abstract', '')}".strip()
+
+        if self.mode == "append":
+            processed = self.processor.process_each_text(text, add_negatives=False)
+            if processed is None:  # no positive keyphrase
+                processed = text
+        else:  # inplace (returns the original text unchanged when no positive keyphrase)
+            processed = self.processor.process_each_text_inplace(text, keep_surface=self.keep_surface)
+
+        return self.tokenizer(
+            processed,
             truncation=True,
-            max_length=max_seq_length,
+            max_length=self.max_seq_length,
             return_special_tokens_mask=True,
         )
 
-        if parse_negatives:
-            neg_encoded = tokenizer(neg_strings, add_special_tokens=False)["input_ids"]
-            enc["negative_keyphrase_ids"] = [
-                [i for i in ids if i >= num_original_tokens] for ids in neg_encoded
-            ]
-
-        return enc
-
-    return dataset.map(
-        tokenize,
-        batched=True,
-        remove_columns=dataset.column_names,
-        desc="Tokenizing",
-    )
+    def __len__(self):
+        return len(self.dataset)
 
 
 def main():
     parser = ArgumentParser(description="Continuous MLM pretraining for keyphrase embeddings")
     parser.add_argument("--base-model-name", type=str, default="answerdotai/ModernBERT-base")
     parser.add_argument("--trust-remote-code", action="store_true")
-    parser.add_argument("--keyphrase-vocab", type=str, required=True, 
+    parser.add_argument("--keyphrase-vocab", type=str, required=True,
                         help="Path to keyphrase vocabulary json")
-    parser.add_argument("--train-file", type=str, required=True, 
-                        help=".txt (one doc per line) or .jsonl with a text field")
-    parser.add_argument("--text-column", type=str, default="text")
+    parser.add_argument("--s2orc-sample-size", type=int, default=0,
+                        help="If >0, subsample this many S2ORC docs")
+    parser.add_argument("--s2orc-seed", type=int, default=123,
+                        help="Seed for the S2ORC subsample")
+    parser.add_argument("--cache-dir", type=str, default=None,
+                        help="Where HF datasets stores the S2ORC download/cache "
+                        "(defaults to ~/.cache/huggingface/datasets)")
+    parser.add_argument("--mode", type=str, default="append", choices=["append", "inplace"],
+                        help="Keyphrase processing, matching pretraining_data_processing.py: "
+                        "'append' adds keyphrase tokens after [SEP]; 'inplace' rewrites them "
+                        "where they occur in the text.")
+    parser.add_argument("--keep-surface", action="store_true",
+                        help="inplace mode only: keep the surface words and add the "
+                        "keyphrase token next to them instead of replacing")
+    parser.add_argument("--sep-token", type=str, default="[SEP]",
+                        help="Separator between text and appended keyphrases (append mode)")
     parser.add_argument("--output-dir", type=str, required=True)
     parser.add_argument("--max-keyphrase", type=int, default=15000)
     parser.add_argument("--max-seq-length", type=int, default=512)
@@ -261,21 +215,15 @@ def main():
     parser.add_argument("--gradient-accumulation-steps", type=int, default=1)
     parser.add_argument("--learning-rate", type=float, default=5e-4)
     parser.add_argument("--num-train-epochs", type=float, default=1.0)
+    parser.add_argument("--max-steps", type=int, default=-1,
+                        help="If >0, cap training at this many optimizer steps "
+                        "(overrides --num-train-epochs)")
     parser.add_argument("--warmup-ratio", type=float, default=0.05)
     parser.add_argument("--weight-decay", type=float, default=0.0)
     parser.add_argument("--logging-steps", type=int, default=50)
     parser.add_argument("--save-steps", type=int, default=1000)
     parser.add_argument("--bf16", action="store_true")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--max-samples", type=int, default=0,
-                        help="If >0, load only the first N rows of the corpus (for smoke testing)",)
-    parser.add_argument("--unlikelihood", action="store_true",
-                        help="Add an unlikelihood term on the per-document negative keyphrases "
-                        "(parsed from the '||NEG||' marker). Off = plain MLM continuous pretraining.")
-    parser.add_argument("--ul-alpha", type=float, default=1.0,
-                        help="Weight of the unlikelihood term (only used with --unlikelihood)")
-    parser.add_argument("--ul-eps", type=float, default=1e-6,
-                        help="Clamp floor for log(1 - p) in the unlikelihood term")
     parser.add_argument("--train-only-keyphrase-embeddings", action="store_true")
     parser.add_argument("--dataloader-num-workers", type=int, default=0,
                         help="Subprocesses for data loading (0 = load in the main process)")
@@ -298,14 +246,18 @@ def main():
     if args.train_only_keyphrase_embeddings:
         freeze_except_keyphrase_embeddings(model, num_original_tokens)
 
-    train_dataset = build_dataset(
-        args.train_file,
+    train_dataset = S2ORCDataset(
         tokenizer,
-        args.text_column,
         args.max_seq_length,
-        num_original_tokens,
-        parse_negatives=args.unlikelihood,
-        max_samples=args.max_samples,
+        keyphrase_vocab_path=args.keyphrase_vocab,
+        max_keyphrase=args.max_keyphrase,
+        mode=args.mode,
+        keep_surface=args.keep_surface,
+        num_original_tokens=num_original_tokens,
+        sep_token=args.sep_token,
+        sample_size=args.s2orc_sample_size,
+        sampling_seed=args.s2orc_seed,
+        cache_dir=args.cache_dir,
     )
 
     data_collator = KeyphraseWeightedDataCollator(
@@ -323,6 +275,7 @@ def main():
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         learning_rate=args.learning_rate,
         num_train_epochs=args.num_train_epochs,
+        max_steps=args.max_steps,
         warmup_ratio=args.warmup_ratio,
         weight_decay=args.weight_decay,
         logging_steps=args.logging_steps,
@@ -334,23 +287,12 @@ def main():
         dataloader_num_workers=args.dataloader_num_workers,
     )
 
-    if args.unlikelihood:
-        trainer = UnlikelihoodTrainer(
-            model=model,
-            args=training_args,
-            train_dataset=train_dataset,
-            data_collator=data_collator,
-            num_original_tokens=num_original_tokens,
-            ul_alpha=args.ul_alpha,
-            ul_eps=args.ul_eps,
-        )
-    else:
-        trainer = Trainer(
-            model=model,
-            args=training_args,
-            train_dataset=train_dataset,
-            data_collator=data_collator,
-        )
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_dataset,
+        data_collator=data_collator,
+    )
 
     trainer.train()
 

@@ -1,0 +1,19 @@
+# Weighted model soup of the last-N checkpoints of one GTE-MLM CSpR run.
+# path is relative to parent_run_dir (or absolute); weight defaults to 1.
+# Weights are normalized internally -> only their ratios matter. Here later
+# checkpoints count more (linear tilt) while all still contribute.
+
+parent_run_dir: /scratch/lamdo/CSpR/finetuning/gte-en-mlm-base+15k+inplace+keepsurface+cspr/2026-06-30_07AM
+output_dir: /scratch/lamdo/CSpR/finetuning/gte-en-mlm-base+15k+inplace+keepsurface+cspr/2026-06-30_07AM/soup_16-20k_wlinear
+
+checkpoints:
+  - path: checkpoint-16000
+    weight: 0.05
+  - path: checkpoint-17000
+    weight: 0.05
+  - path: checkpoint-18000
+    weight: 0.1
+  - path: checkpoint-19000
+    weight: 0.3
+  - path: checkpoint-20000
+    weight: 0.5

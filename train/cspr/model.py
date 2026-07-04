@@ -1,9 +1,17 @@
+import math
 import torch
+import torch.nn.functional as F
 from abc import ABC
 
 from transformers import (AutoModelForMaskedLM, AutoTokenizer,
                           BatchEncoding)
 from train.cspr.partitioned_maskedlm import PartitionedMaskedLM
+
+
+# Partition that carries the fine-grained ranking signal; its score enters the
+# combined score with weight 1 and every other partition is weighted by a
+# learnable lambda. "token" is the default base partition for CSpR.
+_BASE_PARTITION = "token"
 
 
 def _apply_pooling_cspr(inp: torch.Tensor,
@@ -79,13 +87,15 @@ class BaseSparse(torch.nn.Module, ABC):
     def __init__(self, 
                  model_type_or_dir: str, 
                  model_class: type[AutoModelForMaskedLM] | None = AutoModelForMaskedLM,
-                 bf16: bool = False):
+                 bf16: bool = False,
+                 trust_remote_code: bool = False):
         super().__init__()
 
         self.transformer = model_class.from_pretrained(
             model_type_or_dir,
             # torch_dtype=torch.bfloat16 if bf16 else torch.float32
-            torch_dtype = torch.float32
+            torch_dtype = torch.float32,
+            trust_remote_code = trust_remote_code
         )
         self.bf16 = bf16
 
@@ -98,16 +108,18 @@ class BaseSparse(torch.nn.Module, ABC):
 
 
 class BaseSiamese(torch.nn.Module, ABC):
-    def __init__(self, 
-                 model_type_or_dir: str, 
+    def __init__(self,
+                 model_type_or_dir: str,
                  model_class: type[AutoModelForMaskedLM] | None = AutoModelForMaskedLM,
-                 bf16: bool = False):
+                 bf16: bool = False,
+                 trust_remote_code: bool = False):
         super().__init__()
 
         self.sparse_model = BaseSparse(
             model_type_or_dir = model_type_or_dir,
             model_class = model_class,
-            bf16 = bf16
+            bf16 = bf16,
+            trust_remote_code = trust_remote_code
         )
 
     def encode(self, kwargs):
@@ -167,6 +179,55 @@ class BaseSiamese(torch.nn.Module, ABC):
 
 
 
+class _CombinedLambda(torch.nn.Module):
+    """Owns the learnable per-partition weight lambda used to form the combined
+    score ``score_base + sum_p lambda_p * score_p`` (base partition has weight 1).
+
+    lambda is stored as an unconstrained ``logit_scale``-style parameter and
+    passed through softplus so the effective weight is always >= 0. Initialised
+    so that the starting effective lambda equals ``init_lambda`` (default 0.25,
+    matching the long-standing eval-time phrase weight).
+    """
+
+    def __init__(self, partition_names: list[str], init_lambda: float = 0.25,
+                 base_partition: str = _BASE_PARTITION):
+        super().__init__()
+        self.base_partition = base_partition
+        self.weighted_partitions = [p for p in partition_names if p != base_partition]
+        # softplus(raw) = init_lambda  =>  raw = log(exp(init_lambda) - 1)
+        raw_init = math.log(math.expm1(init_lambda)) if init_lambda > 0 else -10.0
+        self.lambda_raw = torch.nn.ParameterDict(
+            {p: torch.nn.Parameter(torch.tensor(float(raw_init))) for p in self.weighted_partitions}
+        )
+
+    def weight(self, partition_name: str) -> torch.Tensor | float:
+        if partition_name == self.base_partition:
+            return 1.0
+        return F.softplus(self.lambda_raw[partition_name])
+
+    def current_lambdas(self) -> dict[str, float]:
+        return {p: F.softplus(raw).item() for p, raw in self.lambda_raw.items()}
+
+    def combine(self, partition_scores: dict[str, torch.Tensor]) -> torch.Tensor:
+        # weighted sum of per-partition scores into a single combined score
+        total = None
+        for name, score in partition_scores.items():
+            term = self.weight(name) * score
+            total = term if total is None else total + term
+        return total
+
+    def scale_reps(self, rep: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+        # Fold lambda into the (non-base) partition representations so that a
+        # plain dot product of partitions downstream reproduces the combined
+        # score. Both the query and the document rep pass through here, so the
+        # retrieval dot product (q_p . d_p) squares the per-rep factor -- scale
+        # each rep by sqrt(lambda) so that sqrt(lambda)^2 == lambda on the score.
+        return {
+            name: (vec if name == self.base_partition else (self.weight(name) ** 0.5) * vec)
+            for name, vec in rep.items()
+        }
+
+
 class CSpRTrain(BaseSiamese):
     """CSpR class, this is supposed to be used for training"""
 
@@ -177,11 +238,13 @@ class CSpRTrain(BaseSiamese):
                bf16: bool = False,
                pooling_method: dict[str, str] | None = None,
                pooling_segments: dict[str, str] | None = None,
-               sep_token_id: int | None = None):
+               sep_token_id: int | None = None,
+               trust_remote_code: bool = False):
         super().__init__(
             model_type_or_dir = model_type_or_dir,
             model_class = model_class,
-            bf16 = bf16
+            bf16 = bf16,
+            trust_remote_code = trust_remote_code
         )
 
         self.sparse_model.transformer = PartitionedMaskedLM(
@@ -198,8 +261,42 @@ class CSpRTrain(BaseSiamese):
         return _pool_cspr_partitions(
             _out, inputs, self.pooling_method, self.pooling_segments, self.sep_token_id
         )
-    
 
+
+
+class CSpRCombinedTrain(CSpRTrain):
+    """CSpR trained on a single combined score ``score_token + lambda * score_phrase``
+    with a learnable lambda (per non-base partition).
+
+    Identical to :class:`CSpRTrain` in how documents/queries are encoded and pooled;
+    the only difference is that the ``"score"`` field returned by ``forward`` is the
+    lambda-weighted combination instead of the plain unweighted partition sum. The
+    per-partition ``score_<partition>`` fields are still emitted, so matryoshka-style
+    per-field losses keep working unchanged.
+    """
+
+    def __init__(self, *args, init_lambda: float = 0.25, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.combiner = _CombinedLambda(
+            partition_names=self.sparse_model.transformer.partition_names,
+            init_lambda=init_lambda,
+        )
+
+    def forward(self, **kwargs):
+        out = super().forward(**kwargs)
+        # super() already produced per-partition score_<p> (when both sides given)
+        # and an unweighted "score". Replace "score" with the lambda-weighted combine.
+        if "score" in out:
+            partition_scores = {
+                name: out[f"score_{name}"]
+                for name in self.sparse_model.transformer.partition_names
+                if f"score_{name}" in out
+            }
+            out["score"] = self.combiner.combine(partition_scores)
+        return out
+
+    def current_lambdas(self) -> dict[str, float]:
+        return self.combiner.current_lambdas()
 
 
 class CSpR(BaseSparse):
@@ -211,11 +308,13 @@ class CSpR(BaseSparse):
                  bf16: bool = False,
                  pooling_method: dict[str, str] | None = None,
                  pooling_segments: dict[str, str] | None = None,
-                 sep_token_id: int | None = None):
+                 sep_token_id: int | None = None,
+                 trust_remote_code: bool = False):
         super().__init__(
             model_type_or_dir=model_type_or_dir,
             model_class=model_class,
-            bf16=bf16
+            bf16=bf16,
+            trust_remote_code=trust_remote_code
         )
 
         self.transformer = PartitionedMaskedLM(self.transformer, vocab_partitions)
@@ -230,7 +329,46 @@ class CSpR(BaseSparse):
         return _pool_cspr_partitions(
             _out, inputs, self.pooling_method, self.pooling_segments, self.sep_token_id
         )
-    
+
+
+class CSpRCombined(CSpR):
+    """Inference counterpart of :class:`CSpRCombinedTrain`.
+
+    Folds the learned lambda into the (non-base) partition representations at
+    encode time, so any downstream code that simply sums partition scores
+    (e.g. the dot product in retrieval, or :func:`encode_sparse_batch`) reproduces
+    ``score_token + lambda * score_phrase`` without a manual per-partition weight.
+
+    Load ``lambda_raw`` from the trained checkpoint via ``set_lambdas`` (or by
+    loading the saved combiner state) so eval matches training exactly. If left
+    unset, lambdas default to ``init_lambda``.
+    """
+
+    # signals to downstream sparse-encoding code that lambda is already baked into
+    # the partition reps, so no further per-partition weighting should be applied.
+    lambda_in_rep = True
+
+    def __init__(self, *args, init_lambda: float = 0.25, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.combiner = _CombinedLambda(
+            partition_names=self.transformer.partition_names,
+            init_lambda=init_lambda,
+        )
+        self.combiner.eval()
+
+    def set_lambdas(self, lambdas: dict[str, float]):
+        """Set effective (post-softplus) lambda values, inverting softplus to raw."""
+        for name, value in lambdas.items():
+            if name not in self.combiner.lambda_raw:
+                continue
+            raw = math.log(math.expm1(value)) if value > 0 else -10.0
+            with torch.no_grad():
+                self.combiner.lambda_raw[name].fill_(float(raw))
+
+    def encode(self, inputs: BatchEncoding) -> dict[str, torch.Tensor]:
+        rep = super().encode(inputs)
+        return self.combiner.scale_reps(rep)
+
 
 # utility functions down here
 

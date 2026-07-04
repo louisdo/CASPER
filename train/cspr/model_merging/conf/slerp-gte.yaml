@@ -1,0 +1,23 @@
+# Chained SLERP merge of a GTE-MLM CSpR run (Qwen3-style: iteratively SLERP
+# two checkpoints at a time until one remains).
+#
+# mode: chained folds checkpoints in manifest order with a constant t:
+#   acc = slerp(slerp(slerp(slerp(16k, 17k, t), 18k, t), 19k, t), 20k, t)
+# The LAST checkpoint listed carries weight t, so list them ascending
+# (16k..20k) to favor the most-trained checkpoint. With t=0.5 the effective
+# weights are 20k:50% 19k:25% 18k:12.5% 17k:6.25% 16k:6.25%.
+#
+# t in [0,1]: higher t -> the later checkpoints dominate more.
+
+parent_run_dir: /scratch/lamdo/CSpR/finetuning/gte-en-mlm-base+15k+inplace+keepsurface+cspr/2026-06-30_07AM
+output_dir: /scratch/lamdo/CSpR/finetuning/gte-en-mlm-base+15k+inplace+keepsurface+cspr/2026-06-30_07AM/slerp_chained_t06
+
+t: 0.6
+mode: chained
+
+checkpoints:
+  - path: checkpoint-16000
+  - path: checkpoint-17000
+  - path: checkpoint-18000
+  - path: checkpoint-19000
+  - path: checkpoint-20000
